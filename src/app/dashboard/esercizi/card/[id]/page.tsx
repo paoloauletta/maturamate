@@ -42,9 +42,7 @@ interface ExerciseCardPageProps {
 export default async function ExerciseCardPage({
   params,
 }: ExerciseCardPageProps) {
-  // Make sure params is not a Promise before using its properties
-  const resolvedParams = params instanceof Promise ? await params : params;
-  const id = resolvedParams.id;
+  const id = params.id;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -95,12 +93,15 @@ export default async function ExerciseCardPage({
   const exercises: Exercise[] = exercisesFromDb.map((exercise) => {
     let parsedQuestionData: ContentType;
     let parsedSolutionData: ContentType;
-    
+
     // Parse question_data based on its type
     if (typeof exercise.question_data === "string") {
       try {
         // Try to parse as JSON if it looks like JSON
-        if (exercise.question_data.startsWith('[') || exercise.question_data.startsWith('{')) {
+        if (
+          exercise.question_data.startsWith("[") ||
+          exercise.question_data.startsWith("{")
+        ) {
           parsedQuestionData = JSON.parse(exercise.question_data);
         } else {
           parsedQuestionData = exercise.question_data;
@@ -113,12 +114,15 @@ export default async function ExerciseCardPage({
       // If it's already an object, just use it
       parsedQuestionData = exercise.question_data as ContentType;
     }
-    
+
     // Parse solution_data based on its type
     if (typeof exercise.solution_data === "string") {
       try {
         // Try to parse as JSON if it looks like JSON
-        if (exercise.solution_data.startsWith('[') || exercise.solution_data.startsWith('{')) {
+        if (
+          exercise.solution_data.startsWith("[") ||
+          exercise.solution_data.startsWith("{")
+        ) {
           parsedSolutionData = JSON.parse(exercise.solution_data);
         } else {
           parsedSolutionData = exercise.solution_data;
@@ -131,7 +135,7 @@ export default async function ExerciseCardPage({
       // If it's already an object, just use it
       parsedSolutionData = exercise.solution_data as ContentType;
     }
-    
+
     return {
       id: exercise.id,
       question_data: parsedQuestionData,

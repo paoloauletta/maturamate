@@ -8,7 +8,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +18,6 @@ import {
   CheckCircle2,
   ChevronUp,
   ChevronDown,
-  CircleCheck,
 } from "lucide-react";
 import MathRenderer from "@/app/components/mathRenderer";
 import { Badge } from "@/components/ui/badge";
@@ -360,7 +358,7 @@ export default function FavoritesClient({
               }}
               className="text-yellow-500 p-1 rounded-full hover:scale-110 transition-transform"
             >
-              <Star className="h-4 w-4" fill="currentColor" />
+              <Star className="h-4 w-4 cursor-pointer" fill="currentColor" />
             </button>
 
             {isExpanded ? (
@@ -447,7 +445,7 @@ export default function FavoritesClient({
               className="text-yellow-500 p-1 rounded-full hover:scale-110 transition-transform"
               onClick={(e) => onUnflag(exercise.id, e)}
             >
-              <Star className="w-4 h-4" fill="currentColor" />
+              <Star className="w-4 h-4" fill="currentColor cursor-pointer" />
             </button>
           </div>
           <h3 className="font-semibold text-base">
@@ -714,7 +712,7 @@ export default function FavoritesClient({
               <p className="text-muted-foreground mb-5">
                 Non hai ancora aggiunto schede ai preferiti.
               </p>
-              <Button asChild>
+              <Button asChild variant="outline">
                 <Link href="/dashboard/esercizi">Vai agli esercizi</Link>
               </Button>
             </div>
@@ -767,7 +765,7 @@ export default function FavoritesClient({
               <p className="text-muted-foreground mb-5">
                 Non hai ancora aggiunto esercizi ai preferiti.
               </p>
-              <Button asChild>
+              <Button asChild variant="outline">
                 <Link href="/dashboard/esercizi">Vai agli esercizi</Link>
               </Button>
             </div>

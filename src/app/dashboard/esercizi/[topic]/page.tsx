@@ -1,13 +1,8 @@
 import { eq } from "drizzle-orm";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect, notFound } from "next/navigation";
-import TopicClient from "./client";
-import {
-  getTopicsWithSubtopics,
-  getTopics,
-  getSubtopics,
-  getTheoryContent,
-} from "@/utils/cache";
+import ExercisesTopicClient from "./client";
+import { getTopicsWithSubtopics, getTopics, getSubtopics } from "@/utils/cache";
 import { db } from "@/db/drizzle";
 import {
   exercisesCardsTable,
@@ -39,14 +34,6 @@ export interface SubtopicType {
   order_index: number | null;
 }
 
-export interface TheoryContentType {
-  id: string;
-  subtopic_id: string;
-  title: string;
-  content: string;
-  created_at?: Date;
-}
-
 export interface ExerciseCardType {
   id: string;
   subtopic_id: string | null;
@@ -57,8 +44,7 @@ export interface ExerciseCardType {
   is_completed: boolean;
 }
 
-export interface SubtopicWithTheoryType extends SubtopicType {
-  theory: TheoryContentType[];
+export interface SubtopicWithExercisesType extends SubtopicType {
   exercise_cards: ExerciseCardType[];
 }
 
@@ -66,17 +52,17 @@ export interface TopicWithSubtopicsType extends TopicType {
   subtopics: SubtopicType[];
 }
 
-export interface TopicClientProps {
+export interface ExerciseTopicClientProps {
   currentTopic: TopicType;
   topicsWithSubtopics: TopicWithSubtopicsType[];
-  subtopicsWithTheory: SubtopicWithTheoryType[];
+  subtopicsWithExercises: SubtopicWithExercisesType[];
   activeSubtopicId?: string;
   userId: string;
 }
 
 // Using the `any` type to bypass the specific Next.js constraint
 // This is a last resort solution when type errors persist
-async function TopicPage(props: any) {
+async function ExercisesTopicPage(props: any) {
   // Extract the params and searchParams safely
   const topicId = props.params?.topic;
   const subtopicId = props.searchParams?.subtopic;
@@ -106,24 +92,10 @@ async function TopicPage(props: any) {
   // Get subtopics for this topic using cached function
   const subtopics = await getSubtopics(topicId);
 
-  // Get theory content for all subtopics in this topic
-  // Using Promise.all to parallelize requests
-  const theoryContentPromises = subtopics.map((subtopic) =>
-    getTheoryContent(subtopic.id)
-  );
-  const theoryContentBySubtopic = await Promise.all(theoryContentPromises);
-
-  // Combine subtopics with their theory content
-  const validTheoryContent = theoryContentBySubtopic
-    .flat()
-    .filter((item) => item.subtopic_id !== null) as TheoryContentType[];
-
   // Fetch all exercise cards for subtopics in this topic
   // Get the subtopic IDs first
   const topicSubtopicIds = subtopics.map((s) => s.id);
 
-  // Fetch exercise cards - this part might be less cacheable as completion
-  // status depends on user progress
   const exerciseCards = await db
     .select({
       id: exercisesCardsTable.id,
@@ -237,18 +209,19 @@ async function TopicPage(props: any) {
     {} as Record<string, ExerciseCardType[]>
   );
 
-  // Group theory content by subtopic and add exercise cards
-  const subtopicsWithTheory: SubtopicWithTheoryType[] = subtopics.map((s) => ({
-    ...s,
-    theory: validTheoryContent.filter((t) => t.subtopic_id === s.id),
-    exercise_cards: exerciseCardsBySubtopic[s.id] || [],
-  }));
+  // Group exercise cards by subtopic
+  const subtopicsWithExercises: SubtopicWithExercisesType[] = subtopics.map(
+    (s) => ({
+      ...s,
+      exercise_cards: exerciseCardsBySubtopic[s.id] || [],
+    })
+  );
 
   return (
-    <TopicClient
+    <ExercisesTopicClient
       currentTopic={topic[0]}
       topicsWithSubtopics={topicsWithSubtopics}
-      subtopicsWithTheory={subtopicsWithTheory}
+      subtopicsWithExercises={subtopicsWithExercises}
       activeSubtopicId={subtopicId}
       userId={user.id as string}
     />
@@ -256,4 +229,4 @@ async function TopicPage(props: any) {
 }
 
 // Export with the 'any' type to bypass Next.js type constraints
-export default TopicPage;
+export default ExercisesTopicPage;

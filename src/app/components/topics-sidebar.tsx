@@ -30,6 +30,7 @@ interface TopicsSidebarProps {
   activeSubtopicId?: string;
   onTopicClick?: (topicId: string) => void;
   onSubtopicClick?: (subtopicId: string) => void;
+  basePath?: string;
 }
 
 export default function TopicsSidebar({
@@ -38,6 +39,7 @@ export default function TopicsSidebar({
   activeSubtopicId,
   onTopicClick,
   onSubtopicClick,
+  basePath = "/dashboard/teoria",
 }: TopicsSidebarProps) {
   // Initialize all topics as expanded
   const initialExpandedState = topics.reduce((acc, topic) => {

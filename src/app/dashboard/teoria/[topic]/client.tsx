@@ -5,7 +5,7 @@ import TopicsSidebar from "@/app/components/topics-sidebar";
 import { useRouter } from "next/navigation";
 import MarkdownRenderer from "@/app/components/markdownRenderer";
 import Link from "next/link";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ExerciseCard from "@/app/components/exercises/ExerciseCard";
 
@@ -83,6 +83,36 @@ export default function TopicClient({
     initialActiveSubtopicId
   );
 
+  // Function to find next topic
+  const findNextTopic = () => {
+    // If currentTopic doesn't have an order_index, return the first topic
+    if (currentTopic.order_index === null) {
+      return topicsWithSubtopics[0]?.id;
+    }
+
+    // Sort topics by order_index
+    const sortedTopics = [...topicsWithSubtopics].sort((a, b) => {
+      if (a.order_index === null) return 1;
+      if (b.order_index === null) return -1;
+      return a.order_index - b.order_index;
+    });
+
+    // Find the index of the current topic
+    const currentIndex = sortedTopics.findIndex(
+      (t) => t.id === currentTopic.id
+    );
+
+    // Return the next topic, or the first one if we're at the end
+    if (currentIndex < sortedTopics.length - 1) {
+      return sortedTopics[currentIndex + 1].id;
+    }
+
+    return null; // No next topic available (we're at the last one)
+  };
+
+  // Get the next topic ID
+  const nextTopicId = findNextTopic();
+
   // Handle navigation when clicking on a topic
   const handleTopicClick = (topicId: string) => {
     router.push(`/dashboard/teoria/${topicId}`);
@@ -142,12 +172,23 @@ export default function TopicClient({
         />
       </div>
 
-      <h1 className="text-4xl font-bold text-left flex justify-between items-center mb-8 border-b pb-4 border-border">
-        {currentTopic.order_index !== null
-          ? `${currentTopic.order_index}. `
-          : ""}
-        {currentTopic.name}
-      </h1>
+      <div className="flex justify-between items-center mb-8 border-b pb-4 border-border">
+        <h1 className="text-4xl font-bold text-left">
+          {currentTopic.order_index !== null
+            ? `${currentTopic.order_index}. `
+            : ""}
+          {currentTopic.name}
+        </h1>
+        <Link
+          href={`/dashboard/esercizi/${currentTopic.id}`}
+          className="hidden md:block"
+        >
+          <Button className="flex items-center gap-2" variant="outline">
+            <Dumbbell className="h-4 w-4" />
+            Esercitati su questo argomento
+          </Button>
+        </Link>
+      </div>
 
       <div className="flex flex-col-reverse md:flex-row gap-8">
         {/* Main content */}
@@ -407,6 +448,22 @@ export default function TopicClient({
               <p className="text-muted-foreground">
                 Non ci sono ancora contenuti teorici per questo argomento.
               </p>
+            </div>
+          )}
+
+          {/* Next Topic Button */}
+          {nextTopicId && (
+            <div className="flex justify-center pt-8 border-t border-muted mt-12">
+              <Link href={`/dashboard/teoria/${nextTopicId}`}>
+                <Button
+                  className="group px-8 py-6 text-white cursor-pointer"
+                  variant="default"
+                  size="lg"
+                >
+                  <span>Vai al prossimo argomento</span>
+                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
             </div>
           )}
         </div>

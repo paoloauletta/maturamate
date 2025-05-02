@@ -1,15 +1,30 @@
 import { db } from "@/db/drizzle";
-import {
-  exercisesTable,
-  exercisesCardsTable,
-  subtopicsTable,
-  topicsTable,
-  completedExercisesTable,
-} from "@/db/schema";
+import { exercisesTable, completedExercisesTable } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import ExerciseCardClient from "./ExerciseCardClient";
+import { getExerciseCardDetails, getExercisesForCard } from "@/utils/cache";
+import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
+
+// Cache common exercise card data - not user specific
+const getCachedCardData = unstable_cache(
+  async (cardId: string) => {
+    return getExerciseCardDetails(cardId);
+  },
+  ["exercise-card-data"],
+  { revalidate: 3600 }
+);
+
+// Cache exercise questions - not user specific
+const getCachedExercises = unstable_cache(
+  async (cardId: string) => {
+    return getExercisesForCard(cardId);
+  },
+  ["exercise-card-questions"],
+  { revalidate: 3600 }
+);
 
 interface ContentData {
   text?: string;
@@ -45,43 +60,15 @@ async function ExerciseCardPage(props: any) {
     return null;
   }
 
-  // Fetch the exercise card details
-  const card = await db
-    .select({
-      id: exercisesCardsTable.id,
-      description: exercisesCardsTable.description,
-      difficulty: exercisesCardsTable.difficulty,
-      created_at: exercisesCardsTable.created_at,
-      subtopic_id: exercisesCardsTable.subtopic_id,
-      subtopic_name: subtopicsTable.name,
-      subtopic_order: subtopicsTable.order_index,
-      topic_id: subtopicsTable.topic_id,
-      topic_name: topicsTable.name,
-      topic_order: topicsTable.order_index,
-    })
-    .from(exercisesCardsTable)
-    .leftJoin(
-      subtopicsTable,
-      eq(exercisesCardsTable.subtopic_id, subtopicsTable.id)
-    )
-    .leftJoin(topicsTable, eq(subtopicsTable.topic_id, topicsTable.id))
-    .where(eq(exercisesCardsTable.id, id));
+  // Fetch the exercise card details using cached function
+  const card = await getCachedCardData(id);
 
-  if (card.length === 0) {
+  if (!card) {
     notFound();
   }
 
-  // Fetch all exercises for this card
-  const exercisesFromDb = await db
-    .select({
-      id: exercisesTable.id,
-      question_data: exercisesTable.question_data,
-      solution_data: exercisesTable.solution_data,
-      order_index: exercisesTable.order_index,
-    })
-    .from(exercisesTable)
-    .where(eq(exercisesTable.exercise_card_id, id))
-    .orderBy(exercisesTable.order_index);
+  // Fetch all exercises for this card using cached function
+  const exercisesFromDb = await getCachedExercises(id);
 
   // Transform the database results to match the Exercise type
   const exercises: Exercise[] = exercisesFromDb.map((exercise) => {
@@ -138,7 +125,7 @@ async function ExerciseCardPage(props: any) {
     };
   });
 
-  // Get completed exercises for this user
+  // Get completed exercises for this user - NOT cached as it's user-specific
   const completedExercises = await db
     .select({
       exercise_id: completedExercisesTable.exercise_id,
@@ -191,17 +178,19 @@ async function ExerciseCardPage(props: any) {
   });
 
   return (
-    <ExerciseCardClient
-      id={card[0].id}
-      description={card[0].description || ""}
-      difficulty={card[0].difficulty}
-      topicId={card[0].topic_id || ""}
-      topicName={card[0].topic_name || ""}
-      subtopicId={card[0].subtopic_id || ""}
-      subtopicName={card[0].subtopic_name || ""}
-      exercises={exercises}
-      completedExercises={completedExercisesMap}
-    />
+    <Suspense fallback={<div>Loading exercise card...</div>}>
+      <ExerciseCardClient
+        id={card.id}
+        description={card.description || ""}
+        difficulty={card.difficulty}
+        topicId={card.topic_id || ""}
+        topicName={card.topic_name || ""}
+        subtopicId={card.subtopic_id || ""}
+        subtopicName={card.subtopic_name || ""}
+        exercises={exercises}
+        completedExercises={completedExercisesMap}
+      />
+    </Suspense>
   );
 }
 

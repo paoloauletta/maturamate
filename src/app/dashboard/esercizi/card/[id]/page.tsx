@@ -20,9 +20,10 @@ interface ContentData {
 // Type for content that can be either a string, an array of strings, or an object with specific properties
 type ContentType = string | string[] | ContentData;
 
-// Next.js 15 compatible props type
 interface ExerciseCardPageProps {
-  params: Promise<{ id: string }>;
+  params: {
+    id: string;
+  };
 }
 
 interface Exercise {
@@ -32,12 +33,18 @@ interface Exercise {
   order_index: number;
 }
 
+interface ExerciseCardPageProps {
+  params: {
+    id: string;
+  };
+}
+
 export default async function ExerciseCardPage({
   params,
-}: {
-  params: { id: string };
-}) {
-  const id = params.id;
+}: ExerciseCardPageProps) {
+  // Make sure params is not a Promise before using its properties
+  const resolvedParams = params instanceof Promise ? await params : params;
+  const id = resolvedParams.id;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();

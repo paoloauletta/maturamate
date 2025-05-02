@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     // Disable ESLint for the entire project during development
     ignoreDuringBuilds: true,
   },
-  output: "standalone",
 };
 
 export default nextConfig;

@@ -11,6 +11,15 @@ export async function middleware(request: NextRequest) {
   // Get the pathname from the URL
   const { pathname } = request.nextUrl;
 
+  // Completely skip middleware for auth callbacks to prevent interference
+  if (
+    pathname.includes("kinde_callback") ||
+    pathname.includes("auth/register") ||
+    pathname.includes("auth/login")
+  ) {
+    return NextResponse.next();
+  }
+
   // Skip middleware for public paths and API routes that handle their own auth
   if (
     publicRoutes.some((route) => pathname.startsWith(route)) ||
@@ -42,7 +51,9 @@ export const config = {
      * - favicon.ico (favicon file)
      * - images/ (public image files)
      * - fonts/ (public font files)
+     * - api/auth/* (auth routes that handle their own auth)
      */
     "/((?!_next/static|_next/image|favicon.ico|images|fonts).*)",
+    "/:path((?!api/auth).*)",
   ],
 };

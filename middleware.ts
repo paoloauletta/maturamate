@@ -5,7 +5,11 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 const publicRoutes = ["/", "/api/auth"];
 
 // Define routes that require authentication
-const protectedRoutes = ["/dashboard"];
+const protectedRoutes = [
+  "/dashboard",
+  "/api/auth/kinde_callback",
+  "/api/auth/kinde_login",
+];
 
 export async function middleware(request: NextRequest) {
   // Get the pathname from the URL

@@ -17,22 +17,6 @@ const nextConfig: NextConfig = {
       dynamic: 30,
     },
   },
-
-  // Add this if not already present
-  async headers() {
-    return [
-      {
-        // Apply to all routes
-        source: "/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "no-store, max-age=0",
-          },
-        ],
-      },
-    ];
-  },
 };
 
 export default nextConfig;

@@ -8,11 +8,16 @@ import {
   topicsTable,
   completedExercisesTable,
   completedExercisesCardsTable,
+  flaggedSimulationsTable,
+  simulationsTable,
+  simulationsCardsTable,
+  completedSimulationsTable,
 } from "@/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Import client component
 import FavoritesClient from "./client";
@@ -22,7 +27,7 @@ export default async function FavoritesPage() {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
-  if (!user) {
+  if (!user || !user.id) {
     redirect("/api/auth/login");
   }
 
@@ -205,13 +210,75 @@ export default async function FavoritesPage() {
     };
   });
 
+  // Fetch flagged simulations with details
+  const flaggedSimulations = await db
+    .select({
+      id: simulationsTable.id,
+      title: simulationsTable.title,
+      description: simulationsTable.description,
+      pdf_url: simulationsTable.pdf_url,
+      time_in_min: simulationsTable.time_in_min,
+      is_complete: simulationsTable.is_complete,
+      card_id: simulationsTable.card_id,
+      card_title: simulationsCardsTable.title,
+      card_description: simulationsCardsTable.description,
+      year: simulationsCardsTable.year,
+      subject: simulationsCardsTable.subject,
+      created_at: flaggedSimulationsTable.created_at,
+    })
+    .from(flaggedSimulationsTable)
+    .innerJoin(
+      simulationsTable,
+      eq(flaggedSimulationsTable.simulation_id, simulationsTable.id)
+    )
+    .innerJoin(
+      simulationsCardsTable,
+      eq(simulationsTable.card_id, simulationsCardsTable.id)
+    )
+    .where(eq(flaggedSimulationsTable.user_id, user.id))
+    .orderBy(flaggedSimulationsTable.created_at);
+
+  // Get completion status for simulations
+  const completedSimulations = await db
+    .select({
+      simulation_id: completedSimulationsTable.simulation_id,
+      completed_at: completedSimulationsTable.completed_at,
+      started_at: completedSimulationsTable.started_at,
+    })
+    .from(completedSimulationsTable)
+    .where(eq(completedSimulationsTable.user_id, user.id));
+
+  // Create maps for completed and started simulations
+  const completedSimulationMap = {} as Record<string, boolean>;
+  const startedSimulationMap = {} as Record<string, boolean>;
+
+  completedSimulations.forEach((sim) => {
+    if (sim.simulation_id) {
+      // Mark as completed if completed_at is not null
+      if (sim.completed_at !== null) {
+        completedSimulationMap[sim.simulation_id] = true;
+      }
+
+      // Mark as started but not completed if completed_at is null but started_at is not
+      if (sim.completed_at === null && sim.started_at !== null) {
+        startedSimulationMap[sim.simulation_id] = true;
+      }
+    }
+  });
+
+  // Add completion status to simulations
+  const flaggedSimulationsWithStatus = flaggedSimulations.map((sim) => ({
+    ...sim,
+    is_completed: sim.id ? completedSimulationMap[sim.id] || false : false,
+    is_started: sim.id ? startedSimulationMap[sim.id] || false : false,
+  }));
+
   return (
-    <Suspense
-      fallback={<div className="container">Caricamento preferiti...</div>}
-    >
+    <Suspense fallback={<LoadingSpinner text="Caricamento preferiti..." />}>
       <FavoritesClient
         flaggedCards={flaggedCards}
         flaggedExercises={flaggedExercises}
+        flaggedSimulations={flaggedSimulationsWithStatus}
       />
     </Suspense>
   );

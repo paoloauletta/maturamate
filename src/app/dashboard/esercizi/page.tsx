@@ -11,6 +11,8 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import ClientExercisesPage from "./client-page";
 import { redirect } from "next/navigation";
 import { getTopics } from "@/utils/cache";
+import { Suspense } from "react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Define interfaces for your data structure
 interface ExerciseCard {
@@ -60,17 +62,19 @@ export default async function Exercises() {
     redirect(`/dashboard/esercizi/${topics[0].id}`);
   }
 
-  // If no topics are available, show a message
+  // If no topics are available,a message
   return (
-    <div className="container">
-      <h1 className="text-4xl font-bold text-left mb-8 border-b pb-4 border-border">
-        Esercizi
-      </h1>
-      <div className="text-center p-12 bg-muted/30 rounded-lg">
-        <p className="text-muted-foreground text-lg">
-          Non ci sono ancora esercizi disponibili.
-        </p>
+    <Suspense fallback={<LoadingSpinner text="Caricamento esercizi..." />}>
+      <div className="container">
+        <h1 className="text-4xl font-bold text-left mb-8 border-b pb-4 border-border">
+          Esercizi
+        </h1>
+        <div className="text-center p-12 bg-muted/30 rounded-lg">
+          <p className="text-muted-foreground text-lg">
+            Non ci sono ancora esercizi disponibili.
+          </p>
+        </div>
       </div>
-    </div>
+    </Suspense>
   );
 }

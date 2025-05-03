@@ -17,11 +17,11 @@ import {
   CheckCircle,
   FileText,
   Maximize2,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
+  Minimize2,
 } from "lucide-react";
 import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import "@/app/globals/styles/pdf-viewer.css";
 
 interface Simulation {
@@ -56,8 +56,6 @@ export default function SimulationClient({
   const [showConfirmation, setShowConfirmation] = useState(!hasStarted);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const [zoom, setZoom] = useState(100); // Default zoom level
-  const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -80,6 +78,7 @@ export default function SimulationClient({
     calculateInitialTimeRemaining()
   );
   const [timerActive, setTimerActive] = useState(hasStarted && !isCompleted);
+  const [isRestarting, setIsRestarting] = useState(false);
 
   // Start the timer when a user begins a simulation
   useEffect(() => {
@@ -201,8 +200,32 @@ export default function SimulationClient({
   };
 
   // Start over/do again
-  const handleStartOver = () => {
-    setShowConfirmation(true);
+  const handleStartOver = async () => {
+    try {
+      setIsRestarting(true);
+      // Call API to reset simulation status and increment attempt counter
+      const response = await fetch("/api/simulations/restart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          simulationId: simulation.id,
+        }),
+      });
+
+      if (response.ok) {
+        // Show the confirmation screen to start the new attempt
+        setShowConfirmation(true);
+        router.refresh();
+      } else {
+        console.error("Failed to restart simulation");
+      }
+    } catch (error) {
+      console.error("Error restarting simulation:", error);
+    } finally {
+      setIsRestarting(false);
+    }
   };
 
   // Toggle fullscreen mode
@@ -210,29 +233,14 @@ export default function SimulationClient({
     setFullscreen(!fullscreen);
   };
 
-  // Zoom functions
-  const zoomIn = () => {
-    setZoom((prev) => Math.min(prev + 25, 200)); // Max zoom 200%
-  };
-
-  const zoomOut = () => {
-    setZoom((prev) => Math.max(prev - 25, 50)); // Min zoom 50%
-  };
-
-  const resetZoom = () => {
-    setZoom(100);
-  };
-
-  // Apply zoom to iframe using CSS transform
+  // Apply fixes when entering/exiting fullscreen
   useEffect(() => {
-    if (iframeRef.current) {
-      // Get the iframe's document
-      const iframeDoc = iframeRef.current;
-      // Use CSS transform to scale the content
-      iframeDoc.style.transform = `scale(${zoom / 100})`;
-      iframeDoc.style.transformOrigin = "top center";
+    if (fullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
-  }, [zoom, fullscreen]);
+  }, [fullscreen]);
 
   // Handle iframe load event
   const handleIframeLoad = () => {
@@ -260,8 +268,19 @@ export default function SimulationClient({
             </p>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={handleStartOver}>
-              Ripeti Simulazione
+            <Button
+              variant="outline"
+              onClick={handleStartOver}
+              disabled={isRestarting}
+            >
+              {isRestarting ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                  Riavvio...
+                </>
+              ) : (
+                "Ripeti Simulazione"
+              )}
             </Button>
             <Link href={`/dashboard/simulazioni/${simulation.id}/solutions`}>
               <Button>
@@ -324,11 +343,11 @@ export default function SimulationClient({
   // Show the actual simulation with timer
   return (
     <div
-      className={`container py-4 ${
-        fullscreen ? "fixed inset-0 z-50 bg-background" : ""
-      }`}
+      className={
+        fullscreen ? "fixed inset-0 z-50 bg-background" : "container py-4"
+      }
     >
-      <div className="sticky top-0 z-10 bg-background py-2 border-b mb-4 flex justify-between items-center">
+      <div className="bg-background py-2 border-b mb-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">{simulation.title}</h1>
         <div className="flex items-center gap-4">
           <div
@@ -339,73 +358,66 @@ export default function SimulationClient({
             <Clock className="h-5 w-5" />
             {formatTime(timeRemaining)}
           </div>
-          <Button onClick={handleCompleteSimulation}>
-            Termina Simulazione
-          </Button>
-        </div>
-      </div>
 
-      <div className="flex flex-col items-center justify-center">
-        <div
-          ref={containerRef}
-          className={`pdf-container ${fullscreen ? "pdf-fullscreen" : ""}`}
-        >
-          <div className="pdf-controls">
-            <div className="zoom-controls">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={zoomOut}
-                title="Zoom Out"
-              >
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium">{zoom}%</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={zoomIn}
-                title="Zoom In"
-              >
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetZoom}
-                title="Reset Zoom"
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-            </div>
-            <Button variant="outline" size="sm" onClick={toggleFullscreen}>
-              <Maximize2 className="h-4 w-4 mr-1" />
-              {fullscreen ? "Esci" : "Schermo intero"}
+          {fullscreen ? (
+            <Button
+              variant="outline"
+              onClick={toggleFullscreen}
+              className="ml-2"
+            >
+              <Minimize2 className="h-4 w-4 mr-1" />
+              Esci
             </Button>
-          </div>
-
-          <iframe
-            ref={iframeRef}
-            src={`${simulation.pdf_url}#toolbar=1&navpanes=1&view=FitH`}
-            className="w-full h-full border-0"
-            title={simulation.title}
-            style={{
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: "top center",
-              visibility: isLoading ? "hidden" : "visible",
-            }}
-            onLoad={handleIframeLoad}
-          />
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600 mb-2"></div>
-                <p className="text-gray-600">Caricamento PDF...</p>
-              </div>
-            </div>
+          ) : (
+            <Button onClick={handleCompleteSimulation}>
+              Termina Simulazione
+            </Button>
           )}
         </div>
       </div>
+
+      <div style={{ width: "100%", height: "calc(100vh - 180px)" }}>
+        {/* Simple iframe with minimal styling */}
+        <iframe
+          ref={iframeRef}
+          src={`${simulation.pdf_url}#toolbar=0&navpanes=0&view=FitH`}
+          style={{
+            width: "100%",
+            height: "100%",
+            border: "none",
+            background: "#f5f5f5",
+          }}
+          title={simulation.title}
+          onLoad={handleIframeLoad}
+        />
+        {isLoading && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              background: "rgba(255,255,255,0.8)",
+              padding: "20px",
+              borderRadius: "5px",
+              textAlign: "center",
+            }}
+          >
+            <Progress className="w-60 mb-2" value={45} />
+            <p className="text-muted-foreground">Caricamento PDF...</p>
+          </div>
+        )}
+      </div>
+
+      {fullscreen && (
+        <div className="p-2 w-full bg-background border-t flex justify-between items-center">
+          <div></div>
+          <Button onClick={handleCompleteSimulation} className="mx-auto">
+            Termina Simulazione
+          </Button>
+          <div></div>
+        </div>
+      )}
     </div>
   );
 }

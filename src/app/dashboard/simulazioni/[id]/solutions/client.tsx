@@ -8,9 +8,11 @@ import {
   FileCheck,
   Download,
   Maximize2,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
+  Minimize2,
+  ChevronLeft,
+  ChevronUp,
+  ChevronDown,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +23,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import "@/app/globals/styles/pdf-viewer.css";
+import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Simulation {
   id: string;
@@ -52,241 +64,402 @@ export default function SolutionsClient({
   solutions,
 }: SolutionsClientProps) {
   const [selectedSolution, setSelectedSolution] = useState<Solution | null>(
-    null
+    solutions.length > 0 ? solutions[0] : null
   );
-  const [numPages, setNumPages] = useState<number | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const [zoom, setZoom] = useState(100); // Default zoom level
-  const containerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const router = useRouter();
+  const [isRestarting, setIsRestarting] = useState(false);
+
+  // State for collapsible sections
+  const [problemiExpanded, setProblemiExpanded] = useState(true);
+  const [quesitiExpanded, setQuesitiExpanded] = useState(true);
+
+  // Separate solutions into Problemi and Quesiti
+  const problemiSolutions = solutions.filter(
+    (sol) =>
+      sol.title.toLowerCase().includes("problema") ||
+      sol.title.toLowerCase().includes("problem")
+  );
+
+  const quesitiSolutions = solutions.filter(
+    (sol) =>
+      sol.title.toLowerCase().includes("quesito") ||
+      sol.title.toLowerCase().includes("quesit")
+  );
+
+  // Other solutions that don't match either category
+  const otherSolutions = solutions.filter(
+    (sol) => !problemiSolutions.includes(sol) && !quesitiSolutions.includes(sol)
+  );
 
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
     setFullscreen(!fullscreen);
   };
 
-  // Zoom functions
-  const zoomIn = () => {
-    setZoom((prev) => Math.min(prev + 25, 200)); // Max zoom 200%
-  };
-
-  const zoomOut = () => {
-    setZoom((prev) => Math.max(prev - 25, 50)); // Min zoom 50%
-  };
-
-  const resetZoom = () => {
-    setZoom(100);
-  };
-
-  // Apply zoom to iframe using CSS transform
+  // Apply fixes when entering/exiting fullscreen
   useEffect(() => {
-    if (iframeRef.current) {
-      // Get the iframe's document
-      const iframeDoc = iframeRef.current;
-      // Use CSS transform to scale the content
-      iframeDoc.style.transform = `scale(${zoom / 100})`;
-      iframeDoc.style.transformOrigin = "top center";
+    if (fullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
-  }, [zoom, fullscreen]);
+  }, [fullscreen]);
 
   // Handle iframe load event
   const handleIframeLoad = () => {
     setIsLoading(false);
   };
 
-  // Handle solution selection
-  const handleViewSolution = (solution: Solution) => {
-    setSelectedSolution(solution);
-    setZoom(100); // Reset zoom when changing solution
-    setIsLoading(true); // Reset loading state for new solution
+  // Format time in minutes to hours and minutes
+  const formatTimeInHours = (minutes: number) => {
+    if (minutes < 60) {
+      return `${minutes} min`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? "ora" : "ore"}`;
+    }
+
+    return `${hours} ${hours === 1 ? "ora" : "ore"} e ${remainingMinutes} min`;
   };
 
-  // Render PDF viewer when a solution is selected
-  if (selectedSolution) {
-    return (
-      <div className="container py-4">
-        <div className="sticky top-0 z-10 bg-background py-2 border-b mb-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedSolution(null)}
+  // Handle restart simulation
+  const handleRestartSimulation = async () => {
+    try {
+      setIsRestarting(true);
+      // Call API to reset simulation status and increment attempt counter
+      const response = await fetch("/api/simulations/restart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          simulationId: simulation.id,
+        }),
+      });
+
+      if (response.ok) {
+        // Navigate back to the simulation page
+        router.push(`/dashboard/simulazioni/${simulation.id}`);
+      } else {
+        console.error("Failed to restart simulation");
+      }
+    } catch (error) {
+      console.error("Error restarting simulation:", error);
+    } finally {
+      setIsRestarting(false);
+    }
+  };
+
+  return (
+    <div
+      className={`${
+        fullscreen
+          ? "fixed inset-0 z-50 bg-background flex flex-col"
+          : "container py-8"
+      }`}
+    >
+      <div className={`${fullscreen ? "px-4 py-2 border-b" : "mb-8"}`}>
+        <div className="flex justify-between items-center">
+          <div>
+            <Link
+              href={`/dashboard/simulazioni/${simulation.id}`}
+              className="flex items-center text-muted-foreground hover:text-foreground mb-2"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Torna alle soluzioni
-            </Button>
-            <h1 className="text-xl font-bold">{selectedSolution.title}</h1>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Torna alla simulazione
+            </Link>
+            <h1 className="text-2xl font-bold">
+              {fullscreen ? selectedSolution?.title : "Soluzioni"}
+            </h1>
           </div>
-        </div>
 
-        <div className="flex flex-col items-center justify-center">
-          <div
-            ref={containerRef}
-            className={`pdf-container ${fullscreen ? "pdf-fullscreen" : ""}`}
-          >
-            <div className="pdf-controls">
-              <div className="zoom-controls">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={zoomOut}
-                  title="Zoom Out"
-                >
-                  <ZoomOut className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            {!fullscreen && (
+              <Link href="/dashboard/simulazioni">
+                <Button variant="outline" size="sm">
+                  <LayoutGrid className="h-4 w-4 mr-1" />
+                  Tutte le simulazioni
                 </Button>
-                <span className="text-sm font-medium">{zoom}%</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={zoomIn}
-                  title="Zoom In"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetZoom}
-                  title="Reset Zoom"
-                >
-                  <RotateCw className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button variant="outline" size="sm" onClick={toggleFullscreen}>
-                <Maximize2 className="h-4 w-4 mr-1" />
-                {fullscreen ? "Esci" : "Schermo intero"}
+              </Link>
+            )}
+
+            {fullscreen && (
+              <Button variant="outline" onClick={toggleFullscreen}>
+                <Minimize2 className="h-4 w-4 mr-1" />
+                Esci
               </Button>
-            </div>
-
-            <iframe
-              ref={iframeRef}
-              src={`${selectedSolution.pdf_url}#toolbar=1&navpanes=1&view=FitH`}
-              className="w-full h-full border-0"
-              title={selectedSolution.title}
-              style={{
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: "top center",
-                visibility: isLoading ? "hidden" : "visible",
-              }}
-              onLoad={handleIframeLoad}
-            />
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600 mb-2"></div>
-                  <p className="text-gray-600">Caricamento PDF...</p>
-                </div>
-              </div>
             )}
           </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="container py-8">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href={`/dashboard/simulazioni/${simulation.id}`}>
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Torna alla Simulazione
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold">Soluzioni: {simulation.title}</h1>
-      </div>
+      {!fullscreen && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Informazioni</CardTitle>
+                <CardDescription>
+                  Soluzioni disponibili per {simulation.title}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard/simulazioni" className="w-full">
+                  <Button variant="outline" className="w-full mb-4">
+                    <LayoutGrid className="h-4 w-4 mr-2" />
+                    Tutte le simulazioni
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
 
-      <div className="max-w-4xl mx-auto">
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Hai completato la simulazione!</CardTitle>
-            <CardDescription>
-              {simulation.subject} - {simulation.year}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">{simulation.description}</p>
-            <p className="text-muted-foreground">
-              Di seguito trovi le soluzioni ufficiali della simulazione. Puoi
-              visualizzarle direttamente o scaricarle in formato PDF.
-            </p>
-          </CardContent>
-        </Card>
-
-        {solutions.length > 0 ? (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold mb-4">
-              Soluzioni Disponibili
-            </h2>
-
-            {solutions.map((solution) => (
-              <Card
-                key={solution.id}
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">
-                      {solution.order_index !== null && solution.order_index > 0
-                        ? `${solution.order_index}. `
-                        : ""}
-                      {solution.title}
+            {/* Problemi Section */}
+            {problemiSolutions.length > 0 && (
+              <Card>
+                <CardHeader
+                  className="pb-2 cursor-pointer"
+                  onClick={() => setProblemiExpanded(!problemiExpanded)}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">
+                      Problemi ({problemiSolutions.length})
                     </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewSolution(solution)}
-                      >
-                        <FileText className="h-4 w-4 mr-1" />
-                        Visualizza
-                      </Button>
-                      <Link href={solution.pdf_url} download>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4 mr-1" />
-                          Scarica
-                        </Button>
-                      </Link>
-                    </div>
+                    {problemiExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </div>
                 </CardHeader>
+                {problemiExpanded && (
+                  <CardContent className="pt-2 space-y-2">
+                    {problemiSolutions.map((solution) => (
+                      <Button
+                        key={solution.id}
+                        variant={
+                          selectedSolution?.id === solution.id
+                            ? "default"
+                            : "outline"
+                        }
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setSelectedSolution(solution);
+                          setIsLoading(true);
+                        }}
+                      >
+                        {solution.title}
+                      </Button>
+                    ))}
+                  </CardContent>
+                )}
               </Card>
-            ))}
+            )}
 
-            <Separator className="my-8" />
+            {/* Quesiti Section */}
+            {quesitiSolutions.length > 0 && (
+              <Card>
+                <CardHeader
+                  className="pb-2 cursor-pointer"
+                  onClick={() => setQuesitiExpanded(!quesitiExpanded)}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">
+                      Quesiti ({quesitiSolutions.length})
+                    </CardTitle>
+                    {quesitiExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </CardHeader>
+                {quesitiExpanded && (
+                  <CardContent className="pt-2 space-y-2">
+                    {quesitiSolutions.map((solution) => (
+                      <Button
+                        key={solution.id}
+                        variant={
+                          selectedSolution?.id === solution.id
+                            ? "default"
+                            : "outline"
+                        }
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setSelectedSolution(solution);
+                          setIsLoading(true);
+                        }}
+                      >
+                        {solution.title}
+                      </Button>
+                    ))}
+                  </CardContent>
+                )}
+              </Card>
+            )}
 
-            {/* Link to all simulations */}
-            <div className="flex justify-between items-center pt-4">
-              <Link href="/dashboard/simulazioni">
-                <Button variant="outline">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Torna alle Simulazioni
-                </Button>
-              </Link>
-
-              <Link href={`/dashboard/simulazioni/${simulation.id}`}>
-                <Button>
-                  <FileCheck className="h-4 w-4 mr-2" />
-                  Ripeti Simulazione
-                </Button>
-              </Link>
-            </div>
+            {/* Other Solutions (not categorized) */}
+            {otherSolutions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Altre soluzioni</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {otherSolutions.map((solution) => (
+                    <Button
+                      key={solution.id}
+                      variant={
+                        selectedSolution?.id === solution.id
+                          ? "default"
+                          : "outline"
+                      }
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setSelectedSolution(solution);
+                        setIsLoading(true);
+                      }}
+                    >
+                      {solution.title}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
-        ) : (
-          <div className="text-center p-8 bg-muted/30 rounded-lg">
-            <p className="text-muted-foreground text-lg">
-              Non ci sono ancora soluzioni disponibili per questa simulazione.
-            </p>
-            <Link href="/dashboard/simulazioni" className="mt-4 inline-block">
-              <Button variant="outline" className="mt-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Torna alle Simulazioni
+
+          <div className="md:col-span-2">
+            {selectedSolution ? (
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>{selectedSolution.title}</CardTitle>
+
+                    <Button variant="outline" onClick={toggleFullscreen}>
+                      <Maximize2 className="h-4 w-4 mr-1" />
+                      Schermo intero
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="relative min-h-[500px] h-[500px]">
+                  {selectedSolution && (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <iframe
+                        ref={iframeRef}
+                        src={`${selectedSolution.pdf_url}#toolbar=0&navpanes=0&view=FitH`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          border: "none",
+                          background: "#f5f5f5",
+                        }}
+                        title={selectedSolution.title}
+                        onLoad={handleIframeLoad}
+                      />
+                      {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                          <LoadingSpinner text="Caricamento PDF..." size="sm" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex items-center justify-center h-full bg-muted/30 rounded-lg p-12">
+                <p className="text-muted-foreground">
+                  Seleziona una soluzione per visualizzarla
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {fullscreen && selectedSolution && (
+        <div className="flex-1 flex flex-col">
+          <div style={{ position: "relative", flex: 1 }}>
+            <div
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                zIndex: 10,
+                background: "white",
+                borderRadius: "4px",
+                padding: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleFullscreen}
+                title="Exit Fullscreen"
+                className="h-8 px-2"
+              >
+                <Minimize2 className="h-4 w-4 mr-1" />
+                Esci
               </Button>
-            </Link>
+            </div>
+
+            {selectedSolution && (
+              <iframe
+                ref={iframeRef}
+                src={`${selectedSolution.pdf_url}#toolbar=0&navpanes=0&view=FitH`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  background: "#f5f5f5",
+                }}
+                title={selectedSolution.title}
+                onLoad={handleIframeLoad}
+              />
+            )}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                <LoadingSpinner text="Caricamento PDF..." size="sm" />
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {solutions.length > 1 && (
+            <div className="p-2 w-full bg-background border-t flex justify-center items-center">
+              <div className="flex flex-wrap justify-center gap-2">
+                {solutions.map((solution) => (
+                  <Button
+                    key={solution.id}
+                    variant={
+                      selectedSolution?.id === solution.id
+                        ? "default"
+                        : "outline"
+                    }
+                    size="sm"
+                    onClick={() => {
+                      setSelectedSolution(solution);
+                      setIsLoading(true);
+                    }}
+                  >
+                    {solution.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

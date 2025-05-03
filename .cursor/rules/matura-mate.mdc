@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Stack
+- NextJS 15
+- Tailwind CSS with shadcn/ui and Lucide for the icons
+- Neon Database and Drizzle as ORM
+- KindeAuth for the authentication

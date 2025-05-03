@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Menu } from "lucide-react";
+import { ChevronDown, ChevronRight, Menu, CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -31,6 +31,8 @@ interface TopicsSidebarProps {
   onTopicClick?: (topicId: string) => void;
   onSubtopicClick?: (subtopicId: string) => void;
   basePath?: string;
+  completedTopicIds?: string[];
+  completedSubtopicIds?: string[];
 }
 
 export default function TopicsSidebar({
@@ -40,10 +42,15 @@ export default function TopicsSidebar({
   onTopicClick,
   onSubtopicClick,
   basePath = "/dashboard/teoria",
+  completedTopicIds = [],
+  completedSubtopicIds = [],
 }: TopicsSidebarProps) {
-  // Initialize all topics as expanded
+  // Initialize expanded state based on completion
   const initialExpandedState = topics.reduce((acc, topic) => {
-    acc[topic.id] = true;
+    // If the topic is completed, it should be collapsed by default
+    const isCompleted = completedTopicIds.includes(topic.id);
+    // Only expand if this is the active topic or it's not completed
+    acc[topic.id] = activeTopicId === topic.id || !isCompleted;
     return acc;
   }, {} as Record<string, boolean>);
 
@@ -51,17 +58,38 @@ export default function TopicsSidebar({
   const [expandedTopics, setExpandedTopics] =
     useState<Record<string, boolean>>(initialExpandedState);
 
+  // Update expanded topics when completedTopicIds changes
+  useEffect(() => {
+    setExpandedTopics((prevState) => {
+      const updatedState = { ...prevState };
+
+      topics.forEach((topic) => {
+        const isCompleted = completedTopicIds.includes(topic.id);
+        // Only expand active topic or uncompleted topics
+        // Always collapse completed topics unless they are the active topic
+        updatedState[topic.id] = activeTopicId === topic.id || !isCompleted;
+      });
+
+      return updatedState;
+    });
+  }, [completedTopicIds, activeTopicId, topics]);
+
   // Update expanded topics if activeSubtopicId changes
   useEffect(() => {
     if (activeSubtopicId) {
       setExpandedTopics((prevState) => {
         const updatedState = { ...prevState };
 
-        topics.forEach((topic) => {
-          if (topic.subtopics.some((sub) => sub.id === activeSubtopicId)) {
-            updatedState[topic.id] = true;
-          }
-        });
+        // Find which topic contains the active subtopic
+        const topicWithActiveSubtopic = topics.find((topic) =>
+          topic.subtopics.some((sub) => sub.id === activeSubtopicId)
+        );
+
+        if (topicWithActiveSubtopic) {
+          // Only expand the topic that contains the active subtopic
+          // Keep all other topics in their current state
+          updatedState[topicWithActiveSubtopic.id] = true;
+        }
 
         return updatedState;
       });
@@ -123,6 +151,7 @@ export default function TopicsSidebar({
         {sortedTopics.map((topic) => {
           const isExpanded = expandedTopics[topic.id] || false;
           const isActive = activeTopicId === topic.id;
+          const isCompleted = completedTopicIds.includes(topic.id);
 
           // Sort subtopics by order_index
           const sortedSubtopics = [...topic.subtopics].sort((a, b) => {
@@ -138,6 +167,8 @@ export default function TopicsSidebar({
                   "flex items-center py-2 px-4 text-sm transition-all duration-200 border-l-2",
                   isActive
                     ? "border-l-primary text-primary dark:text-primary"
+                    : isCompleted
+                    ? "border-l-green-500"
                     : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-blue-500"
                 )}
               >
@@ -156,42 +187,55 @@ export default function TopicsSidebar({
                 {/* Topic name with its own click handler for navigation */}
                 <span
                   className={cn(
-                    "truncate cursor-pointer ml-1 font-medium",
+                    "truncate cursor-pointer ml-1 font-medium flex items-center",
                     isActive ? "font-bold" : "hover:text-primary"
                   )}
                   onClick={() => handleTopicClick(topic.id)}
                 >
                   {topic.order_index !== null ? `${topic.order_index}. ` : ""}
                   {topic.name}
+                  {isCompleted && (
+                    <CheckCircle className="ml-1.5 h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                  )}
                 </span>
               </div>
 
               {isExpanded && sortedSubtopics.length > 0 && (
                 <div className="ml-4 mt-1 space-y-1 border-l border-muted">
-                  {sortedSubtopics.map((subtopic) => (
-                    <div
-                      key={subtopic.id}
-                      className={cn(
-                        "cursor-pointer py-1 px-4 text-sm transition-all duration-200 flex items-center border-l-2 -ml-px",
-                        activeSubtopicId === subtopic.id
-                          ? "border-l-primary text-primary dark:text-primary font-medium"
-                          : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-blue-500"
-                      )}
-                      onClick={() =>
-                        sheetOpen
-                          ? handleSubtopicClickWithClose(subtopic.id)
-                          : handleSubtopicClick(subtopic.id)
-                      }
-                    >
-                      <span className="truncate">
-                        {topic.order_index !== null &&
-                        subtopic.order_index !== null
-                          ? `${topic.order_index}.${subtopic.order_index} `
-                          : ""}
-                        {subtopic.name}
-                      </span>
-                    </div>
-                  ))}
+                  {sortedSubtopics.map((subtopic) => {
+                    const isSubtopicCompleted = completedSubtopicIds.includes(
+                      subtopic.id
+                    );
+                    return (
+                      <div
+                        key={subtopic.id}
+                        className={cn(
+                          "cursor-pointer py-1 px-4 text-sm transition-all duration-200 flex items-center border-l-2 -ml-px",
+                          activeSubtopicId === subtopic.id
+                            ? "border-l-primary text-primary dark:text-primary font-medium"
+                            : isSubtopicCompleted
+                            ? "border-l-green-500"
+                            : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-blue-500"
+                        )}
+                        onClick={() =>
+                          sheetOpen
+                            ? handleSubtopicClickWithClose(subtopic.id)
+                            : handleSubtopicClick(subtopic.id)
+                        }
+                      >
+                        <span className="truncate flex items-center">
+                          {topic.order_index !== null &&
+                          subtopic.order_index !== null
+                            ? `${topic.order_index}.${subtopic.order_index} `
+                            : ""}
+                          {subtopic.name}
+                          {isSubtopicCompleted && (
+                            <CheckCircle className="ml-1.5 h-3 w-3 text-green-500 flex-shrink-0" />
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

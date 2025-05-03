@@ -5,9 +5,16 @@ import TopicsSidebar from "@/app/components/topics-sidebar";
 import { useRouter } from "next/navigation";
 import MarkdownRenderer from "@/app/components/markdownRenderer";
 import Link from "next/link";
-import { BookOpen, ChevronRight, Dumbbell } from "lucide-react";
+import {
+  BookOpen,
+  ChevronRight,
+  Dumbbell,
+  Check,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ExerciseCard from "@/app/components/exercises/ExerciseCard";
+import { toast } from "sonner";
 
 // Theory content types
 interface TheoryContentType {
@@ -67,12 +74,17 @@ interface TopicClientProps {
   userId: string;
 }
 
+// Add interface for completed topics/subtopics
+interface CompletionStatus {
+  completedTopicIds: string[];
+  completedSubtopicIds: string[];
+}
+
 export default function TopicClient({
   currentTopic,
   topicsWithSubtopics,
   subtopicsWithTheory,
   activeSubtopicId: initialActiveSubtopicId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId,
 }: TopicClientProps) {
   const router = useRouter();
@@ -82,6 +94,96 @@ export default function TopicClient({
   const [activeSubtopicId, setActiveSubtopicId] = useState<string | undefined>(
     initialActiveSubtopicId
   );
+
+  // State to track completion status
+  const [completionStatus, setCompletionStatus] = useState<CompletionStatus>({
+    completedTopicIds: [],
+    completedSubtopicIds: [],
+  });
+
+  // State to track loading states for buttons
+  const [loadingSubtopic, setLoadingSubtopic] = useState<string | null>(null);
+  const [loadingTopic, setLoadingTopic] = useState<boolean>(false);
+
+  // Fetch completion status on mount
+  useEffect(() => {
+    const fetchCompletionStatus = async () => {
+      try {
+        const response = await fetch("/api/user/completion");
+        if (response.ok) {
+          const data = await response.json();
+          setCompletionStatus({
+            completedTopicIds: data.completedTopicIds || [],
+            completedSubtopicIds: data.completedSubtopicIds || [],
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch completion status:", error);
+      }
+    };
+
+    fetchCompletionStatus();
+  }, []);
+
+  // Function to mark a subtopic as completed
+  const markSubtopicAsCompleted = async (subtopicId: string) => {
+    setLoadingSubtopic(subtopicId);
+    try {
+      const response = await fetch("/api/subtopics/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subtopic_id: subtopicId }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setCompletionStatus((prev) => ({
+          ...prev,
+          completedSubtopicIds: [...prev.completedSubtopicIds, subtopicId],
+        }));
+        toast.success("Sottotopico completato con successo!");
+      } else {
+        toast.error("Errore nel salvare il completamento del sottotopico");
+      }
+    } catch (error) {
+      console.error("Error marking subtopic as completed:", error);
+      toast.error("Errore nel salvare il completamento del sottotopico");
+    } finally {
+      setLoadingSubtopic(null);
+    }
+  };
+
+  // Function to mark a topic as completed
+  const markTopicAsCompleted = async (topicId: string) => {
+    setLoadingTopic(true);
+    try {
+      const response = await fetch("/api/topics/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topic_id: topicId }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setCompletionStatus((prev) => ({
+          ...prev,
+          completedTopicIds: [...prev.completedTopicIds, topicId],
+        }));
+        toast.success("Argomento completato con successo!");
+      } else {
+        toast.error("Errore nel salvare il completamento dell'argomento");
+      }
+    } catch (error) {
+      console.error("Error marking topic as completed:", error);
+      toast.error("Errore nel salvare il completamento dell'argomento");
+    } finally {
+      setLoadingTopic(false);
+    }
+  };
 
   // Function to find next topic
   const findNextTopic = () => {
@@ -151,6 +253,16 @@ export default function TopicClient({
     }
   }, [activeSubtopicId]);
 
+  // Handle click on "Vai al prossimo argomento" button
+  const handleNextTopicClick = async () => {
+    if (nextTopicId) {
+      // Mark the current topic as completed
+      await markTopicAsCompleted(currentTopic.id);
+      // Navigate to the next topic
+      router.push(`/dashboard/teoria/${nextTopicId}`);
+    }
+  };
+
   return (
     <div className="container">
       {/* Mobile Topic Menu - Show above topic name on mobile */}
@@ -169,6 +281,8 @@ export default function TopicClient({
               handleSubtopicClick(subtopicId, topic.id);
             }
           }}
+          completedTopicIds={completionStatus.completedTopicIds}
+          completedSubtopicIds={completionStatus.completedSubtopicIds}
         />
       </div>
 
@@ -178,6 +292,9 @@ export default function TopicClient({
             ? `${currentTopic.order_index}. `
             : ""}
           {currentTopic.name}
+          {completionStatus.completedTopicIds.includes(currentTopic.id) && (
+            <CheckCircle className="inline-block ml-2 h-6 w-6 text-green-500" />
+          )}
         </h1>
         <Link
           href={`/dashboard/esercizi/${currentTopic.id}`}
@@ -209,13 +326,21 @@ export default function TopicClient({
                 )}
 
                 <div className="mb-6">
-                  <h2 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
-                    {currentTopic.order_index !== null &&
-                    subtopic.order_index !== null
-                      ? `${currentTopic.order_index}.${subtopic.order_index} `
-                      : ""}
-                    {subtopic.name}
-                  </h2>
+                  <div className="flex items-center justify-between mb-6 border-b border-muted pb-2">
+                    <h2 className="text-3xl font-semibold text-foreground/95">
+                      {currentTopic.order_index !== null &&
+                      subtopic.order_index !== null
+                        ? `${currentTopic.order_index}.${subtopic.order_index} `
+                        : ""}
+                      {subtopic.name}
+                      {completionStatus.completedSubtopicIds.includes(
+                        subtopic.id
+                      ) && (
+                        <CheckCircle className="inline-block ml-2 h-5 w-5 text-green-500" />
+                      )}
+                    </h2>
+                  </div>
+
                   {subtopic.theory.length > 0 ? (
                     <div className="space-y-10">
                       {subtopic.theory.map((theory) => (
@@ -237,6 +362,44 @@ export default function TopicClient({
                           </div>
                         </div>
                       ))}
+
+                      {/* Mark Subtopic as Completed Button */}
+                      <div className="flex justify-end mt-8">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => markSubtopicAsCompleted(subtopic.id)}
+                          disabled={
+                            loadingSubtopic === subtopic.id ||
+                            completionStatus.completedSubtopicIds.includes(
+                              subtopic.id
+                            )
+                          }
+                          className={
+                            completionStatus.completedSubtopicIds.includes(
+                              subtopic.id
+                            )
+                              ? "text-green-500 border-green-500"
+                              : ""
+                          }
+                        >
+                          {loadingSubtopic === subtopic.id ? (
+                            <>Caricamento...</>
+                          ) : completionStatus.completedSubtopicIds.includes(
+                              subtopic.id
+                            ) ? (
+                            <>
+                              <Check className="h-4 w-4 mr-1" />
+                              Completato
+                            </>
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4 mr-1" />
+                              Segna come completato
+                            </>
+                          )}
+                        </Button>
+                      </div>
 
                       {/* Exercise Preview Section */}
                       {subtopic.exercise_cards.length > 0 && (
@@ -454,16 +617,22 @@ export default function TopicClient({
           {/* Next Topic Button */}
           {nextTopicId && (
             <div className="flex justify-center pt-8 border-t border-muted mt-12">
-              <Link href={`/dashboard/teoria/${nextTopicId}`}>
-                <Button
-                  className="group px-8 py-6 text-white cursor-pointer"
-                  variant="default"
-                  size="lg"
-                >
-                  <span>Vai al prossimo argomento</span>
-                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+              <Button
+                className="group px-8 py-6 text-white cursor-pointer"
+                variant="default"
+                size="lg"
+                onClick={handleNextTopicClick}
+                disabled={loadingTopic}
+              >
+                {loadingTopic ? (
+                  <span>Caricamento...</span>
+                ) : (
+                  <>
+                    <span>Vai al prossimo argomento</span>
+                    <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </div>
@@ -485,6 +654,8 @@ export default function TopicClient({
                   handleSubtopicClick(subtopicId, topic.id);
                 }
               }}
+              completedTopicIds={completionStatus.completedTopicIds}
+              completedSubtopicIds={completionStatus.completedSubtopicIds}
             />
           </div>
         </div>

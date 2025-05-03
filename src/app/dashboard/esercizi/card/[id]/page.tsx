@@ -7,6 +7,7 @@ import ExerciseCardClient from "./ExerciseCardClient";
 import { getExerciseCardDetails, getExercisesForCard } from "@/utils/cache";
 import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Cache common exercise card data - not user specific
 const getCachedCardData = unstable_cache(
@@ -178,7 +179,7 @@ async function ExerciseCardPage(props: any) {
   });
 
   return (
-    <Suspense fallback={<div>Loading exercise card...</div>}>
+    <Suspense fallback={<LoadingSpinner text="Caricamento esercizi..." />}>
       <ExerciseCardClient
         id={card.id}
         description={card.description || ""}

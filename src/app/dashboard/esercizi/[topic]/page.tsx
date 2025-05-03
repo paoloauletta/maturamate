@@ -63,9 +63,11 @@ export interface ExerciseTopicClientProps {
 // Using the `any` type to bypass the specific Next.js constraint
 // This is a last resort solution when type errors persist
 async function ExercisesTopicPage(props: any) {
-  // Extract the params and searchParams safely
-  const topicId = props.params?.topic;
-  const subtopicId = props.searchParams?.subtopic;
+  // Extract the params and searchParams safely using await
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+  const topicId = params.topic;
+  const subtopicId = searchParams?.subtopic;
 
   if (!topicId) {
     notFound();

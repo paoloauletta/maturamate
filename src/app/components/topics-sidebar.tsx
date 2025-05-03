@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronRight, Menu, CheckCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -54,47 +54,49 @@ export default function TopicsSidebar({
     return acc;
   }, {} as Record<string, boolean>);
 
+  // Use a ref to avoid infinite loops when expanding topics
+  const expandedTopicsRef =
+    useRef<Record<string, boolean>>(initialExpandedState);
+
   // State to track expanded topics
   const [expandedTopics, setExpandedTopics] =
     useState<Record<string, boolean>>(initialExpandedState);
 
-  // Update expanded topics when completedTopicIds changes
+  // This effect ensures completed topics stay collapsed, even after component rerenders
   useEffect(() => {
-    setExpandedTopics((prevState) => {
-      const updatedState = { ...prevState };
+    // Update the expanded state whenever completedTopicIds changes
+    // This ensures completed topics are always collapsed (unless they're active)
+    const newExpandedState = { ...expandedTopics };
 
-      topics.forEach((topic) => {
-        const isCompleted = completedTopicIds.includes(topic.id);
-        // Only expand active topic or uncompleted topics
-        // Always collapse completed topics unless they are the active topic
-        updatedState[topic.id] = activeTopicId === topic.id || !isCompleted;
-      });
-
-      return updatedState;
+    // First, collapse all completed topics
+    completedTopicIds.forEach((topicId) => {
+      if (topicId !== activeTopicId) {
+        newExpandedState[topicId] = false;
+      }
     });
-  }, [completedTopicIds, activeTopicId, topics]);
 
-  // Update expanded topics if activeSubtopicId changes
-  useEffect(() => {
+    // Then, ensure the topic with the active subtopic is expanded
     if (activeSubtopicId) {
-      setExpandedTopics((prevState) => {
-        const updatedState = { ...prevState };
+      const topicWithActiveSubtopic = topics.find((topic) =>
+        topic.subtopics.some((sub) => sub.id === activeSubtopicId)
+      );
 
-        // Find which topic contains the active subtopic
-        const topicWithActiveSubtopic = topics.find((topic) =>
-          topic.subtopics.some((sub) => sub.id === activeSubtopicId)
-        );
-
-        if (topicWithActiveSubtopic) {
-          // Only expand the topic that contains the active subtopic
-          // Keep all other topics in their current state
-          updatedState[topicWithActiveSubtopic.id] = true;
-        }
-
-        return updatedState;
-      });
+      if (topicWithActiveSubtopic) {
+        newExpandedState[topicWithActiveSubtopic.id] = true;
+      }
     }
-  }, [activeSubtopicId, topics]);
+
+    // Update state only if there are actual changes
+    if (JSON.stringify(newExpandedState) !== JSON.stringify(expandedTopics)) {
+      setExpandedTopics(newExpandedState);
+    }
+  }, [
+    completedTopicIds,
+    activeTopicId,
+    activeSubtopicId,
+    topics,
+    expandedTopics,
+  ]);
 
   // Toggle topic expansion without navigation
   const toggleTopic = (topicId: string, e: React.MouseEvent) => {

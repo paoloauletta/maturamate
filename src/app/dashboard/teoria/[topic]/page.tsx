@@ -7,6 +7,7 @@ import {
   getTopics,
   getSubtopics,
   getTheoryContent,
+  getUserCompletionStatus,
 } from "@/utils/cache";
 import { db } from "@/db/drizzle";
 import {
@@ -17,6 +18,9 @@ import {
 
 // Set revalidation period - revalidate every hour
 export const revalidate = 3600;
+
+// Add fetchCache configuration to enable caching of fetch requests
+export const fetchCache = "default-cache";
 
 // Generate static params for all topics - this enables static generation
 export async function generateStaticParams() {
@@ -78,8 +82,10 @@ export interface TopicClientProps {
 // This is a last resort solution when type errors persist
 async function TopicPage(props: any) {
   // Extract the params and searchParams safely
-  const topicId = props.params?.topic;
-  const subtopicId = props.searchParams?.subtopic;
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+  const topicId = params.topic;
+  const subtopicId = searchParams?.subtopic;
 
   if (!topicId) {
     notFound();

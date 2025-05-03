@@ -22,7 +22,9 @@ export const revalidate = 3600;
 // Using the `any` type to bypass the specific Next.js constraint
 // This is a last resort solution when type errors persist
 export default async function SimulationPage(props: any) {
-  const simulationId = props.params?.id;
+  // Properly await the params
+  const params = await props.params;
+  const simulationId = params.id;
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 

@@ -109,13 +109,19 @@ export default function TopicClient({
   useEffect(() => {
     const fetchCompletionStatus = async () => {
       try {
-        const response = await fetch("/api/user/completion");
-        if (response.ok) {
-          const data = await response.json();
-          setCompletionStatus({
-            completedTopicIds: data.completedTopicIds || [],
-            completedSubtopicIds: data.completedSubtopicIds || [],
-          });
+        // Only fetch if we don't already have the completion data
+        if (
+          completionStatus.completedTopicIds.length === 0 &&
+          completionStatus.completedSubtopicIds.length === 0
+        ) {
+          const response = await fetch("/api/user/completion");
+          if (response.ok) {
+            const data = await response.json();
+            setCompletionStatus({
+              completedTopicIds: data.completedTopicIds || [],
+              completedSubtopicIds: data.completedSubtopicIds || [],
+            });
+          }
         }
       } catch (error) {
         console.error("Failed to fetch completion status:", error);
@@ -123,7 +129,10 @@ export default function TopicClient({
     };
 
     fetchCompletionStatus();
-  }, []);
+  }, [
+    completionStatus.completedTopicIds.length,
+    completionStatus.completedSubtopicIds.length,
+  ]);
 
   // Function to mark a subtopic as completed
   const markSubtopicAsCompleted = async (subtopicId: string) => {
@@ -221,7 +230,11 @@ export default function TopicClient({
   };
 
   // Handle navigation when clicking on a subtopic
-  const handleSubtopicClick = (subtopicId: string, topicId: string) => {
+  const handleSubtopicClick = (
+    subtopicId: string,
+    topicId: string,
+    skipUrlUpdate = false
+  ) => {
     // If we're already on the correct topic page, just scroll to the subtopic
     if (topicId === currentTopic.id) {
       // Update local state to trigger UI updates in this component and sidebar
@@ -234,24 +247,16 @@ export default function TopicClient({
       }
 
       // Update URL without a full navigation
-      const url = new URL(window.location.href);
-      url.searchParams.set("subtopic", subtopicId);
-      window.history.pushState({}, "", url.toString());
-    } else {
+      if (!skipUrlUpdate) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("subtopic", subtopicId);
+        window.history.pushState({}, "", url.toString());
+      }
+    } else if (!skipUrlUpdate) {
       // Navigate to the appropriate topic page with subtopic in query
       router.push(`/dashboard/teoria/${topicId}?subtopic=${subtopicId}`);
     }
   };
-
-  // Scroll to the active subtopic if provided in URL
-  useEffect(() => {
-    if (activeSubtopicId && subtopicRefs.current[activeSubtopicId]) {
-      subtopicRefs.current[activeSubtopicId]?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }, [activeSubtopicId]);
 
   // Handle click on "Vai al prossimo argomento" button
   const handleNextTopicClick = async () => {

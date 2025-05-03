@@ -4,6 +4,9 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 
+// Ensure route is properly detected during build
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { getUser } = getKindeServerSession();

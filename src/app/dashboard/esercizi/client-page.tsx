@@ -96,7 +96,7 @@ export default function ClientExercisesPage({
   const [difficultyFilter, setDifficultyFilter] = useState<number | null>(null);
   const [completionFilter, setCompletionFilter] = useState<string | null>(null);
 
-  const scrollToTopic = (topicId: string) => {
+  const scrollToTopic = (topicId: string, skipUrlUpdate = false) => {
     const element = document.getElementById(`topic-${topicId}`);
     if (element) {
       const headerOffset = 100; // Add offset from the top
@@ -110,8 +110,10 @@ export default function ClientExercisesPage({
       });
     }
 
-    // Update URL params
-    updateTopicParam(topicId);
+    // Update URL params only if not skipped
+    if (!skipUrlUpdate) {
+      updateTopicParam(topicId);
+    }
   };
 
   const scrollToSubtopic = (subtopicId: string) => {
@@ -205,18 +207,7 @@ export default function ClientExercisesPage({
   };
 
   // Handle scrolling when activeSubtopicId or activeTopicId changes
-  useEffect(() => {
-    if (activeSubtopicId) {
-      // Longer delay to ensure Next.js navigation is completed
-      setTimeout(() => {
-        scrollToSubtopic(activeSubtopicId);
-      }, 200);
-    } else if (activeTopicId) {
-      setTimeout(() => {
-        scrollToTopic(activeTopicId);
-      }, 200);
-    }
-  }, [activeSubtopicId, activeTopicId]);
+  // REMOVED automatic scrolling on param changes - only scroll on explicit user action
 
   // Calculate filter counts for badges
   const activeFilterCount =

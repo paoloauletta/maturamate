@@ -140,7 +140,11 @@ export default function ExercisesTopicClient({
   };
 
   // Handle navigation when clicking on a subtopic
-  const handleSubtopicClick = (subtopicId: string, topicId: string) => {
+  const handleSubtopicClick = (
+    subtopicId: string,
+    topicId: string,
+    skipUrlUpdate = false
+  ) => {
     // If we're already on the correct topic page, just scroll to the subtopic
     if (topicId === currentTopic.id) {
       // Update local state to trigger UI updates in this component and sidebar
@@ -152,11 +156,13 @@ export default function ExercisesTopicClient({
         subtopicElement.scrollIntoView({ behavior: "smooth", block: "start" });
       }
 
-      // Update URL without a full navigation
-      const url = new URL(window.location.href);
-      url.searchParams.set("subtopic", subtopicId);
-      window.history.pushState({}, "", url.toString());
-    } else {
+      // Update URL without a full navigation (only if not skipped)
+      if (!skipUrlUpdate) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("subtopic", subtopicId);
+        window.history.pushState({}, "", url.toString());
+      }
+    } else if (!skipUrlUpdate) {
       // Navigate to the appropriate topic page with subtopic in query
       router.push(`/dashboard/esercizi/${topicId}?subtopic=${subtopicId}`);
     }
@@ -201,16 +207,6 @@ export default function ExercisesTopicClient({
 
     return true;
   };
-
-  // Scroll to the active subtopic if provided in URL
-  useEffect(() => {
-    if (activeSubtopicId && subtopicRefs.current[activeSubtopicId]) {
-      subtopicRefs.current[activeSubtopicId]?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }, [activeSubtopicId]);
 
   return (
     <div className="container">

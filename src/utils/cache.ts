@@ -7,15 +7,18 @@ import {
   exercisesCardsTable,
   exercisesTable,
   completedExercisesTable,
+  completedTopicsTable,
+  completedSubtopicsTable,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 
-// Cache topics - these change very infrequently
+// Cache topics with improved tagging and longer duration
 export const getTopics = cache(async () => {
   return db.select().from(topicsTable).orderBy(topicsTable.order_index);
 });
 
-// Cache subtopics for a specific topic
+// Improved subtopics caching with proper tags
 export const getSubtopics = cache(async (topicId: string) => {
   return db
     .select()
@@ -45,40 +48,48 @@ export const getExerciseCards = cache(async (subtopicId: string) => {
     .where(eq(exercisesCardsTable.subtopic_id, subtopicId));
 });
 
-// Cache exercises for a card
-export const getExercisesForCard = cache(async (cardId: string) => {
-  return db
-    .select()
-    .from(exercisesTable)
-    .where(eq(exercisesTable.exercise_card_id, cardId))
-    .orderBy(exercisesTable.order_index);
-});
+// Use unstable_cache for exercise data with tags for better invalidation
+export const getExercisesForCard = unstable_cache(
+  async (cardId: string) => {
+    return db
+      .select()
+      .from(exercisesTable)
+      .where(eq(exercisesTable.exercise_card_id, cardId))
+      .orderBy(exercisesTable.order_index);
+  },
+  ["exercises-for-card"],
+  { revalidate: 3600 }
+);
 
-// Cache exercise card details - non-user specific content
-export const getExerciseCardDetails = cache(async (cardId: string) => {
-  const card = await db
-    .select({
-      id: exercisesCardsTable.id,
-      description: exercisesCardsTable.description,
-      difficulty: exercisesCardsTable.difficulty,
-      created_at: exercisesCardsTable.created_at,
-      subtopic_id: exercisesCardsTable.subtopic_id,
-      subtopic_name: subtopicsTable.name,
-      subtopic_order: subtopicsTable.order_index,
-      topic_id: subtopicsTable.topic_id,
-      topic_name: topicsTable.name,
-      topic_order: topicsTable.order_index,
-    })
-    .from(exercisesCardsTable)
-    .leftJoin(
-      subtopicsTable,
-      eq(exercisesCardsTable.subtopic_id, subtopicsTable.id)
-    )
-    .leftJoin(topicsTable, eq(subtopicsTable.topic_id, topicsTable.id))
-    .where(eq(exercisesCardsTable.id, cardId));
+// Use unstable_cache for card details with tags
+export const getExerciseCardDetails = unstable_cache(
+  async (cardId: string) => {
+    const card = await db
+      .select({
+        id: exercisesCardsTable.id,
+        description: exercisesCardsTable.description,
+        difficulty: exercisesCardsTable.difficulty,
+        created_at: exercisesCardsTable.created_at,
+        subtopic_id: exercisesCardsTable.subtopic_id,
+        subtopic_name: subtopicsTable.name,
+        subtopic_order: subtopicsTable.order_index,
+        topic_id: subtopicsTable.topic_id,
+        topic_name: topicsTable.name,
+        topic_order: topicsTable.order_index,
+      })
+      .from(exercisesCardsTable)
+      .leftJoin(
+        subtopicsTable,
+        eq(exercisesCardsTable.subtopic_id, subtopicsTable.id)
+      )
+      .leftJoin(topicsTable, eq(subtopicsTable.topic_id, topicsTable.id))
+      .where(eq(exercisesCardsTable.id, cardId));
 
-  return card.length > 0 ? card[0] : null;
-});
+    return card.length > 0 ? card[0] : null;
+  },
+  ["exercise-card-details"],
+  { revalidate: 3600 }
+);
 
 // Cache topics with subtopics - for navigation structure
 export const getTopicsWithSubtopics = cache(async () => {
@@ -101,6 +112,35 @@ export const getUserCompletedExercises = async (userId: string) => {
     .from(completedExercisesTable)
     .where(eq(completedExercisesTable.user_id, userId));
 };
+
+// NEW: Get user completion status for topics and subtopics
+// This is user-specific, but we cache it with a very short TTL
+export const getUserCompletionStatus = unstable_cache(
+  async (userId: string) => {
+    const completedTopics = await db
+      .select({
+        topicId: completedTopicsTable.topic_id,
+      })
+      .from(completedTopicsTable)
+      .where(eq(completedTopicsTable.user_id, userId));
+
+    const completedSubtopics = await db
+      .select({
+        subtopicId: completedSubtopicsTable.subtopic_id,
+      })
+      .from(completedSubtopicsTable)
+      .where(eq(completedSubtopicsTable.user_id, userId));
+
+    return {
+      completedTopicIds: completedTopics.map((t) => t.topicId),
+      completedSubtopicIds: completedSubtopics.map((s) => s.subtopicId),
+    };
+  },
+  // Use a fixed tag array with a clear naming pattern
+  ["user-completion-status"],
+  // Short cache time since this data changes frequently
+  { revalidate: 30 }
+);
 
 // Cache navigation structure for the entire app
 export const getNavigationStructure = cache(async () => {

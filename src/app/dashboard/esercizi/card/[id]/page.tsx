@@ -46,8 +46,9 @@ interface Exercise {
 // Using the `any` type to bypass the specific Next.js constraint
 // This is a last resort solution when type errors persist
 async function ExerciseCardPage(props: any) {
-  // Extract the id safely
-  const id = props.params?.id;
+  // Properly await the params
+  const params = await props.params;
+  const id = params.id;
 
   if (!id) {
     notFound();

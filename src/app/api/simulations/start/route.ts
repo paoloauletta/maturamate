@@ -91,3 +91,6 @@ export async function POST(req: NextRequest) {
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
+
+// Ensure route is properly detected during build
+export const dynamic = "force-dynamic";

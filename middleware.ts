@@ -5,21 +5,18 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 const publicRoutes = ["/", "/api/auth"];
 
 // Define routes that require authentication
-const protectedRoutes = [
-  "/dashboard",
-  "/api/auth/kinde_callback",
-  "/api/auth/kinde_login",
-];
+const protectedRoutes = ["/dashboard"];
 
 export async function middleware(request: NextRequest) {
   // Get the pathname from the URL
   const { pathname } = request.nextUrl;
 
-  // Completely skip middleware for auth callbacks to prevent interference
+  // Skip middleware completely for all Kinde auth routes to prevent state parameter issues
   if (
+    pathname.includes("/api/auth/") ||
     pathname.includes("kinde_callback") ||
-    pathname.includes("auth/register") ||
-    pathname.includes("auth/login")
+    pathname.includes("register") ||
+    pathname.includes("login")
   ) {
     return NextResponse.next();
   }
@@ -55,9 +52,8 @@ export const config = {
      * - favicon.ico (favicon file)
      * - images/ (public image files)
      * - fonts/ (public font files)
-     * - api/auth/* (auth routes that handle their own auth)
+     * - api/auth (auth routes that handle their own auth)
      */
-    "/((?!_next/static|_next/image|favicon.ico|images|fonts).*)",
-    "/:path((?!api/auth).*)",
+    "/((?!_next/static|_next/image|favicon.ico|images|fonts|api/auth).*)",
   ],
 };

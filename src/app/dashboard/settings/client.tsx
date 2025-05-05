@@ -3,26 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Upload, Trash2, X, AlertCircle, LogOut } from "lucide-react";
+import { Pencil, Trash2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -39,6 +27,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useSession, signOut } from "next-auth/react";
+
+// Create a standalone LogoutButton component
+export function LogoutButton() {
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
+  return (
+    <Button variant="outline" onClick={handleSignOut} className="gap-2">
+      <LogOut className="h-4 w-4" />
+      Disconnetti
+    </Button>
+  );
+}
 
 interface SettingsClientProps {
   id: string;
@@ -62,7 +64,6 @@ export default function SettingsClient({
   const [username, setUsername] = useState(initialUsername || "");
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string>(picture || "");
-  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleProfileUpdate = async () => {
@@ -93,60 +94,6 @@ export default function SettingsClient({
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Errore nell'aggiornamento del profilo");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedImage(file);
-      // Create a preview URL for the uploaded image
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
-    }
-  };
-
-  const saveProfileImage = async () => {
-    try {
-      if (!uploadedImage) return;
-
-      setIsSubmitting(true);
-
-      // Create form data properly
-      const formData = new FormData();
-      formData.append("image", uploadedImage, uploadedImage.name);
-
-      // Log for debugging
-      console.log(
-        "Uploading image:",
-        uploadedImage.name,
-        uploadedImage.type,
-        uploadedImage.size
-      );
-
-      const response = await fetch("/api/user/upload-image", {
-        method: "POST",
-        // Don't set Content-Type header with FormData, browser will set it with boundary
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to upload profile image");
-      }
-
-      // Use the returned image URL instead of the local URL
-      setProfileImage(data.imageUrl);
-      toast.success("Immagine del profilo aggiornata");
-
-      // Refresh the page to show updated image
-      router.refresh();
-    } catch (error) {
-      console.error("Failed to upload profile image:", error);
-      toast.error("Errore nel caricamento dell'immagine");
     } finally {
       setIsSubmitting(false);
     }
@@ -184,33 +131,27 @@ export default function SettingsClient({
     }
   };
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/" });
-  };
-
   return (
     <div className="space-y-10">
-      {/* Sign Out Button */}
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={handleSignOut} className="gap-2">
-          <LogOut className="h-4 w-4" />
-          Disconnetti
-        </Button>
+      {/* Header with Title and Logout Button */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Impostazioni Account</h1>
+        <LogoutButton />
       </div>
 
       {/* Profile Information Section */}
-      <Card>
-        <CardHeader>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-6">
           <CardTitle>Informazioni Profilo</CardTitle>
           <CardDescription>
             Gestisci le tue informazioni personali
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-6">
+        <CardContent className="space-y-8 px-6 pb-8">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Profile Image */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative h-32 w-32 rounded-full overflow-hidden border-2 border-border">
+            <div className="flex flex-col items-center mx-auto md:mx-0">
+              <div className="relative h-40 w-40 rounded-full overflow-hidden border-2 border-border">
                 {profileImage ? (
                   <Image
                     src={profileImage}
@@ -226,72 +167,13 @@ export default function SettingsClient({
                   </div>
                 )}
               </div>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Upload className="h-4 w-4" />
-                    Carica Immagine
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Carica Immagine Profilo</DialogTitle>
-                    <DialogDescription>
-                      Seleziona un'immagine dal tuo dispositivo
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="flex justify-center">
-                      <div className="relative h-40 w-40 rounded-full overflow-hidden border-2 border-border">
-                        {profileImage ? (
-                          <Image
-                            src={profileImage}
-                            alt="Profile Preview"
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-muted flex items-center justify-center">
-                            <span className="text-3xl font-bold text-muted-foreground">
-                              {fullName?.charAt(0) || "U"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="profile-image">Immagine Profilo</Label>
-                      <Input
-                        id="profile-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                      />
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="outline">Annulla</Button>
-                    </DialogClose>
-                    <Button
-                      onClick={saveProfileImage}
-                      disabled={!uploadedImage || isSubmitting}
-                    >
-                      {isSubmitting ? "Caricamento..." : "Salva"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </div>
 
             {/* Profile Details */}
-            <div className="flex-1 space-y-4">
-              <div>
+            <div className="flex-1 space-y-6">
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" value={email} disabled />
+                <Input id="email" value={email} disabled className="mt-2" />
                 <p className="text-xs text-muted-foreground mt-1">
                   La tua email non può essere modificata
                 </p>
@@ -299,9 +181,9 @@ export default function SettingsClient({
 
               {!isEditing ? (
                 <>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <Label>Nome Completo</Label>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-2">
                       <p>{fullName || "Non impostato"}</p>
                       <Button
                         variant="ghost"
@@ -313,9 +195,9 @@ export default function SettingsClient({
                     </div>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <Label>Username</Label>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-2">
                       <p>{username || "Non impostato"}</p>
                       <Button
                         variant="ghost"
@@ -329,27 +211,29 @@ export default function SettingsClient({
                 </>
               ) : (
                 <>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <Label htmlFor="full-name">Nome Completo</Label>
                     <Input
                       id="full-name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Il tuo nome completo"
+                      className="mt-2"
                     />
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Il tuo username"
+                      className="mt-2"
                     />
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 mt-4">
                     <Button
                       onClick={handleProfileUpdate}
                       disabled={isSubmitting}
@@ -371,14 +255,21 @@ export default function SettingsClient({
       </Card>
 
       {/* Delete Account Section */}
-      <Card className="border-destructive/50">
-        <CardHeader>
+      <Card className="border-destructive/50 shadow-sm px-4">
+        <CardHeader className="pb-2 pt-4">
           <CardTitle className="text-destructive">Elimina Account</CardTitle>
           <CardDescription>
             Elimina permanentemente il tuo account e tutti i dati associati
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 pb-4">
+          <div className="bg-destructive/5 p-4 rounded-lg border border-destructive/20 mb-4">
+            <p className="text-sm text-destructive/90">
+              Attenzione: L'eliminazione dell'account è irreversibile. Tutti i
+              tuoi dati e le tue attività saranno rimossi definitivamente.
+            </p>
+          </div>
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" className="gap-2">

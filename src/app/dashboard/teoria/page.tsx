@@ -5,15 +5,15 @@ import {
   completedSubtopicsTable,
   subtopicsTable,
 } from "@/db/schema";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { eq, and, not } from "drizzle-orm";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
+import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 
 export default async function TheoryPage() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect("/api/auth/login");

@@ -1,25 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 
 // Define public routes that don't require authentication
-const publicRoutes = ["/", "/api/auth"];
+const publicRoutes = ["/", "/api/auth", "/username-setup"];
 
 // Define routes that require authentication
-const protectedRoutes = [
-  "/dashboard",
-  "/api/auth/kinde_callback",
-  "/api/auth/kinde_login",
-];
+const protectedRoutes = ["/dashboard"];
 
 export async function middleware(request: NextRequest) {
   // Get the pathname from the URL
   const { pathname } = request.nextUrl;
 
-  // Completely skip middleware for auth callbacks to prevent interference
+  // Skip middleware for NextAuth.js callback routes
   if (
-    pathname.includes("kinde_callback") ||
-    pathname.includes("auth/register") ||
-    pathname.includes("auth/login")
+    pathname.includes("/api/auth/callback") ||
+    pathname.includes("/api/auth/signin") ||
+    pathname.includes("/api/auth/signout")
   ) {
     return NextResponse.next();
   }
@@ -33,8 +29,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if the user is authenticated
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   // If accessing protected routes without auth, redirect to homepage
   if (protectedRoutes.some((route) => pathname.startsWith(route)) && !user) {

@@ -6,10 +6,11 @@ import {
   simulationsCardsTable,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import ClientSimulationsPage from "./client-page";
-import { Suspense } from "react";
 import { cache } from "react";
+import { PageLoading } from "@/app/components/loading/page-loading.server";
 
 // Cache simulations and cards data - these change very infrequently
 const getSimulationData = cache(async () => {
@@ -32,8 +33,8 @@ const getSimulationData = cache(async () => {
 export const revalidate = 3600;
 
 export default async function Simulations() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user || !user.id) {
     return null;
@@ -125,18 +126,30 @@ export default async function Simulations() {
     return acc;
   }, {} as Record<number, typeof simulationCards>);
 
+  // Sort cards within each year by order_index
+  Object.keys(simulationCardsByYear).forEach((yearKey) => {
+    const year = Number(yearKey);
+    simulationCardsByYear[year].sort((a, b) => {
+      // If order_index is null, place at the end
+      if (a.order_index === null && b.order_index === null) return 0;
+      if (a.order_index === null) return 1;
+      if (b.order_index === null) return -1;
+      return a.order_index - b.order_index;
+    });
+  });
+
   // Sort years in descending order (most recent first)
   const sortedYears = Object.keys(simulationCardsByYear)
     .map(Number)
     .sort((a, b) => b - a);
 
   return (
-    <Suspense fallback={<div>Loading simulations...</div>}>
+    <PageLoading loadingText="Caricamento simulazioni...">
       <ClientSimulationsPage
         simulationCardsByYear={simulationCardsByYear}
         sortedYears={sortedYears}
         userId={user.id}
       />
-    </Suspense>
+    </PageLoading>
   );
 }

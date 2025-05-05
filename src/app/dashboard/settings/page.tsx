@@ -1,39 +1,46 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import SettingsClient from "./client";
 import { db } from "@/db/drizzle";
-import { usersTable } from "@/db/schema";
+import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export default async function SettingsPage() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
-    redirect("/api/auth/login");
+    redirect("/");
   }
 
-  // Fetch user data from database to get username
-  const userData = await db
+  // Get additional user information from the database
+  const userInfo = await db
     .select({
-      username: usersTable.username,
+      username: users.username,
     })
-    .from(usersTable)
-    .where(eq(usersTable.id, user.id as string))
-    .limit(1);
+    .from(users)
+    .where(eq(users.id, user.id as string))
+    .then((res) => res[0] || { username: "" });
 
-  const username = userData[0]?.username || "";
+  const userData = {
+    id: user.id as string,
+    email: user.email as string,
+    givenName: user.name?.split(" ")[0] || "",
+    familyName: user.name?.split(" ").slice(1).join(" ") || "",
+    picture: user.image || "",
+    username: userInfo?.username || "",
+  };
 
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-8">Impostazioni Account</h1>
       <SettingsClient
-        id={user.id as string}
-        email={user.email as string}
-        givenName={user.given_name as string}
-        familyName={user.family_name as string}
-        picture={user.picture as string}
-        username={username}
+        id={userData.id}
+        email={userData.email}
+        givenName={userData.givenName}
+        familyName={userData.familyName}
+        picture={userData.picture}
+        username={userData.username}
       />
     </div>
   );

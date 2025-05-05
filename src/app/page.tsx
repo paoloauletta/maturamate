@@ -1,14 +1,10 @@
-import { Button } from "@/components/ui/button";
-import {
-  RegisterLink,
-  LoginLink,
-} from "@kinde-oss/kinde-auth-nextjs/components";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
+import SignInButton from "./components/auth/sign-in";
+import { auth } from "@/lib/auth";
 
 export default async function Home() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   // Redirect authenticated users to dashboard
   if (user) {
@@ -28,24 +24,7 @@ export default async function Home() {
         </div>
 
         <div className="flex flex-col space-y-4">
-          <LoginLink>
-            <Button className="w-full py-6 text-lg" size="lg">
-              Accedi
-            </Button>
-          </LoginLink>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-gray-300 w-full absolute"></div>
-            <span className="relative px-4 bg-background text-sm text-muted-foreground">
-              oppure
-            </span>
-          </div>
-
-          <RegisterLink>
-            <Button variant="outline" className="w-full py-6 text-lg" size="lg">
-              Registrati
-            </Button>
-          </RegisterLink>
+          <SignInButton />
         </div>
       </div>
     </main>

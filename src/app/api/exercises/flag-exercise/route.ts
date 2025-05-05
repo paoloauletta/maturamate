@@ -1,15 +1,15 @@
 import { db } from "@/db/drizzle";
 import { flaggedExercisesTable } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
-    if (!user) {
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -76,10 +76,10 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
-    if (!user) {
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

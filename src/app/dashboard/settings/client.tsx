@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Upload, Trash2, X, AlertCircle } from "lucide-react";
+import { Pencil, Upload, Trash2, X, AlertCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useSession, signOut } from "next-auth/react";
 
 interface SettingsClientProps {
   id: string;
@@ -57,8 +58,7 @@ export default function SettingsClient({
   username: initialUsername,
 }: SettingsClientProps) {
   const router = useRouter();
-  const [firstName, setFirstName] = useState(givenName || "");
-  const [lastName, setLastName] = useState(familyName || "");
+  const [fullName, setFullName] = useState(`${givenName} ${familyName}`.trim());
   const [username, setUsername] = useState(initialUsername || "");
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string>(picture || "");
@@ -76,6 +76,7 @@ export default function SettingsClient({
         },
         body: JSON.stringify({
           username,
+          fullName,
         }),
       });
 
@@ -167,17 +168,10 @@ export default function SettingsClient({
 
       toast.success("Account eliminato con successo");
 
-      // If the server indicates we should logout, redirect to the login page
-      if (data.shouldLogout) {
-        // Give the toast a moment to show before redirecting
-        setTimeout(() => {
-          // Make sure we redirect to a logout endpoint
-          window.location.href = "/api/auth/logout";
-        }, 1500);
-      } else {
-        // Redirect to home page after account deletion
-        router.push("/");
-      }
+      // Sign out the user using Auth.js
+      setTimeout(() => {
+        signOut({ callbackUrl: "/" });
+      }, 1500);
     } catch (error: any) {
       console.error("Failed to delete account:", error);
       toast.error(
@@ -190,8 +184,20 @@ export default function SettingsClient({
     }
   };
 
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
   return (
     <div className="space-y-10">
+      {/* Sign Out Button */}
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={handleSignOut} className="gap-2">
+          <LogOut className="h-4 w-4" />
+          Disconnetti
+        </Button>
+      </div>
+
       {/* Profile Information Section */}
       <Card>
         <CardHeader>
@@ -215,7 +221,7 @@ export default function SettingsClient({
                 ) : (
                   <div className="h-full w-full bg-muted flex items-center justify-center">
                     <span className="text-3xl font-bold text-muted-foreground">
-                      {firstName?.charAt(0) || "U"}
+                      {fullName?.charAt(0) || "U"}
                     </span>
                   </div>
                 )}
@@ -248,22 +254,24 @@ export default function SettingsClient({
                         ) : (
                           <div className="h-full w-full bg-muted flex items-center justify-center">
                             <span className="text-3xl font-bold text-muted-foreground">
-                              {firstName?.charAt(0) || "U"}
+                              {fullName?.charAt(0) || "U"}
                             </span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="picture">Immagine</Label>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="profile-image">Immagine Profilo</Label>
                       <Input
-                        id="picture"
+                        id="profile-image"
                         type="file"
                         accept="image/*"
                         onChange={handleImageUpload}
                       />
                     </div>
                   </div>
+
                   <DialogFooter>
                     <DialogClose asChild>
                       <Button variant="outline">Annulla</Button>
@@ -272,32 +280,66 @@ export default function SettingsClient({
                       onClick={saveProfileImage}
                       disabled={!uploadedImage || isSubmitting}
                     >
-                      {isSubmitting ? "Salvando..." : "Salva Immagine"}
+                      {isSubmitting ? "Caricamento..." : "Salva"}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
 
+            {/* Profile Details */}
             <div className="flex-1 space-y-4">
-              {/* Profile Form */}
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={email}
-                  disabled
-                  className="bg-muted"
-                  readOnly
-                />
-                <p className="text-sm text-muted-foreground">
-                  L'indirizzo email non può essere modificato
+                <Input id="email" value={email} disabled />
+                <p className="text-xs text-muted-foreground mt-1">
+                  La tua email non può essere modificata
                 </p>
               </div>
 
-              {isEditing ? (
+              {!isEditing ? (
                 <>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
+                    <Label>Nome Completo</Label>
+                    <div className="flex items-center justify-between">
+                      <p>{fullName || "Non impostato"}</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label>Username</Label>
+                    <div className="flex items-center justify-between">
+                      <p>{username || "Non impostato"}</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    <Label htmlFor="full-name">Nome Completo</Label>
+                    <Input
+                      id="full-name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Il tuo nome completo"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
@@ -306,78 +348,19 @@ export default function SettingsClient({
                       placeholder="Il tuo username"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Nome</Label>
-                      <Input
-                        id="firstName"
-                        value={firstName}
-                        disabled
-                        className="bg-muted"
-                        readOnly
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Cognome</Label>
-                      <Input
-                        id="lastName"
-                        value={lastName}
-                        disabled
-                        className="bg-muted"
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setUsername(initialUsername || "");
-                        setIsEditing(false);
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Annulla
-                    </Button>
+
+                  <div className="flex items-center space-x-2">
                     <Button
                       onClick={handleProfileUpdate}
-                      disabled={!username || isSubmitting}
+                      disabled={isSubmitting}
                     >
-                      {isSubmitting ? "Salvando..." : "Salva"}
+                      {isSubmitting ? "Salvataggio..." : "Salva"}
                     </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <div className="p-2 border rounded-md bg-background">
-                      {username || "Non specificato"}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Nome</Label>
-                      <div className="p-2 border rounded-md bg-background">
-                        {firstName || "Non specificato"}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Cognome</Label>
-                      <div className="p-2 border rounded-md bg-background">
-                        {lastName || "Non specificato"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end mt-4">
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => setIsEditing(true)}
+                      onClick={() => setIsEditing(false)}
                     >
-                      <Pencil className="h-4 w-4" />
-                      Modifica Profilo
+                      Annulla
                     </Button>
                   </div>
                 </>
@@ -387,69 +370,42 @@ export default function SettingsClient({
         </CardContent>
       </Card>
 
-      {/* Danger Zone Section */}
-      <Card className="border-destructive/20">
-        <CardHeader className="text-destructive">
-          <CardTitle>Area Pericolosa</CardTitle>
+      {/* Delete Account Section */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Elimina Account</CardTitle>
           <CardDescription>
-            Azioni irreversibili sul tuo account
+            Elimina permanentemente il tuo account e tutti i dati associati
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium">Elimina Account</h4>
-                <p className="text-sm text-muted-foreground">
-                  Elimina permanentemente il tuo account e tutti i dati
-                  associati
-                </p>
-              </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="gap-2">
-                    <Trash2 className="h-4 w-4" />
-                    Elimina Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Questa azione non può essere annullata. Eliminerà
-                      permanentemente il tuo account e rimuoverà tutti i tuoi
-                      dati dai nostri server.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <div className="bg-muted/50 p-3 rounded-md flex items-start gap-3 mt-2 mb-4">
-                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-foreground">
-                        Conseguenze dell'eliminazione:
-                      </p>
-                      <ul className="list-disc pl-4 pt-2 space-y-1">
-                        <li>
-                          Perdita di tutti i progressi e i dati di completamento
-                        </li>
-                        <li>Rimozione di tutti i contenuti personalizzati</li>
-                        <li>Impossibilità di recuperare l'account in futuro</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annulla</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={deleteAccount}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Eliminazione..." : "Elimina Account"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="gap-2">
+                <Trash2 className="h-4 w-4" />
+                Elimina Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Questa azione non può essere annullata. Eliminerà
+                  permanentemente il tuo account e rimuoverà i tuoi dati dai
+                  nostri server.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annulla</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={deleteAccount}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  {isSubmitting ? "Eliminazione..." : "Elimina Account"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>

@@ -2,16 +2,12 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { navLinks } from "@/app/dashboard/layout";
+import { navLinks } from "@/app/dashboard/layout-client";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  CircleUser,
   LogOut,
   Settings,
   Sparkles,
@@ -34,6 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSession, signOut } from "next-auth/react";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -48,7 +45,8 @@ export default function DashboardSidebar({
   onItemClick,
   isMobile = false,
 }: SidebarProps) {
-  const { user } = useKindeBrowserClient();
+  const { data: session } = useSession();
+  const user = session?.user;
   const router = useRouter();
   const pathname = usePathname();
 
@@ -91,6 +89,20 @@ export default function DashboardSidebar({
     router.push("/dashboard/settings");
   };
 
+  // Get first letter of name or email for avatar fallback
+  const getAvatarFallback = () => {
+    if (user?.name) return user.name[0];
+    if (user?.email) return user.email[0];
+    return "U";
+  };
+
+  // Get user's full name or email
+  const getUserDisplayName = () => {
+    if (user?.name) return user.name;
+    if (user?.email) return user.email;
+    return "";
+  };
+
   return (
     <div
       className={cn(
@@ -121,14 +133,23 @@ export default function DashboardSidebar({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.picture || ""} />
+                {user?.image ? (
+                  <AvatarImage
+                    src={user.image}
+                    alt={getUserDisplayName()}
+                    onError={(e) => {
+                      // On error, hide the image and let the fallback show
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : null}
                 <AvatarFallback className="bg-primary/10">
-                  {user?.given_name?.[0] || user?.email?.[0] || "U"}
+                  {getAvatarFallback()}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user?.given_name || ""} {user?.family_name || ""}
+                  {getUserDisplayName()}
                 </p>
                 <p className="text-xs text-muted-foreground truncate max-w-[160px]">
                   {user?.email || ""}
@@ -173,12 +194,10 @@ export default function DashboardSidebar({
 
                     <DropdownMenuSeparator />
 
-                    <LogoutLink>
-                      <DropdownMenuItem>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Logout</span>
-                      </DropdownMenuItem>
-                    </LogoutLink>
+                    <DropdownMenuItem onClick={() => signOut()}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -223,15 +242,24 @@ export default function DashboardSidebar({
                     className="h-10 w-10 cursor-pointer"
                     onClick={handleSettingsClick}
                   >
-                    <AvatarImage src={user?.picture || ""} />
+                    {user?.image ? (
+                      <AvatarImage
+                        src={user.image}
+                        alt={getUserDisplayName()}
+                        onError={(e) => {
+                          // On error, hide the image and let the fallback show
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
                     <AvatarFallback className="bg-primary/10">
-                      {user?.given_name?.[0] || user?.email?.[0] || "U"}
+                      {getAvatarFallback()}
                     </AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
                 <TooltipContent side="right">
                   <div className="text-xs font-medium">
-                    {user?.given_name} {user?.family_name}
+                    {getUserDisplayName()}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {subscriptionData.plan}
@@ -242,9 +270,18 @@ export default function DashboardSidebar({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="h-10 w-10 cursor-pointer">
-                    <AvatarImage src={user?.picture || ""} />
+                    {user?.image ? (
+                      <AvatarImage
+                        src={user.image}
+                        alt={getUserDisplayName()}
+                        onError={(e) => {
+                          // On error, hide the image and let the fallback show
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
                     <AvatarFallback className="bg-primary/10">
-                      {user?.given_name?.[0] || user?.email?.[0] || "U"}
+                      {getAvatarFallback()}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
@@ -261,12 +298,10 @@ export default function DashboardSidebar({
 
                   <DropdownMenuSeparator />
 
-                  <LogoutLink>
-                    <DropdownMenuItem>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </LogoutLink>
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

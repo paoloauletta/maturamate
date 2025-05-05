@@ -6,10 +6,11 @@ import {
   completedSimulationsTable,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import SolutionsClient from "./client";
-import { cache } from "react";
+import { cache, Suspense } from "react";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
+import { auth } from "@/lib/auth";
 
 // Cache simulation details - these change very infrequently
 const getSimulation = cache(async (id: string) => {
@@ -58,8 +59,8 @@ export default async function SimulationSolutionsPage(props: any) {
   // Properly await the params
   const params = await props.params;
   const simulationId = params.id;
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user || !user.id) {
     redirect("/api/auth/login");
@@ -106,5 +107,9 @@ export default async function SimulationSolutionsPage(props: any) {
   // Get solutions for this simulation
   const solutions = await getSolutions(simulationId);
 
-  return <SolutionsClient simulation={simulation} solutions={solutions} />;
+  return (
+    <Suspense fallback={<LoadingSpinner text="Caricamento soluzioni..." />}>
+      <SolutionsClient simulation={simulation} solutions={solutions} />
+    </Suspense>
+  );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import TopicsSidebar from "@/app/components/topics-sidebar";
+import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import ExerciseCard from "@/app/components/exercises/ExerciseCard";
+import ExerciseCard from "@/app/components/exercises/ExerciseCard.client";
 import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
 import { BookOpen, Filter, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -209,7 +209,7 @@ export default function ExercisesTopicClient({
   };
 
   return (
-    <div className="container">
+    <div>
       {/* Mobile Topic Menu - Show above topic name on mobile */}
       <div className="block md:hidden mb-4">
         <TopicsSidebar

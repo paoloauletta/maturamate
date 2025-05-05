@@ -1,13 +1,11 @@
 import { eq } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import TopicClient from "./client";
 import {
   getTopicsWithSubtopics,
   getTopics,
   getSubtopics,
   getTheoryContent,
-  getUserCompletionStatus,
 } from "@/utils/cache";
 import { db } from "@/db/drizzle";
 import {
@@ -15,6 +13,7 @@ import {
   exercisesTable,
   completedExercisesTable,
 } from "@/db/schema";
+import { auth } from "@/lib/auth";
 
 // Set revalidation period - revalidate every hour
 export const revalidate = 3600;
@@ -91,12 +90,8 @@ async function TopicPage(props: any) {
     notFound();
   }
 
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
-
-  if (!user || !user.id) {
-    redirect("/api/auth/login");
-  }
+  const session = await auth();
+  const user = session?.user;
 
   // Fetch the current topic and all topics with subtopics using cached functions
   const allTopics = await getTopics();
@@ -193,7 +188,7 @@ async function TopicPage(props: any) {
       is_correct: completedExercisesTable.is_correct,
     })
     .from(completedExercisesTable)
-    .where(eq(completedExercisesTable.user_id, user.id as string));
+    .where(eq(completedExercisesTable.user_id, user?.id as string));
 
   // Filter to only correct exercises and create a set for faster lookups
   const correctExercises = new Set(
@@ -256,7 +251,7 @@ async function TopicPage(props: any) {
       topicsWithSubtopics={topicsWithSubtopics}
       subtopicsWithTheory={subtopicsWithTheory}
       activeSubtopicId={subtopicId}
-      userId={user.id as string}
+      userId={user?.id as string}
     />
   );
 }

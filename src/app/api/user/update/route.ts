@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/drizzle";
-import { usersTable } from "@/db/schema";
+import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
     // Get the authenticated user
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
     if (!user || !user.id) {
       return NextResponse.json(
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Parse the request body
     const body = await request.json();
-    const { username } = body;
+    const { username, fullName } = body;
 
     if (!username) {
       return NextResponse.json(
@@ -28,13 +28,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create an update object
+    const updateData: { username: string; name?: string } = {
+      username: username,
+    };
+
+    // Add fullName to update if provided
+    if (fullName !== undefined) {
+      updateData.name = fullName;
+    }
+
     // Update the user in the database
-    await db
-      .update(usersTable)
-      .set({
-        username: username,
-      })
-      .where(eq(usersTable.id, user.id));
+    await db.update(users).set(updateData).where(eq(users.id, user.id));
 
     return NextResponse.json(
       { message: "Profile updated successfully" },

@@ -11,7 +11,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import MathRenderer from "@/app/components/mathRenderer";
+import MathRenderer from "@/app/components/renderer/mathRenderer";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface MobileExerciseViewProps {

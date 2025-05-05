@@ -8,10 +8,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import {
   Book,
-  BookOpen,
   Bot,
   ChartNoAxesColumn,
   ClipboardCheck,
@@ -25,7 +23,6 @@ import {
   getUserStreak,
   getWeeklyGoals,
 } from "@/lib/data/user-statistics";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db } from "@/db/drizzle";
 import {
   completedTopicsTable,
@@ -34,15 +31,15 @@ import {
   subtopicsTable,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-
+import { auth } from "@/lib/auth";
 export default async function DashboardIndexPage() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
   const userId = user?.id;
 
   // Default mock data in case we don't have a userId
   let userData = {
-    name: user?.given_name || "Studente",
+    name: user?.name || "Studente",
     daysToExam: getDaysUntilExam(),
     overallProgress: 0,
     totalAvailableExercises: 0,

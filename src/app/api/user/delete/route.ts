@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/drizzle";
 import {
-  usersTable,
+  users,
   completedTopicsTable,
   completedSubtopicsTable,
   completedExercisesTable,
@@ -17,8 +17,8 @@ import { eq } from "drizzle-orm";
 export async function DELETE(request: NextRequest) {
   try {
     // Get the authenticated user
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
     if (!user || !user.id) {
       return NextResponse.json(
@@ -82,7 +82,7 @@ export async function DELETE(request: NextRequest) {
       console.log("Deleted flagged simulations");
 
       // Finally, delete the user
-      await db.delete(usersTable).where(eq(usersTable.id, user.id));
+      await db.delete(users).where(eq(users.id, user.id));
       console.log("Deleted user account");
 
       console.log("Account deletion completed successfully");

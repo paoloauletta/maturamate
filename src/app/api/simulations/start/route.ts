@@ -1,94 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/drizzle";
 import { completedSimulationsTable } from "@/db/schema";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
     if (!user || !user.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { simulationId, userId } = await req.json();
+    const { simulationId } = await request.json();
 
-    console.log("Starting simulation with data:", {
-      simulationId,
-      userId,
-      userIdType: typeof userId,
-      userIdFromAuth: user.id,
-      userIdFromAuthType: typeof user.id,
-    });
-
-    // Verify userId matches authenticated user
-    if (userId !== user.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!simulationId) {
+      return NextResponse.json(
+        { error: "Simulation ID is required" },
+        { status: 400 }
+      );
     }
 
-    // Get previous attempts for this simulation
-    const previousAttempts = await db
-      .select()
+    // Get the attempt number (how many times the user has attempted this simulation)
+    const attemptCount = await db
+      .select({ count: count() })
       .from(completedSimulationsTable)
       .where(
         and(
-          eq(completedSimulationsTable.user_id, userId),
+          eq(completedSimulationsTable.user_id, user.id),
           eq(completedSimulationsTable.simulation_id, simulationId)
         )
       );
 
-    console.log(
-      "Found previous attempts:",
-      previousAttempts.length,
-      previousAttempts.map((a) => ({
-        id: a.id,
-        started_at: a.started_at,
-        completed_at: a.completed_at,
-      }))
-    );
+    const attempt = (attemptCount[0]?.count || 0) + 1;
 
-    // Calculate new attempt number
-    const attemptNumber = previousAttempts.length + 1;
-
-    console.log("Creating new simulation attempt:", {
-      attemptNumber,
-      userId,
-      simulationId,
-    });
-
-    // Current timestamp for started_at
-    const startTime = new Date();
-    console.log("Start time:", startTime);
-
-    // Insert a new record in the completedSimulationsTable
+    // Create a new simulation attempt
     const result = await db.insert(completedSimulationsTable).values({
-      user_id: userId,
+      user_id: user.id,
       simulation_id: simulationId,
-      attempt: attemptNumber,
-      started_at: startTime,
+      attempt: attempt,
+      started_at: new Date(),
     });
-    console.log("Insert result:", result);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: "Simulation started successfully",
+      attempt,
+    });
   } catch (error) {
     console.error("Error starting simulation:", error);
-    // Add more detailed error response
-    if (error instanceof Error) {
-      return new NextResponse(
-        JSON.stringify({
-          message: "Internal Server Error",
-          error: error.message,
-          stack: error.stack,
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to start simulation" },
+      { status: 500 }
+    );
   }
 }
 

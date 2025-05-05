@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { getUserStatistics } from "@/lib/data/user-statistics";
 
 export async function GET(request: NextRequest) {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   // Check if the user is authenticated
   if (!user || !user.id) {

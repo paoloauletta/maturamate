@@ -7,12 +7,12 @@ import {
   completedExercisesTable,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import ClientExercisesPage from "./client-page";
 import { redirect } from "next/navigation";
 import { getTopics } from "@/utils/cache";
 import { Suspense } from "react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 
 // Define interfaces for your data structure
 interface ExerciseCard {
@@ -47,10 +47,11 @@ interface TopicGroup {
 export const revalidate = 3600;
 
 export default async function Exercises() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
+    redirect("/api/auth/signin");
     return null;
   }
 

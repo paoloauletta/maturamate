@@ -10,7 +10,7 @@ import {
   completedTopicsTable,
   completedSubtopicsTable,
 } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
 // Cache topics with improved tagging and longer duration

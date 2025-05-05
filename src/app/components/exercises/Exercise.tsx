@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, MessageSquareText, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import MathRenderer from "@/app/components/mathRenderer";
+import MathRenderer from "@/app/components/renderer/mathRenderer";
 
 interface ExerciseProps {
   id: string;

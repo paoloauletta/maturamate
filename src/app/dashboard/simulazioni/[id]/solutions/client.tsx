@@ -3,10 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  FileText,
-  ArrowLeft,
-  FileCheck,
-  Download,
   Maximize2,
   Minimize2,
   ChevronLeft,
@@ -22,18 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import "@/app/globals/styles/pdf-viewer.css";
 import { useRouter } from "next/navigation";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 
 interface Simulation {
   id: string;

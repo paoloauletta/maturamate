@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, Filter } from "lucide-react";
-import TopicsSidebar from "@/app/components/topics-sidebar";
+import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
@@ -214,7 +214,7 @@ export default function ClientExercisesPage({
     (difficultyFilter !== null ? 1 : 0) + (completionFilter !== null ? 1 : 0);
 
   return (
-    <div className="container">
+    <div>
       {/* Mobile Topic Menu - Show above topic name on mobile */}
       <div className="block md:hidden mb-4">
         <TopicsSidebar

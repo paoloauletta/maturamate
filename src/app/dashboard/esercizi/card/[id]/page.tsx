@@ -1,13 +1,13 @@
 import { db } from "@/db/drizzle";
-import { exercisesTable, completedExercisesTable } from "@/db/schema";
+import { completedExercisesTable } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { notFound } from "next/navigation";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import ExerciseCardClient from "./ExerciseCardClient";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import ExerciseCardClient from "./client";
 import { getExerciseCardDetails, getExercisesForCard } from "@/utils/cache";
 import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 
 // Cache common exercise card data - not user specific
 const getCachedCardData = unstable_cache(
@@ -55,10 +55,11 @@ async function ExerciseCardPage(props: any) {
     return null;
   }
 
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
-  if (!user) {
+  if (!user || !user.id) {
+    redirect("/api/auth/signin");
     return null;
   }
 
@@ -136,7 +137,7 @@ async function ExerciseCardPage(props: any) {
       created_at: completedExercisesTable.created_at,
     })
     .from(completedExercisesTable)
-    .where(and(eq(completedExercisesTable.user_id, user.id as string)));
+    .where(and(eq(completedExercisesTable.user_id, user.id)));
 
   // First group by exercise_id to get all attempts for each exercise
   const exerciseAttemptsMap: Record<

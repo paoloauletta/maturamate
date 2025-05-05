@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import TopicsSidebar from "@/app/components/topics-sidebar";
+import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useRouter } from "next/navigation";
-import MarkdownRenderer from "@/app/components/markdownRenderer";
+import MarkdownRenderer from "@/app/components/renderer/markdownRenderer";
 import Link from "next/link";
 import {
   BookOpen,
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ExerciseCard from "@/app/components/exercises/ExerciseCard";
 import { toast } from "sonner";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 
 // Theory content types
 interface TheoryContentType {
@@ -114,14 +115,45 @@ export default function TopicClient({
           completionStatus.completedTopicIds.length === 0 &&
           completionStatus.completedSubtopicIds.length === 0
         ) {
-          const response = await fetch("/api/user/completion");
-          if (response.ok) {
-            const data = await response.json();
-            setCompletionStatus({
-              completedTopicIds: data.completedTopicIds || [],
-              completedSubtopicIds: data.completedSubtopicIds || [],
-            });
-          }
+          // Call the new API for all topic IDs
+          const topicPromises = topicsWithSubtopics.map(async (topic) => {
+            const resp = await fetch(
+              `/api/user/completion?itemType=topic&itemId=${topic.id}`
+            );
+            if (resp.ok) {
+              const data = await resp.json();
+              return { id: topic.id, completed: data.isCompleted };
+            }
+            return { id: topic.id, completed: false };
+          });
+
+          // Call the API for all subtopic IDs
+          const subtopicPromises = topicsWithSubtopics.flatMap((topic) =>
+            topic.subtopics.map(async (subtopic) => {
+              const resp = await fetch(
+                `/api/user/completion?itemType=subtopic&itemId=${subtopic.id}`
+              );
+              if (resp.ok) {
+                const data = await resp.json();
+                return { id: subtopic.id, completed: data.isCompleted };
+              }
+              return { id: subtopic.id, completed: false };
+            })
+          );
+
+          // Wait for all promises to resolve
+          const topicResults = await Promise.all(topicPromises);
+          const subtopicResults = await Promise.all(subtopicPromises);
+
+          // Update the completion status
+          setCompletionStatus({
+            completedTopicIds: topicResults
+              .filter((result) => result.completed)
+              .map((result) => result.id),
+            completedSubtopicIds: subtopicResults
+              .filter((result) => result.completed)
+              .map((result) => result.id),
+          });
         }
       } catch (error) {
         console.error("Failed to fetch completion status:", error);
@@ -132,6 +164,7 @@ export default function TopicClient({
   }, [
     completionStatus.completedTopicIds.length,
     completionStatus.completedSubtopicIds.length,
+    topicsWithSubtopics,
   ]);
 
   // Function to mark a subtopic as completed
@@ -267,6 +300,14 @@ export default function TopicClient({
       router.push(`/dashboard/teoria/${nextTopicId}`);
     }
   };
+
+  if (loadingTopic) {
+    return <LoadingSpinner text="Caricamento teoria..." />;
+  }
+
+  if (loadingSubtopic) {
+    return <LoadingSpinner text="Caricamento teoria..." />;
+  }
 
   return (
     <div className="container">

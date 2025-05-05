@@ -8,3 +8,181 @@ alwaysApply: true
 - Tailwind CSS with shadcn/ui and Lucide for the icons
 - Neon Database and Drizzle as ORM
 - KindeAuth for the authentication
+
+
+
+
+
+
+# Structure and Syntax
+- Name the file as follow 'name-name'.
+- Do not name file 'name.client.tsx' or 'name.server.tsx' ever.
+- /src/components/ui is for shadcn/ui components only, do not write code in there
+-/src/app/components is for oure custom made components.
+
+
+
+
+
+
+# Components Architecture
+
+This document outlines the component organization and naming conventions used in the MaturaMate codebase.
+
+## Component Organization
+
+### Directory Structure
+
+- `/components/ui/`: UI components from shadcn/ui library (all client components)
+- `/app/components/`: Application-specific components:
+  - `/app/components/exercises/`: Exercise-related components
+  - `/app/components/dashboard/`: Dashboard UI components
+  - `/app/components/auth/`: Authentication components
+- `/app/dashboard/*/`: Page components for dashboard sections
+  - Each section typically has a server `page.tsx` and client `*.client.tsx` components
+
+### File Naming Conventions
+
+- **Client Components**: Files that include client-side interactivity are named with `-client.tsx` suffix
+  - Example: `exercise-card-client.tsx`
+- **Server Components**: Files that primarily handle data fetching and server-side operations are named with `-server.tsx` suffix
+  - Example: `topics-data-server.tsx`
+- **Page Components**: Page components are always named `page.tsx` following Next.js convention
+
+  - These are typically server components that may import client components
+
+- **Layout Components**: Layout components are named `layout.tsx` following Next.js convention
+
+## Client/Server Component Patterns
+
+### Server Components
+
+Server components are used for:
+
+- Data fetching directly from the database
+- Server-side rendering of static content
+- Passing data to client components
+
+Example pattern for a server component page:
+
+```tsx
+// page.tsx
+import { ServerDataComponent } from "./data.server";
+import { ClientUIComponent } from "./ui.client";
+
+export default async function Page() {
+  const data = await ServerDataComponent.getData();
+
+  return <ClientUIComponent data={data} />;
+}
+```
+
+### Client Components
+
+Client components are used for:
+
+- Interactive UI elements (buttons, forms, etc.)
+- Components that use React hooks
+- Components that need to respond to user actions
+
+Example pattern for a client component:
+
+```tsx
+// component.client.tsx
+"use client";
+
+import { useState } from "react";
+
+export function ClientComponent({ data }) {
+  const [state, setState] = useState(initialState);
+
+  // Interactive logic here
+
+  return <div>...</div>;
+}
+```
+
+### Boundary Components
+
+Boundary components separate client from server concerns:
+
+- They are named with `-client.tsx` suffix
+- They receive props from server components
+- They contain all the client-side interactivity
+
+## Unified Loading State Approach
+
+MaturaMate uses a consistent approach for handling loading states across both server and client components:
+
+### Server Component Loading (with Suspense)
+
+The `PageLoading` component provides a standardized way to handle loading states in server components:
+
+```tsx
+// Server component (page.tsx)
+import { PageLoading } from "@/components/ui/page-loading.server";
+
+export default async function MyPage() {
+  const data = await fetchData();
+
+  return (
+    <PageLoading loadingText="Caricamento...">
+      <ClientComponent data={data} />
+    </PageLoading>
+  );
+}
+```
+
+### Client Component Loading (with useState)
+
+The `DataLoading` component provides a standardized way to handle loading, error, and empty states in client components:
+
+```tsx
+// Client component (component.client.tsx)
+"use client";
+
+import { DataLoading } from "@/components/ui/data-loading.client";
+
+export function MyClientComponent() {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch data...
+
+  return (
+    <DataLoading
+      data={data}
+      isLoading={isLoading}
+      error={error}
+      loadingText="Caricamento dati..."
+    >
+      {(data) => (
+        // Render UI with data
+      )}
+    </DataLoading>
+  );
+}
+```
+
+This approach ensures consistent loading UX across the application while respecting Next.js architecture patterns.
+
+## Data Flow
+
+1. Server components fetch data directly from the database using Drizzle ORM
+2. Data is passed as props to client components
+3. Client components manage UI state and user interactions
+4. API routes handle data mutations
+
+## Best Practices
+
+1. **Keep server components simple**: Focus on data fetching and passing props to client components
+2. **Minimize client component code**: Only include code that needs interactivity in client components
+3. **Use appropriate naming**: Follow the `-client.tsx` and `-server.tsx` conventions
+4. **Avoid prop drilling**: Create boundary components at appropriate levels
+5. **Minimize client-side data fetching**: Prefer server components for data access
+6. **Document component relationships**: Add comments explaining relationships between components
+7. **Use unified loading components**: Use `PageLoading` for server components and `DataLoading` for client components
+
+By following these conventions, we ensure a clear separation between client and server code, which improves performance and maintainability.
+

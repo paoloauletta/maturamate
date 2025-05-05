@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Funnel_Display } from "next/font/google";
+import { Funnel_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./components/dashboard/themeProvider";
-import AuthProvider from "./components/auth/AuthProvider";
-
+import { SessionProvider } from "next-auth/react";
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel-display",
+  subsets: ["latin"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
 });
 
@@ -22,14 +26,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${funnelDisplay.className} antialiased`}>
+      <body
+        className={`${funnelDisplay.className} ${dmSans.className} antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>{children}</AuthProvider>
+          <SessionProvider>{children}</SessionProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import ExercisesTopicClient from "./client";
 import { getTopicsWithSubtopics, getTopics, getSubtopics } from "@/utils/cache";
@@ -39,6 +39,7 @@ export interface ExerciseCardType {
   subtopic_id: string | null;
   description: string;
   difficulty: number;
+  order_index: number | null;
   total_exercises: number;
   completed_exercises: number;
   is_completed: boolean;
@@ -73,11 +74,11 @@ async function ExercisesTopicPage(props: any) {
     notFound();
   }
 
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user || !user.id) {
-    redirect("/api/auth/login");
+    redirect("/api/auth/signin");
   }
 
   // Fetch the current topic and all topics with subtopics using cached functions
@@ -104,6 +105,7 @@ async function ExercisesTopicPage(props: any) {
       subtopic_id: exercisesCardsTable.subtopic_id,
       description: exercisesCardsTable.description,
       difficulty: exercisesCardsTable.difficulty,
+      order_index: exercisesCardsTable.order_index,
     })
     .from(exercisesCardsTable)
     .where(eq(exercisesCardsTable.subtopic_id, topicSubtopicIds[0]));
@@ -117,6 +119,7 @@ async function ExercisesTopicPage(props: any) {
           subtopic_id: exercisesCardsTable.subtopic_id,
           description: exercisesCardsTable.description,
           difficulty: exercisesCardsTable.difficulty,
+          order_index: exercisesCardsTable.order_index,
         })
         .from(exercisesCardsTable)
         .where(eq(exercisesCardsTable.subtopic_id, topicSubtopicIds[i]));
@@ -197,7 +200,7 @@ async function ExercisesTopicPage(props: any) {
     }),
   }));
 
-  // Group exercise cards by subtopic for easy access
+  // Group exercise cards by subtopic for easy access and sort by order_index
   const exerciseCardsBySubtopic = exerciseCardsWithCompletion.reduce(
     (acc, card) => {
       if (!card.subtopic_id) return acc;
@@ -210,6 +213,17 @@ async function ExercisesTopicPage(props: any) {
     },
     {} as Record<string, ExerciseCardType[]>
   );
+
+  // Sort cards within each subtopic by order_index
+  Object.keys(exerciseCardsBySubtopic).forEach((subtopicId) => {
+    exerciseCardsBySubtopic[subtopicId].sort((a, b) => {
+      // If order_index is null, place at the end
+      if (a.order_index === null && b.order_index === null) return 0;
+      if (a.order_index === null) return 1;
+      if (b.order_index === null) return -1;
+      return a.order_index - b.order_index;
+    });
+  });
 
   // Group exercise cards by subtopic
   const subtopicsWithExercises: SubtopicWithExercisesType[] = subtopics.map(

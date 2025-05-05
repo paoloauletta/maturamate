@@ -1,6 +1,6 @@
 "use client";
 
-import TopicsSidebar from "@/app/components/topics-sidebar";
+import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useRouter } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

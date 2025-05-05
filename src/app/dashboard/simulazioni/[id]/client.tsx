@@ -16,13 +16,10 @@ import {
   AlertTriangle,
   CheckCircle,
   FileText,
-  Maximize2,
   Minimize2,
 } from "lucide-react";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import "@/app/globals/styles/pdf-viewer.css";
 
 interface Simulation {
   id: string;

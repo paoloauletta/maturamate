@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/drizzle";
 import { completedTopicsTable } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -7,8 +7,8 @@ import { and, eq } from "drizzle-orm";
 export async function POST(request: NextRequest) {
   try {
     // Get the authenticated user
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
     if (!user || !user.id) {
       return NextResponse.json(

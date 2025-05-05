@@ -1,10 +1,11 @@
 import { db } from "@/db/drizzle";
 import { simulationsTable, completedSimulationsTable } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import SimulationClient from "./client";
-import { cache } from "react";
+import { cache, Suspense } from "react";
+import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 
 // Cache simulation details - these change very infrequently
 const getSimulation = cache(async (id: string) => {
@@ -25,11 +26,11 @@ export default async function SimulationPage(props: any) {
   // Properly await the params
   const params = await props.params;
   const simulationId = params.id;
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user || !user.id) {
-    redirect("/api/auth/login");
+    redirect("/api/auth/signin");
   }
 
   const simulationData = await getSimulation(simulationId);
@@ -76,13 +77,15 @@ export default async function SimulationPage(props: any) {
     : null;
 
   return (
-    <SimulationClient
-      simulation={simulation}
-      userId={user.id as string}
-      hasStarted={hasStarted}
-      isCompleted={isCompleted}
-      completedSimulationId={hasStarted ? completedSimulation[0].id : null}
-      startedAt={startedAt}
-    />
+    <Suspense fallback={<LoadingSpinner text="Caricamento simulazione..." />}>
+      <SimulationClient
+        simulation={simulation}
+        userId={user.id as string}
+        hasStarted={hasStarted}
+        isCompleted={isCompleted}
+        completedSimulationId={hasStarted ? completedSimulation[0].id : null}
+        startedAt={startedAt}
+      />
+    </Suspense>
   );
 }

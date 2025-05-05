@@ -1,13 +1,13 @@
 import { db } from "@/db/drizzle";
 import { completedSimulationsTable } from "@/db/schema";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and, isNull, desc } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
+    const user = session?.user;
 
     if (!user || !user.id) {
       return new NextResponse("Unauthorized", { status: 401 });

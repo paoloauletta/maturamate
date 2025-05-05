@@ -4,18 +4,96 @@ import {
   pgTable,
   text,
   timestamp,
+  primaryKey,
   uuid,
   boolean,
 } from "drizzle-orm/pg-core";
+import type { AdapterAccountType } from "next-auth/adapters";
 
-export const usersTable = pgTable("users", {
-  id: text("id").primaryKey(),
-  username: text("username").notNull(),
-  given_name: text("given_name").notNull(),
-  email: text("email").notNull(),
-  profile_picture: text("profile_picture").notNull(),
+export const users = pgTable("user", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  username: text("username"),
+  name: text("name"),
+  email: text("email").unique(),
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  image: text("image"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const accounts = pgTable(
+  "account",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccountType>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => [
+    {
+      compoundKey: primaryKey({
+        columns: [account.provider, account.providerAccountId],
+      }),
+    },
+  ]
+);
+
+export const sessions = pgTable("session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+});
+
+export const verificationTokens = pgTable(
+  "verificationToken",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (verificationToken) => [
+    {
+      compositePk: primaryKey({
+        columns: [verificationToken.identifier, verificationToken.token],
+      }),
+    },
+  ]
+);
+
+export const authenticators = pgTable(
+  "authenticator",
+  {
+    credentialID: text("credentialID").notNull().unique(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    providerAccountId: text("providerAccountId").notNull(),
+    credentialPublicKey: text("credentialPublicKey").notNull(),
+    counter: integer("counter").notNull(),
+    credentialDeviceType: text("credentialDeviceType").notNull(),
+    credentialBackedUp: boolean("credentialBackedUp").notNull(),
+    transports: text("transports"),
+  },
+  (authenticator) => [
+    {
+      compositePK: primaryKey({
+        columns: [authenticator.userId, authenticator.credentialID],
+      }),
+    },
+  ]
+);
 
 export const topicsTable = pgTable("topics", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -38,14 +116,14 @@ export const subtopicsTable = pgTable("subtopics", {
 
 export const completedTopicsTable = pgTable("completed_topics", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => usersTable.id),
+  user_id: text("user_id").references(() => users.id),
   topic_id: uuid("topic_id").references(() => topicsTable.id),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const completedSubtopicsTable = pgTable("completed_subtopics", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => usersTable.id),
+  user_id: text("user_id").references(() => users.id),
   subtopic_id: uuid("subtopic_id").references(() => subtopicsTable.id),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
@@ -57,7 +135,7 @@ export const exercisesTable = pgTable("exercises", {
   exercise_card_id: uuid("exercise_card_id")
     .references(() => exercisesCardsTable.id)
     .notNull(),
-  order_index: integer("order_index"), // Optional order within a topic
+  order_index: integer("order_index"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -66,12 +144,13 @@ export const exercisesCardsTable = pgTable("exercises_cards", {
   subtopic_id: uuid("subtopic_id").references(() => subtopicsTable.id),
   description: text("description").notNull(),
   difficulty: integer("difficulty").notNull(), // either 1, 2, 3
+  order_index: integer("order_index"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const completedExercisesTable = pgTable("completed_exercises", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => usersTable.id),
+  user_id: text("user_id").references(() => users.id),
   exercise_id: uuid("exercise_id").references(() => exercisesTable.id),
   is_correct: boolean("is_correct").notNull(),
   attempt: integer("attempt").notNull(),
@@ -82,7 +161,7 @@ export const completedExercisesCardsTable = pgTable(
   "completed_exercises_cards",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    user_id: text("user_id").references(() => usersTable.id),
+    user_id: text("user_id").references(() => users.id),
     exercise_card_id: uuid("exercise_card_id").references(
       () => exercisesCardsTable.id
     ),
@@ -92,14 +171,14 @@ export const completedExercisesCardsTable = pgTable(
 
 export const flaggedExercisesTable = pgTable("flagged_exercises", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => usersTable.id),
+  user_id: text("user_id").references(() => users.id),
   exercise_id: uuid("exercise_id").references(() => exercisesTable.id),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const flaggedExercisesCardsTable = pgTable("flagged_exercises_cards", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => usersTable.id),
+  user_id: text("user_id").references(() => users.id),
   exercise_card_id: uuid("exercise_card_id").references(
     () => exercisesCardsTable.id
   ),
@@ -120,6 +199,7 @@ export const simulationsCardsTable = pgTable("simulations_cards", {
   description: text("description").notNull(),
   year: integer("year").notNull(),
   subject: text("subject").notNull(),
+  order_index: integer("order_index"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -168,7 +248,7 @@ export const completedSimulationsTable = pgTable("completed_simulations", {
 
 export const flaggedSimulationsTable = pgTable("flagged_simulations", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => usersTable.id),
+  user_id: text("user_id").references(() => users.id),
   simulation_id: uuid("simulation_id").references(() => simulationsTable.id),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });

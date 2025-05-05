@@ -1,7 +1,3 @@
 export default function TutorPage() {
-    return(
-        <div>
-            <h1>Tutor</h1>
-        </div>
-    )
+  return <div className="h-[calc(100vh-60px)] -m-4 lg:-m-[60px]">Tutor</div>;
 }

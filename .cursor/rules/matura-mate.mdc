@@ -7,7 +7,7 @@ alwaysApply: true
 - NextJS 15 with Typescript
 - Tailwind CSS with shadcn/ui and Lucide for the icons
 - Neon Database and Drizzle as ORM
-- KindeAuth for the authentication
+- Auth.js for the authentication
 
 
 

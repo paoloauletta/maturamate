@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { navLinks } from "@/app/dashboard/layout";
+import { navLinks } from "@/app/dashboard/layout-client";
 import { cn } from "@/lib/utils";
 
 interface DashboardItemsProps {
@@ -27,16 +27,16 @@ export default function DashboardItems({
   // Function to check if a link should be active based on the current pathname
   const isLinkActive = (href: string): boolean => {
     // Special case for dashboard home
-    if (href === '/dashboard' && pathname === '/dashboard') {
+    if (href === "/dashboard" && pathname === "/dashboard") {
       return true;
     }
-    
+
     // For other routes, check if the pathname starts with the href
     // but make sure we don't match partial segments (e.g. /dashboard/teorica shouldn't match /dashboard/teori)
-    if (href !== '/dashboard') {
-      return pathname.startsWith(href + '/') || pathname === href;
+    if (href !== "/dashboard") {
+      return pathname.startsWith(href + "/") || pathname === href;
     }
-    
+
     return false;
   };
 

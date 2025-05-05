@@ -39,7 +39,7 @@ export default function ClientTheoryPage({
   };
 
   return (
-    <div className="container">
+    <div>
       <h1 className="text-3xl font-bold mb-8 text-center">Teoria</h1>
 
       <div className="flex flex-col md:flex-row gap-8">

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ExerciseCard from "@/app/components/exercises/ExerciseCard.client";
 import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
-import { BookOpen, Filter, ChevronRight } from "lucide-react";
+import { BookOpen, Filter, ChevronRight, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -352,8 +352,11 @@ export default function ExercisesTopicClient({
             href={`/dashboard/teoria/${currentTopic.id}`}
             className="hidden md:block"
           >
-            <Button className="flex items-center gap-2" variant="outline">
-              <BookOpen className="h-4 w-4" />
+            <Button
+              className="flex items-center gap-2 cursor-pointer"
+              variant="outline"
+            >
+              <Book className="h-4 w-4" />
               Studia la Teoria
             </Button>
           </Link>

@@ -8,11 +8,6 @@ const funnelDisplay = Funnel_Display({
   subsets: ["latin"],
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "MaturaMate",
   description:
@@ -26,9 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${funnelDisplay.className} ${dmSans.className} antialiased`}
-      >
+      <body className={`${funnelDisplay.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

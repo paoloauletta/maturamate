@@ -29,7 +29,7 @@ export default async function TheoryPage() {
     // If no topics exist, create a placeholder message
     return (
       <Suspense fallback={<LoadingSpinner text="Caricamento teoria..." />}>
-        <div className="container text-center">
+        <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Teoria</h1>
           <p className="text-muted-foreground">
             Non ci sono ancora argomenti disponibili.

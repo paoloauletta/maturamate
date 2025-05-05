@@ -66,7 +66,7 @@ export default async function Exercises() {
   // If no topics are available,a message
   return (
     <Suspense fallback={<LoadingSpinner text="Caricamento esercizi..." />}>
-      <div className="container">
+      <div>
         <h1 className="text-4xl font-bold text-left mb-8 border-b pb-4 border-border">
           Esercizi
         </h1>

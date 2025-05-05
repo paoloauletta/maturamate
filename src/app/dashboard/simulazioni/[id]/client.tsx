@@ -13,13 +13,28 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Clock,
-  AlertTriangle,
   CheckCircle,
   FileText,
   Minimize2,
+  Maximize,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Simulation {
   id: string;
@@ -51,10 +66,21 @@ export default function SimulationClient({
 }: SimulationClientProps) {
   const router = useRouter();
   const [showConfirmation, setShowConfirmation] = useState(!hasStarted);
-  const [numPages, setNumPages] = useState<number | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+
+  // PDF.js state
+  const [pageNum, setPageNum] = useState(1);
+  const [numPages, setNumPages] = useState(0);
+  const [scale, setScale] = useState(1.5);
+  const [rotation, setRotation] = useState(0);
+
+  // PDF.js refs
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pdfDocRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const renderTaskRef = useRef<any>(null);
 
   // Calculate initial time remaining based on start time
   const calculateInitialTimeRemaining = () => {
@@ -225,29 +251,260 @@ export default function SimulationClient({
     }
   };
 
-  // Toggle fullscreen mode
-  const toggleFullscreen = () => {
-    setFullscreen(!fullscreen);
-  };
+  // Function to get proxy URL for PDFs
+  const getProxyUrl = (originalUrl: string) => {
+    // For local PDFs (those hosted on our server), use them directly
+    if (typeof window === "undefined") return originalUrl;
 
-  // Apply fixes when entering/exiting fullscreen
-  useEffect(() => {
-    if (fullscreen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+    if (
+      originalUrl.startsWith("/") ||
+      originalUrl.startsWith(window.location.origin)
+    ) {
+      return originalUrl;
     }
-  }, [fullscreen]);
 
-  // Handle iframe load event
-  const handleIframeLoad = () => {
-    setIsLoading(false);
+    // For external PDFs, use our proxy
+    return `/api/pdf-proxy?url=${encodeURIComponent(originalUrl)}`;
   };
+
+  // Function to render PDF page
+  const renderPage = async (num: number) => {
+    if (!pdfDocRef.current) return;
+
+    setIsLoading(true);
+
+    try {
+      // Cancel any ongoing render task
+      if (renderTaskRef.current) {
+        try {
+          await renderTaskRef.current.cancel();
+        } catch (e) {
+          console.log("Error cancelling previous render task:", e);
+        }
+        renderTaskRef.current = null;
+      }
+
+      const page = await pdfDocRef.current.getPage(num);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      // Clear previous content
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      const viewport = page.getViewport({ scale, rotation: rotation });
+
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport,
+      };
+
+      // Store the render task to be able to cancel it if needed
+      const renderTask = page.render(renderContext);
+      renderTaskRef.current = renderTask;
+
+      await renderTask.promise;
+      renderTaskRef.current = null;
+      setIsLoading(false);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("cancelled")) {
+        console.log("Rendering was cancelled");
+      } else if (
+        error instanceof Error &&
+        error.message.includes("Transport destroyed")
+      ) {
+        console.log("Transport destroyed - PDF document may have been closed");
+      } else {
+        console.error("Error rendering page:", error);
+      }
+      setIsLoading(false);
+    }
+  };
+
+  // Load the PDF document
+  useEffect(() => {
+    let isComponentMounted = true;
+
+    if (!simulation.pdf_url) return;
+
+    setIsLoading(true);
+    setPageNum(1);
+
+    // Clean up previous resources
+    const cleanup = () => {
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel();
+        } catch (e) {
+          console.log("Error cancelling render task during cleanup:", e);
+        }
+        renderTaskRef.current = null;
+      }
+
+      if (pdfDocRef.current) {
+        try {
+          pdfDocRef.current.destroy();
+        } catch (e) {
+          console.log("Error destroying PDF document during cleanup:", e);
+        }
+        pdfDocRef.current = null;
+      }
+    };
+
+    // Clean up previous instance
+    cleanup();
+
+    const loadPDF = async () => {
+      try {
+        // Dynamically import PDF.js
+        const pdfjsLib = await import("pdfjs-dist");
+
+        // Set up the worker using the file we copied to the public directory
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+
+        // Get the document using our proxy for external URLs
+        const proxyUrl = getProxyUrl(simulation.pdf_url);
+
+        // Create loading task with better error handling
+        const loadingTask = pdfjsLib.getDocument(proxyUrl);
+        loadingTask.onPassword = (
+          updatePassword: (password: string) => void,
+          reason: number
+        ) => {
+          console.log("Password required for PDF:", reason);
+          // You could implement a password prompt here
+          return Promise.resolve();
+        };
+
+        // Await the document with a timeout
+        const pdfDoc = (await Promise.race([
+          loadingTask.promise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("PDF loading timeout")), 30000)
+          ),
+        ])) as any; // Type assertion to handle the PDF document
+
+        // Check if component is still mounted before updating state
+        if (!isComponentMounted) {
+          pdfDoc.destroy();
+          return;
+        }
+
+        // Store the PDF document reference
+        pdfDocRef.current = pdfDoc;
+        setNumPages(pdfDoc.numPages);
+
+        // Render the first page
+        await renderPage(1);
+      } catch (error) {
+        console.error("Error loading PDF:", error);
+        setIsLoading(false);
+      }
+    };
+
+    loadPDF();
+
+    // Cleanup function
+    return () => {
+      isComponentMounted = false;
+      cleanup();
+    };
+  }, [simulation.pdf_url]);
+
+  // Re-render the page when scale or rotation changes
+  useEffect(() => {
+    if (pdfDocRef.current) {
+      renderPage(pageNum);
+    }
+  }, [scale, rotation]);
+
+  // Navigation functions
+  const goToPreviousPage = () => {
+    if (pageNum <= 1) return;
+    setPageNum((prev) => {
+      const newPage = prev - 1;
+      renderPage(newPage);
+      return newPage;
+    });
+  };
+
+  const goToNextPage = () => {
+    if (pageNum >= numPages) return;
+    setPageNum((prev) => {
+      const newPage = prev + 1;
+      renderPage(newPage);
+      return newPage;
+    });
+  };
+
+  // Zoom functions
+  const zoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.25, 3));
+  };
+
+  const zoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.25, 0.5));
+  };
+
+  // Rotation function
+  const rotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
+  // Toggle fullscreen mode for the PDF canvas
+  const toggleFullscreen = () => {
+    if (containerRef.current) {
+      if (!fullscreen) {
+        if (containerRef.current.requestFullscreen) {
+          containerRef.current.requestFullscreen();
+          setFullscreen(true);
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+          setFullscreen(false);
+        }
+      }
+    }
+  };
+
+  // Handle fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
 
   // If the user has completed this simulation, show solutions page
   if (isCompleted) {
     return (
-      <div className="container py-8">
+      <div className="py-8">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -294,43 +551,78 @@ export default function SimulationClient({
   // Show confirmation page before starting the simulation
   if (showConfirmation) {
     return (
-      <div className="container py-8">
-        <Card className="max-w-2xl mx-auto">
+      <div className="py-8 px-4 flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <Card className="max-w-2xl w-full border-border/30">
           <CardHeader>
-            <CardTitle>Sei pronto per iniziare la simulazione?</CardTitle>
-            <CardDescription>
-              {simulation.title} - {simulation.subject}, {simulation.year}
-            </CardDescription>
+            <CardTitle className="text-2xl">
+              Sei pronto per iniziare la simulazione?
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p>{simulation.description}</p>
+          <CardContent className="pb-6 space-y-6">
+            {/* Main simulation information */}
+            <div>
+              <h2 className="text-lg font-medium mb-1">{simulation.title}</h2>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <span>{simulation.subject}</span>
+                <div className="w-1 h-1 rounded-full bg-muted-foreground/40 mx-2" />
+                <span>{simulation.year}</span>
+              </div>
+            </div>
 
-              <div className="flex items-center text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                <p>
-                  Una volta iniziata, avrai{" "}
-                  <strong>
-                    {getHumanReadableDuration(simulation.time_in_min)}
-                  </strong>{" "}
-                  per completare la simulazione. Il timer inizierà
-                  immediatamente.
+            {/* Duration information */}
+            <div className="flex items-center text-muted-foreground border border-border/30 rounded-md p-3 bg-muted/20">
+              <Clock className="h-5 w-5 mr-3 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-foreground">
+                  Durata: {getHumanReadableDuration(simulation.time_in_min)}
+                </p>
+                <p className="text-sm">
+                  Avrai questo tempo per completare tutti gli esercizi.
                 </p>
               </div>
-
-              <div className="flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  Durata: {getHumanReadableDuration(simulation.time_in_min)}
+            </div>
+            {/* Mobile disclaimer */}
+            <div className="md:hidden flex items-start bg-blue-50 border border-blue-200 text-blue-700 rounded-md p-4 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-3 flex-shrink-0 mt-0.5"
+              >
+                <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+                <path d="M12 18h.01" />
+              </svg>
+              <div>
+                <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
+                  Consiglio
+                </p>
+                <p>
+                  È consigliato svolgere le simulazioni da desktop o tablet per
+                  una migliore esperienza.
                 </p>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Link href="/dashboard/simulazioni">
-              <Button variant="outline">Torna alle simulazioni</Button>
+          <CardFooter className="border-t border-border/30 pt-4 flex flex-col sm:flex-row gap-3 sm:justify-between">
+            <Link href="/dashboard/simulazioni" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto cursor-pointer"
+              >
+                Torna alle simulazioni
+              </Button>
             </Link>
-            <Button onClick={handleStartSimulation}>Inizia Simulazione</Button>
+            <Button
+              onClick={handleStartSimulation}
+              className="bg-primary hover:bg-primary/90 w-full sm:w-auto cursor-pointer text-white"
+            >
+              Inizia Simulazione
+            </Button>
           </CardFooter>
         </Card>
       </div>
@@ -341,80 +633,182 @@ export default function SimulationClient({
   return (
     <div
       className={
-        fullscreen ? "fixed inset-0 z-50 bg-background" : "container py-4"
+        fullscreen
+          ? "fixed inset-0 z-50 bg-background"
+          : "min-h-screen flex flex-col"
       }
     >
-      <div className="bg-background py-2 border-b mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{simulation.title}</h1>
-        <div className="flex items-center gap-4">
+      <AlertDialog
+        open={showCompleteDialog}
+        onOpenChange={setShowCompleteDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Sei sicuro di voler terminare la simulazione?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata e la simulazione verrà
+              considerata completata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCompleteSimulation}>
+              Conferma
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="bg-background sticky top-0 py-3 px-4 border-b z-10 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div className="flex items-center">
+          <h1 className="text-xl font-medium">{simulation.title}</h1>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <div
-            className={`flex items-center gap-2 font-mono text-lg ${
-              timeRemaining < 300 ? "text-red-500" : ""
-            }`}
+            className={`flex items-center justify-center rounded-md border ${
+              timeRemaining < 300
+                ? "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+                : "border-border/30 bg-muted/20"
+            } px-3 py-1.5`}
           >
-            <Clock className="h-5 w-5" />
-            {formatTime(timeRemaining)}
+            <Clock
+              className={`h-4 w-4 mr-2 ${
+                timeRemaining < 300 ? "text-red-500" : ""
+              }`}
+            />
+            <span
+              className={`font-mono text-base ${
+                timeRemaining < 300 ? "text-red-500 font-bold" : ""
+              }`}
+            >
+              {formatTime(timeRemaining)}
+            </span>
           </div>
 
-          {fullscreen ? (
+          <div className="flex gap-2 flex-1 sm:flex-initial justify-end">
             <Button
-              variant="outline"
-              onClick={toggleFullscreen}
-              className="ml-2"
+              onClick={() => setShowCompleteDialog(true)}
+              className="bg-primary hover:bg-primary/90"
+              size="sm"
             >
-              <Minimize2 className="h-4 w-4 mr-1" />
-              Esci
-            </Button>
-          ) : (
-            <Button onClick={handleCompleteSimulation}>
               Termina Simulazione
             </Button>
-          )}
-        </div>
-      </div>
-
-      <div style={{ width: "100%", height: "calc(100vh - 180px)" }}>
-        {/* Simple iframe with minimal styling */}
-        <iframe
-          ref={iframeRef}
-          src={`${simulation.pdf_url}#toolbar=0&navpanes=0&view=FitH`}
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "none",
-            background: "#f5f5f5",
-          }}
-          title={simulation.title}
-          onLoad={handleIframeLoad}
-        />
-        {isLoading && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              background: "rgba(255,255,255,0.8)",
-              padding: "20px",
-              borderRadius: "5px",
-              textAlign: "center",
-            }}
-          >
-            <Progress className="w-60 mb-2" value={45} />
-            <p className="text-muted-foreground">Caricamento PDF...</p>
           </div>
-        )}
+        </div>
       </div>
 
-      {fullscreen && (
-        <div className="p-2 w-full bg-background border-t flex justify-between items-center">
-          <div></div>
-          <Button onClick={handleCompleteSimulation} className="mx-auto">
-            Termina Simulazione
-          </Button>
-          <div></div>
+      <div
+        className={`flex-1 w-full relative ${
+          fullscreen ? "h-[calc(100vh-112px)]" : "h-[calc(100vh-180px)]"
+        }`}
+      >
+        <div className="absolute inset-0 py-4  sm:p-6 flex flex-col">
+          <div className="flex-1 bg-white dark:bg-slate-900 rounded-lg shadow-sm overflow-hidden border border-border/30 flex flex-col">
+            {/* PDF.js Canvas Renderer */}
+            <div
+              ref={containerRef}
+              className="flex-1 w-full h-full relative overflow-auto"
+            >
+              <div className="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between items-center">
+                {/* Page navigation controls */}
+                <div className="bg-background/90 rounded-full px-3 py-1 shadow-md">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={goToPreviousPage}
+                      disabled={pageNum <= 1}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm">
+                      {pageNum} / {numPages}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={goToNextPage}
+                      disabled={pageNum >= numPages}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* PDF controls */}
+                <div className="bg-background/90 rounded-lg p-1 shadow-md flex">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={zoomOut}
+                    title="Zoom Out"
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={zoomIn}
+                    title="Zoom In"
+                    className="h-8 w-8 p-0"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={rotate}
+                    title="Rotate"
+                    className="h-8 w-8 p-0"
+                  >
+                    <RotateCw className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleFullscreen}
+                    title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                    className="h-8 w-8 p-0"
+                  >
+                    {fullscreen ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex justify-center items-center min-h-[100%]">
+                <canvas
+                  ref={canvasRef}
+                  style={{
+                    margin: "0 auto",
+                    display: "block",
+                    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+                  }}
+                />
+              </div>
+
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                  <div className="flex flex-col items-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                    <p className="mt-4 text-muted-foreground">
+                      Caricamento PDF...
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

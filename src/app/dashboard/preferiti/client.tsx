@@ -797,7 +797,7 @@ export function FavoritesList() {
   };
 
   return (
-    <div className="container max-w-full px-4 md:px-6">
+    <div className=" max-w-full px-4 md:px-6">
       <div className="flex justify-between items-center mb-8 border-b pb-4 border-border">
         <h1 className="text-4xl font-bold">Preferiti</h1>
       </div>

@@ -13,6 +13,7 @@ import {
   Star,
   CircleDot,
   BookOpen,
+  Rows3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -128,19 +129,11 @@ export default function ClientSimulationsPage({
   };
 
   return (
-    <div className="container">
-      <div className="flex justify-between items-center mb-8 border-b pb-4 border-border">
-        <h1 className="text-4xl font-bold">Simulazioni</h1>
-
-        <div className="flex items-center gap-4">
-          {/* Subject filter dropdown - to be implemented */}
-          <div className="text-sm text-muted-foreground">
-            {subjectFilter === "all"
-              ? "Tutte le materie"
-              : `Materia: ${subjectFilter}`}
-          </div>
-        </div>
-      </div>
+    // DO NOT CHANGE FROM HERE
+    <div className="">
+      <h1 className="text-4xl font-bold text-left mb-8 border-b pb-4 border-border">
+        Simulazioni
+      </h1>
 
       {sortedYears.length > 0 ? (
         sortedYears.map((year) => {
@@ -153,118 +146,186 @@ export default function ClientSimulationsPage({
 
           return (
             <div key={year} className="mb-12">
-              <h2 className="text-2xl font-bold mb-6 text-primary">
+              <h1 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
                 Simulazioni {year}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredCards.map((card) => (
-                  <Card key={card.id} className="h-full">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <CardTitle>{card.title}</CardTitle>
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <School className="h-4 w-4 mr-1" />
-                        {card.subject}
-                        <span className="mx-2">•</span>
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {card.year}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {card.description.length > 120
-                          ? `${card.description.substring(0, 120)}...`
-                          : card.description}
-                      </p>
+              </h1>
 
-                      <div className="space-y-3 mt-4">
-                        {/* List each simulation type for this card */}
-                        {card.simulations.map((simulation) => {
-                          let simulationType = "Simulazione Completa";
-                          let icon = <BookOpen className="h-4 w-4 mr-2" />;
-
-                          if (
-                            simulation.title.toLowerCase().includes("problem")
-                          ) {
-                            simulationType = "Solo Problemi";
-                            icon = <CircleDot className="h-4 w-4 mr-2" />;
-                          } else if (
-                            simulation.title.toLowerCase().includes("quesit")
-                          ) {
-                            simulationType = "Solo Quesiti";
-                            icon = <CircleDot className="h-4 w-4 mr-2" />;
-                          }
-
-                          return (
-                            <div
-                              key={simulation.id}
-                              className="border rounded-md p-3 hover:bg-muted/50 transition-colors"
+              {/* TILL HERE, FROM HERE ON YOU CAN CHANGE THE CODE */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filteredCards.map((card) => {
+                  const [isExpanded, setIsExpanded] = useState(false);
+                  return (
+                    <Card
+                      key={card.id}
+                      className="border border-border/80 dark:border-border bg-background"
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-xl">
+                            {card.title}
+                          </CardTitle>
+                          <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            aria-label={
+                              isExpanded
+                                ? "Nascondi simulazioni"
+                                : "Mostra simulazioni"
+                            }
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`transition-transform duration-200 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
                             >
-                              <div className="flex justify-between items-center mb-2">
-                                <div className="flex items-center">
-                                  {icon}
-                                  <span className="font-medium">
-                                    {simulationType}
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={(e) =>
-                                    toggleFavorite(simulation.id, e)
-                                  }
-                                  className="focus:outline-none ml-2"
-                                  aria-label={
-                                    simulation.is_flagged
-                                      ? "Rimuovi dai preferiti"
-                                      : "Aggiungi ai preferiti"
-                                  }
-                                >
-                                  <Star
-                                    className={cn(
-                                      "h-5 w-5 transition-colors",
-                                      simulation.is_flagged
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-muted-foreground hover:text-yellow-400"
-                                    )}
-                                  />
-                                </button>
-                              </div>
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground mt-2">
+                          <div className="flex items-center">
+                            <School className="h-4 w-4 mr-1.5" />
+                            <span>{card.subject}</span>
+                          </div>
+                          <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1.5" />
+                            <span>{card.year}</span>
+                          </div>
+                          <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                          <div className="flex items-center">
+                            <Rows3 className="h-4 w-4 mr-1.5" />
+                            <span>{card.simulations.length} simulazioni</span>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0 pb-3">
+                        <p className="text-sm text-muted-foreground">
+                          {card.description.length > 120
+                            ? `${card.description.substring(0, 120)}...`
+                            : card.description}
+                        </p>
+                      </CardContent>
 
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  {formatTimeInHours(simulation.time_in_min)}
+                      {isExpanded && (
+                        <div className="px-6 pb-4 space-y-2">
+                          {card.simulations.map((simulation) => {
+                            let simulationType = "Simulazione Completa";
 
-                                  {simulation.is_completed && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="ml-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            if (
+                              simulation.title.toLowerCase().includes("problem")
+                            ) {
+                              simulationType = "Solo Problemi";
+                            } else if (
+                              simulation.title.toLowerCase().includes("quesit")
+                            ) {
+                              simulationType = "Solo Quesiti";
+                            }
+
+                            return (
+                              <div
+                                key={simulation.id}
+                                className="py-3 first:pt-4 border-b border-border/30 last:border-b-0"
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="text-sm font-medium">
+                                      <span>{simulationType}</span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1.5">
+                                      <div className="flex items-center">
+                                        <Clock className="h-3.5 w-3.5 mr-1" />
+                                        <span>
+                                          {formatTimeInHours(
+                                            simulation.time_in_min
+                                          )}
+                                        </span>
+                                      </div>
+
+                                      {simulation.is_completed && (
+                                        <div className="flex items-center text-green-600 dark:text-green-400">
+                                          <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                                          <span>Completata</span>
+                                        </div>
+                                      )}
+
+                                      {simulation.is_started &&
+                                        !simulation.is_completed && (
+                                          <div className="flex items-center text-blue-600 dark:text-blue-400">
+                                            <Clock className="h-3.5 w-3.5 mr-1" />
+                                            <span>In corso</span>
+                                          </div>
+                                        )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleFavorite(simulation.id, e);
+                                      }}
+                                      className="focus:outline-none text-muted-foreground"
+                                      aria-label={
+                                        simulation.is_flagged
+                                          ? "Rimuovi dai preferiti"
+                                          : "Aggiungi ai preferiti"
+                                      }
                                     >
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Completata
-                                    </Badge>
-                                  )}
-                                </div>
+                                      <Star
+                                        className={cn(
+                                          "h-5 w-5 transition-colors",
+                                          simulation.is_flagged
+                                            ? "fill-yellow-400 text-yellow-400"
+                                            : "hover:text-yellow-400"
+                                        )}
+                                      />
+                                    </button>
 
-                                <Link
-                                  href={`/dashboard/simulazioni/${simulation.id}`}
-                                >
-                                  <Button variant="outline" size="sm">
-                                    {simulation.is_completed
-                                      ? "Rivedi"
-                                      : simulation.is_started
-                                      ? "Continua"
-                                      : "Inizia"}
-                                  </Button>
-                                </Link>
+                                    <Link
+                                      href={`/dashboard/simulazioni/${simulation.id}`}
+                                    >
+                                      <Button
+                                        variant={
+                                          simulation.is_completed ||
+                                          !simulation.is_started
+                                            ? "outline"
+                                            : "default"
+                                        }
+                                        size="sm"
+                                        className={cn(
+                                          simulation.is_completed
+                                            ? "border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400"
+                                            : simulation.is_started
+                                            ? "bg-blue-600 hover:bg-blue-700"
+                                            : ""
+                                        )}
+                                      >
+                                        {simulation.is_completed
+                                          ? "Rivedi"
+                                          : simulation.is_started
+                                          ? "Continua"
+                                          : "Inizia"}
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                            );
+                          })}
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           );

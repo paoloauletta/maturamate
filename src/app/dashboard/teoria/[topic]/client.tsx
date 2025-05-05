@@ -5,13 +5,7 @@ import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useRouter } from "next/navigation";
 import MarkdownRenderer from "@/app/components/renderer/markdownRenderer";
 import Link from "next/link";
-import {
-  BookOpen,
-  ChevronRight,
-  Dumbbell,
-  Check,
-  CheckCircle,
-} from "lucide-react";
+import { BookOpen, ChevronRight, Check, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ExerciseCard from "@/app/components/exercises/ExerciseCard";
 import { toast } from "sonner";
@@ -310,7 +304,7 @@ export default function TopicClient({
   }
 
   return (
-    <div className="container">
+    <div>
       {/* Mobile Topic Menu - Show above topic name on mobile */}
       <div className="block md:hidden mb-4">
         <TopicsSidebar
@@ -346,8 +340,11 @@ export default function TopicClient({
           href={`/dashboard/esercizi/${currentTopic.id}`}
           className="hidden md:block"
         >
-          <Button className="flex items-center gap-2" variant="outline">
-            <Dumbbell className="h-4 w-4" />
+          <Button
+            className="flex items-center gap-2 cursor-pointer"
+            variant="outline"
+          >
+            <BookOpen className="h-4 w-4" />
             Esercitati su questo argomento
           </Button>
         </Link>
@@ -412,7 +409,13 @@ export default function TopicClient({
                       {/* Mark Subtopic as Completed Button */}
                       <div className="flex justify-end mt-8">
                         <Button
-                          variant="outline"
+                          variant={
+                            completionStatus.completedSubtopicIds.includes(
+                              subtopic.id
+                            )
+                              ? "outline"
+                              : "default"
+                          }
                           size="sm"
                           onClick={() => markSubtopicAsCompleted(subtopic.id)}
                           disabled={
@@ -439,10 +442,10 @@ export default function TopicClient({
                               Completato
                             </>
                           ) : (
-                            <>
+                            <div className="flex gap-1 items-center cursor-pointer">
                               <Check className="h-4 w-4 mr-1" />
                               Segna come completato
-                            </>
+                            </div>
                           )}
                         </Button>
                       </div>

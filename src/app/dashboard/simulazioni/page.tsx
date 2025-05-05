@@ -7,7 +7,6 @@ import {
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import ClientSimulationsPage from "./client-page";
 import { cache } from "react";
 import { PageLoading } from "@/app/components/loading/page-loading.server";

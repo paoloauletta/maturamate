@@ -1,13 +1,14 @@
 "use client";
 
-import { LoadingSpinner } from "./loading-spinner";
+import { LoadingSpinner } from "./loading-spinner-client";
 
-interface DataLoadingProps<T> {
+export interface DataLoadingProps<T> {
   data: T | null | undefined;
   isLoading: boolean;
   error?: Error | null;
   loadingText?: string;
   errorText?: string;
+  emptyMessage?: string;
   children: (data: T) => React.ReactNode;
 }
 
@@ -21,6 +22,7 @@ export function DataLoading<T>({
   error,
   loadingText = "Caricamento dati...",
   errorText = "Si è verificato un errore durante il caricamento dei dati.",
+  emptyMessage = "Nessun dato disponibile.",
   children,
 }: DataLoadingProps<T>) {
   if (isLoading) {
@@ -36,10 +38,10 @@ export function DataLoading<T>({
     );
   }
 
-  if (!data) {
+  if (!data || (Array.isArray(data) && data.length === 0)) {
     return (
       <div className="w-full py-12 text-center">
-        <p className="text-muted-foreground">Nessun dato disponibile.</p>
+        <p className="text-muted-foreground">{emptyMessage}</p>
       </div>
     );
   }

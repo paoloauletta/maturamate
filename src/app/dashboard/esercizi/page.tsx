@@ -14,7 +14,7 @@ import { getTopics } from "@/utils/cache";
 import { Suspense } from "react";
 import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 import { getExercisesData } from "./exercises-data-server";
-import { ExercisesResponsiveLoadingSkeleton } from "@/app/components/dashboard/exercises-responsive-loading-server";
+import { ExercisesSkeleton } from "@/components/loading";
 
 // Define interfaces for your data structure
 interface ExerciseCard {
@@ -50,7 +50,7 @@ export const revalidate = 3600;
 
 export default function ExercisesPage() {
   return (
-    <Suspense fallback={<ExercisesResponsiveLoadingSkeleton />}>
+    <Suspense fallback={<ExercisesSkeleton />}>
       <ExercisesContent />
     </Suspense>
   );

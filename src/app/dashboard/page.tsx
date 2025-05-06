@@ -1,46 +1,65 @@
 import { Suspense } from "react";
-import { getDashboardData } from "./dashboard-data-server";
-import { DashboardStats } from "@/app/components/dashboard/dashboard-stats-client";
-import { DashboardActions } from "@/app/components/dashboard/action-buttons-client";
-import { FlaggedExercises } from "@/app/components/dashboard/flagged-exercises-client";
-import { PageLoadingSkeleton } from "@/app/components/dashboard/page-loading-server";
+import { getDashboardData } from "@/app/dashboard/data/dashboard-data-server";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats-client";
+import { DashboardActions } from "@/components/dashboard/action-buttons-client";
+import { FlaggedExercises } from "@/components/dashboard/flagged-exercises-client";
+import { DashboardSkeleton } from "@/components/loading";
+
+// Force dynamic rendering for this route
+export const dynamic = "force-dynamic";
 
 export default async function DashboardIndexPage() {
   return (
-    <Suspense fallback={<PageLoadingSkeleton />}>
+    <Suspense fallback={<DashboardSkeleton />}>
       <DashboardContent />
     </Suspense>
   );
 }
 
 async function DashboardContent() {
-  const dashboardData = await getDashboardData();
-  const { userData, completionData, randomQuote, continueUrl } = dashboardData;
+  try {
+    const dashboardData = await getDashboardData();
+    const { userData, completionData, randomQuote, continueUrl } =
+      dashboardData;
 
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Welcome Header */}
-      <section className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Ciao, {userData.name}!
-        </h1>
-        <p className="text-muted-foreground">{randomQuote}</p>
-        <div className="flex items-center text-amber-500 font-semibold mt-2">
-          <span>Mancano {userData.daysToExam} giorni alla maturità!</span>
-        </div>
-      </section>
+    // Extract flagged exercises items with proper fallback
+    const flaggedItems = userData.flaggedExercises || [];
 
-      {/* Stats Cards - Client Component */}
-      <DashboardStats data={dashboardData} />
+    return (
+      <div className="flex flex-col gap-6">
+        {/* Welcome Header */}
+        <section className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Ciao, {userData.name}!
+          </h1>
+          <p className="text-muted-foreground">{randomQuote}</p>
+          <div className="flex items-center text-amber-500 font-semibold mt-2">
+            <span>Mancano {userData.daysToExam} giorni alla maturità!</span>
+          </div>
+        </section>
 
-      {/* Action Cards - Client Component */}
-      <DashboardActions
-        continueUrl={continueUrl}
-        weakestTopic={userData.weakestTopic}
-      />
+        {/* Stats Cards - Client Component */}
+        <DashboardStats data={dashboardData} />
 
-      {/* Flagged Exercises - Client Component */}
-      <FlaggedExercises flaggedExercises={userData.flaggedExercises} />
-    </div>
-  );
+        {/* Action Cards - Client Component */}
+        <DashboardActions
+          continueUrl={continueUrl}
+          weakestTopic={userData.weakestTopic}
+        />
+
+        {/* Flagged Exercises - Client Component */}
+        <FlaggedExercises flaggedExercises={flaggedItems} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Error rendering dashboard:", error);
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Si è verificato un errore durante il caricamento della dashboard.
+        </p>
+      </div>
+    );
+  }
 }

@@ -18,12 +18,49 @@ import ExerciseCard from "@/app/components/exercises/ExerciseCard";
 import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import {
-  TopicType,
-  TopicGroup,
-  SubtopicGroup,
-  ExerciseCard as ExerciseCardType,
-} from "./exercises-data-server";
+
+// Define subtopic interface to match TopicsSidebar
+interface SubtopicType {
+  id: string;
+  name: string;
+  order_index: number | null;
+}
+
+// Define topic interface to match TopicsSidebar
+interface TopicType {
+  id: string;
+  name: string;
+  order_index: number | null;
+  subtopics: SubtopicType[];
+}
+
+interface ExerciseCardType {
+  id: string;
+  subtopic_id: string | null;
+  subtopic_name: string | null;
+  topic_name: string | null;
+  topic_id: string | null;
+  description: string;
+  difficulty: number;
+  created_at: Date;
+  topic_order: number | null;
+  subtopic_order: number | null;
+  is_completed: boolean;
+  total_exercises: number;
+  score?: number; // Optional score property
+}
+
+interface SubtopicGroup {
+  subtopic_name: string;
+  subtopic_order: number | null;
+  exercise_cards: ExerciseCardType[];
+}
+
+interface TopicGroup {
+  topic_name: string;
+  topic_order: number | null;
+  subtopics: Record<string, SubtopicGroup>;
+}
 
 interface ClientExercisesPageProps {
   topicsWithSubtopics: TopicType[];

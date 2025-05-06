@@ -11,7 +11,7 @@ import {
   exercisesTable,
   completedExercisesTable,
 } from "@/db/schema";
-import { ExercisesResponsiveLoadingSkeleton } from "@/app/components/dashboard/exercises-responsive-loading-server";
+import { ExercisesSkeleton } from "@/components/loading";
 
 // Set revalidation period - revalidate every hour
 export const revalidate = 3600;
@@ -67,24 +67,10 @@ export interface ExerciseTopicClientProps {
 // Using the `any` type to bypass the specific Next.js constraint
 // This is a last resort solution when type errors persist
 export default async function ExercisesTopicPage(props: any) {
-  // Extract the params and searchParams safely
+  // Properly await the params
   const params = await props.params;
   const searchParams = await props.searchParams;
 
-  return (
-    <Suspense fallback={<ExercisesResponsiveLoadingSkeleton />}>
-      <TopicContent params={params} searchParams={searchParams} />
-    </Suspense>
-  );
-}
-
-async function TopicContent({
-  params,
-  searchParams,
-}: {
-  params: { topic: string };
-  searchParams?: { subtopic?: string };
-}) {
   const topicId = params.topic;
   const subtopicId = searchParams?.subtopic;
 

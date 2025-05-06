@@ -12,7 +12,7 @@ type FlaggedExercise = {
 };
 
 interface FlaggedExercisesProps {
-  flaggedExercises: FlaggedExercise[];
+  flaggedExercises: FlaggedExercise[] | undefined | null;
 }
 
 export function FlaggedExercises({ flaggedExercises }: FlaggedExercisesProps) {
@@ -27,6 +27,9 @@ export function FlaggedExercises({ flaggedExercises }: FlaggedExercisesProps) {
     return null;
   }
 
+  // Safe check for flaggedExercises
+  const exercises = Array.isArray(flaggedExercises) ? flaggedExercises : [];
+
   return (
     <Card className="mt-6">
       <CardHeader className="pb-3">
@@ -36,9 +39,9 @@ export function FlaggedExercises({ flaggedExercises }: FlaggedExercisesProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {flaggedExercises.length > 0 ? (
+        {exercises.length > 0 ? (
           <ul className="space-y-2">
-            {flaggedExercises.map((exercise) => (
+            {exercises.map((exercise) => (
               <li key={exercise.id} className="border-b pb-2 last:border-0">
                 <Link
                   href={exercise.path}

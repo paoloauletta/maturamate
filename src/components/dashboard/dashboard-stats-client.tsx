@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { type DashboardData } from "@/app/dashboard/dashboard-data-server";
 import { useState, useEffect } from "react";
 
 interface StatCardProps {
@@ -42,8 +41,28 @@ export function StatCard({ title, value, progress, subtitle }: StatCardProps) {
   );
 }
 
+// Define a more flexible interface that works with both data formats
 interface DashboardStatsProps {
-  data: DashboardData;
+  data: {
+    userData: {
+      name: string;
+      overallProgress: number;
+      uniqueCompletedExercises: number;
+      totalAvailableExercises: number;
+      totalExercises: number;
+      correctExercises: number;
+      incorrectExercises: number;
+      simulationsCompleted: number;
+      [key: string]: any;
+    };
+    completionData: {
+      topicsCompletionPercentage: number;
+      completedTopics: number;
+      totalTopics: number;
+      [key: string]: any;
+    };
+    [key: string]: any;
+  };
 }
 
 export function DashboardStats({ data }: DashboardStatsProps) {

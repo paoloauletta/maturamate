@@ -248,7 +248,7 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
                         errori
                       </p>
                       <Badge variant="outline" className="text-xs">
-                        {subtopic.topic}
+                        {subtopic.subtopic.split(" ")[0]}
                       </Badge>
                     </div>
                     <div className="flex gap-2 mt-2">

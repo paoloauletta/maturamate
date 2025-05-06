@@ -326,11 +326,8 @@ export default function TopicClient({
         />
       </div>
 
-      <div className="flex justify-between items-center mb-8 border-b pb-4 border-border">
+      <div className="flex justify-between items-center lg:mt-0 lg:mb-8 lg:pb-4 border-b border-border mt-12 mb-6 pb-2">
         <h1 className="text-4xl font-bold text-left">
-          {currentTopic.order_index !== null
-            ? `${currentTopic.order_index}. `
-            : ""}
           {currentTopic.name}
           {completionStatus.completedTopicIds.includes(currentTopic.id) && (
             <CheckCircle className="inline-block ml-2 h-6 w-6 text-green-500" />
@@ -368,12 +365,11 @@ export default function TopicClient({
                   <div className="my-10 border-t border-gray-200 dark:border-gray-800" />
                 )}
 
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-6 border-b border-muted pb-2">
+                <div>
+                  <div className="flex items-center justify-between border-b border-muted pb-2">
                     <h2 className="text-3xl font-semibold text-foreground/95">
-                      {currentTopic.order_index !== null &&
-                      subtopic.order_index !== null
-                        ? `${currentTopic.order_index}.${subtopic.order_index} `
+                      {subtopic.order_index !== null
+                        ? `${subtopic.order_index}. `
                         : ""}
                       {subtopic.name}
                       {completionStatus.completedSubtopicIds.includes(
@@ -385,7 +381,7 @@ export default function TopicClient({
                   </div>
 
                   {subtopic.theory.length > 0 ? (
-                    <div className="space-y-10">
+                    <div className="mt-6">
                       {subtopic.theory.map((theory) => (
                         <div key={theory.id} className="space-y-4">
                           <div className="prose max-w-none dark:prose-invert">
@@ -407,7 +403,7 @@ export default function TopicClient({
                       ))}
 
                       {/* Mark Subtopic as Completed Button */}
-                      <div className="flex justify-end mt-8">
+                      <div className="flex lg:justify-end my-8 justify-center">
                         <Button
                           variant={
                             completionStatus.completedSubtopicIds.includes(
@@ -452,7 +448,7 @@ export default function TopicClient({
 
                       {/* Exercise Preview Section */}
                       {subtopic.exercise_cards.length > 0 && (
-                        <div className="mt-16 border-t pt-8">
+                        <div className="border-t pt-8">
                           <div className="relative overflow-hidden rounded-lg p-1">
                             {/* Card carousel showing partial next card based on screen size */}
                             <div className="flex space-x-4 pr-3 w-full overflow-x-visible">
@@ -628,12 +624,12 @@ export default function TopicClient({
 
                           {/* Exercise Button */}
                           {subtopic.exercise_cards.length > 0 && (
-                            <div className="flex justify-start mt-8 p-1">
+                            <div className="flex justify-start mt-4 lg:mt-8 p-1">
                               <Link
                                 href={`/dashboard/esercizi?subtopic=${subtopic.id}`}
                               >
                                 <Button
-                                  className="group px-8 py-6 text-white cursor-pointer"
+                                  className="group px-8  text-white cursor-pointer"
                                   variant="default"
                                   size="lg"
                                 >

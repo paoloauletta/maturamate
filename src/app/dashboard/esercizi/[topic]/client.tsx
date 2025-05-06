@@ -230,14 +230,13 @@ export default function ExercisesTopicClient({
         />
       </div>
 
-      <div className="flex justify-between items-center mb-8 border-b pb-4 border-border">
-        <h1 className="text-4xl font-bold text-left">
-          Esercizi:{" "}
-          {currentTopic.order_index !== null
-            ? `${currentTopic.order_index}. `
-            : ""}
-          {currentTopic.name}
-        </h1>
+      <div className="flex justify-between items-center lg:mt-0 lg:mb-8 lg:pb-4 border-b border-border mt-12 mb-6 pb-2">
+        <div className="flex flex-row gap-2">
+          <h1 className="text-4xl font-bold text-left md:block hidden">
+            Esercizi:{" "}
+          </h1>
+          <h1 className="text-4xl font-bold text-left">{currentTopic.name}</h1>
+        </div>
         <div className="flex items-center gap-2">
           {/* Filter Menu */}
           <DropdownMenu>
@@ -378,9 +377,8 @@ export default function ExercisesTopicClient({
               >
                 <div className="mb-6">
                   <h2 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
-                    {currentTopic.order_index !== null &&
-                    subtopic.order_index !== null
-                      ? `${currentTopic.order_index}.${subtopic.order_index} `
+                    {subtopic.order_index !== null
+                      ? `${subtopic.order_index}. `
                       : ""}
                     {subtopic.name}
                   </h2>

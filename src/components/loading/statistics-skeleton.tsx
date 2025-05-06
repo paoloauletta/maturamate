@@ -21,7 +21,7 @@ function PerformanceSummarySkeleton() {
  */
 function TopicsProgressSkeleton() {
   return (
-    <div className="bg-card/50 rounded-lg border shadow-sm">
+    <div className="bg-card/50 rounded-lg border -sm">
       <div className="p-6 pb-3">
         <Skeleton className="h-6 w-48 mb-2" />
         <Skeleton className="h-4 w-64" />
@@ -44,7 +44,7 @@ function TopicsProgressSkeleton() {
  */
 function WeakSubtopicsSkeleton() {
   return (
-    <div className="bg-card/50 rounded-lg border shadow-sm">
+    <div className="bg-card/50 rounded-lg border -sm">
       <div className="p-6 pb-3">
         <Skeleton className="h-6 w-48 mb-2" />
         <Skeleton className="h-4 w-64" />
@@ -67,7 +67,7 @@ function WeakSubtopicsSkeleton() {
  */
 function WeeklyActivitySkeleton() {
   return (
-    <div className="bg-card/50 rounded-lg border shadow-sm">
+    <div className="bg-card/50 rounded-lg border -sm">
       <div className="p-6 pb-3">
         <Skeleton className="h-6 w-48 mb-2" />
         <Skeleton className="h-4 w-64" />

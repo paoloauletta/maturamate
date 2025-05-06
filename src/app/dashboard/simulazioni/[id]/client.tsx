@@ -703,7 +703,7 @@ export default function SimulationClient({
         }`}
       >
         <div className="absolute inset-0 py-4  sm:p-6 flex flex-col">
-          <div className="flex-1 bg-white dark:bg-slate-900 rounded-lg shadow-sm overflow-hidden border border-border/30 flex flex-col">
+          <div className="flex-1 bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-border/30 flex flex-col">
             {/* PDF.js Canvas Renderer */}
             <div
               ref={containerRef}
@@ -711,7 +711,7 @@ export default function SimulationClient({
             >
               <div className="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between items-center">
                 {/* Page navigation controls */}
-                <div className="bg-background/90 rounded-full px-3 py-1 shadow-md">
+                <div className="bg-background/90 rounded-full px-3 py-1">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
@@ -738,7 +738,7 @@ export default function SimulationClient({
                 </div>
 
                 {/* PDF controls */}
-                <div className="bg-background/90 rounded-lg p-1 shadow-md flex">
+                <div className="bg-background/90 rounded-lg p-1 flex">
                   <Button
                     variant="ghost"
                     size="sm"

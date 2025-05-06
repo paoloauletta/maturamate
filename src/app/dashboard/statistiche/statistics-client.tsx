@@ -39,15 +39,13 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <section>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
-          Le mie statistiche
-        </h1>
-      </section>
+      <div className="flex justify-between items-center border-b border-border lg:pb-4 pb-2 mt-6">
+        <h1 className="text-4xl font-bold text-left">Le mie statistiche</h1>
+      </div>
 
       {/* Overall Performance Summary */}
       <section className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               Progresso Complessivo
@@ -65,7 +63,7 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               Argomenti Completati
@@ -97,7 +95,7 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               Esercizi Totali
@@ -133,7 +131,7 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               Esercizi flaggati
@@ -168,7 +166,7 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
 
       <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
         {/* Progress by Topic */}
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle>Progresso per argomento</CardTitle>
             <CardDescription>
@@ -226,7 +224,7 @@ export function StatisticsClient({ data }: StatisticsClientProps) {
         </Card>
 
         {/* Weakest Subtopics */}
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle>Argomenti da migliorare</CardTitle>
             <CardDescription>Sottocategorie con più errori</CardDescription>

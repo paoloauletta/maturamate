@@ -131,9 +131,9 @@ export default function ClientSimulationsPage({
   return (
     // DO NOT CHANGE FROM HERE
     <div className="">
-      <h1 className="text-4xl font-bold text-left mb-8 border-b pb-4 border-border">
-        Simulazioni
-      </h1>
+      <div className="flex justify-between items-center lg:mt-0 lg:mb-8 lg:pb-4 border-b border-border my-6 pb-2">
+        <h1 className="text-4xl font-bold text-left">Simulazioni</h1>
+      </div>
 
       {sortedYears.length > 0 ? (
         sortedYears.map((year) => {
@@ -146,9 +146,9 @@ export default function ClientSimulationsPage({
 
           return (
             <div key={year} className="mb-12">
-              <h1 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
+              <h2 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
                 Simulazioni {year}
-              </h1>
+              </h2>
 
               {/* TILL HERE, FROM HERE ON YOU CAN CHANGE THE CODE */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

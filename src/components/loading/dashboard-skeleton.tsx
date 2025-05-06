@@ -47,7 +47,7 @@ function ActionCardsSection() {
  */
 function FlaggedExercisesSection() {
   return (
-    <div className="bg-card/50 rounded-lg border shadow-sm mt-6">
+    <div className="bg-card/50 rounded-lg border -sm mt-6">
       <div className="p-6 pb-3">
         <div className="flex items-center">
           <Skeleton className="h-5 w-5 mr-2" />

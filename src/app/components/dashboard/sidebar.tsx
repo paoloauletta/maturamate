@@ -315,14 +315,14 @@ export default function DashboardSidebar({
           {navLinks.map((link, index) => {
             if (link.type === "divider") {
               return (
-                <div key={index} className="relative my-4">
+                <div key={index} className="relative mt-6">
                   {!collapsed && (
                     <>
-                      <Separator className="my-2" />
-                      <div className="mb-2 px-2">
-                        <p className="text-xs font-regular text-muted-foreground tracking-wider">
+                      <div className="px-2 flex flex-col w-container">
+                        <p className="text-xs font-medium text-muted-foreground ">
                           {link.label}
                         </p>
+                        <Separator className="my-2" />
                       </div>
                     </>
                   )}

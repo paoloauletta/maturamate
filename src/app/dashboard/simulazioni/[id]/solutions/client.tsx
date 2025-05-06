@@ -524,7 +524,7 @@ export default function SolutionsClient({
                   >
                     <div className="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between items-center">
                       {/* Page navigation controls */}
-                      <div className="bg-background/90 rounded-full px-3 py-1 shadow-md">
+                      <div className="bg-background/90 rounded-full px-3 py-1">
                         <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
@@ -551,7 +551,7 @@ export default function SolutionsClient({
                       </div>
 
                       {/* PDF controls */}
-                      <div className="bg-background/90 rounded-lg p-1 shadow-md flex">
+                      <div className="bg-background/90 rounded-lg p-1 flex">
                         <Button
                           variant="ghost"
                           size="sm"

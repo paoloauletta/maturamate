@@ -31,7 +31,7 @@ interface BaseCardSkeletonProps {
   withBorder?: boolean;
 
   /**
-   * Whether to apply a shadow to the card
+   * Whether to apply a  to the card
    * @default true
    */
   withShadow?: boolean;
@@ -56,7 +56,7 @@ export function BaseCardSkeleton({
         width,
         withBackground && "bg-card/50",
         withBorder && "border",
-        withShadow && "shadow-sm",
+        withShadow && "-sm",
         className
       )}
     />

@@ -42,7 +42,7 @@ export function FavoriteExerciseCard({
       href={`/dashboard/esercizi/card/${id}?from=preferiti`}
       className="block h-full"
     >
-      <Card className="relative h-full hover:shadow-md transition-shadow cursor-pointer">
+      <Card className="relative h-full hover:-md transition- cursor-pointer">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div className="flex-1">

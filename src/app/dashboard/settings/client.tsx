@@ -140,7 +140,7 @@ export default function SettingsClient({
       </div>
 
       {/* Profile Information Section */}
-      <Card className="shadow-sm">
+      <Card>
         <CardHeader className="pb-4 sm:pb-6">
           <CardTitle>Informazioni Profilo</CardTitle>
           <CardDescription>
@@ -255,7 +255,7 @@ export default function SettingsClient({
       </Card>
 
       {/* Account Danger Section */}
-      <Card className="shadow-sm border-destructive/30">
+      <Card className="border-destructive/30">
         <CardHeader className="pb-4 sm:pb-6">
           <CardTitle className="text-destructive">Zona Pericolosa</CardTitle>
           <CardDescription>

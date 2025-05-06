@@ -160,10 +160,11 @@ export default function DashboardLayoutClient({
       <div className="flex flex-col">
         <div className="bg-background sticky top-0 z-40">
           <header className="flex h-14 items-center gap-4 px-4 lg:h-[60px] lg:px-6 border-b">
-            <div className="md:hidden font-semibold text-lg">
-              <span>
-                Matura<span className="text-primary">Mate</span>
-              </span>
+            {/* Theme toggle on mobile - placed where the logo was */}
+            <div className="md:hidden">
+              <Suspense fallback={<div className="h-8 w-8" />}>
+                <ThemeToggle />
+              </Suspense>
             </div>
             <div className="ml-auto flex items-center gap-x-5">
               {/* Only show theme toggle on desktop */}
@@ -175,13 +176,9 @@ export default function DashboardLayoutClient({
 
               {/* Mobile hamburger menu on the right */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="md:hidden block items-center justify-center flex"
-                  >
-                    <Menu className="h-7 w-7" />
+                <SheetTrigger asChild className="md:hidden block">
+                  <Button variant="ghost">
+                    <Menu style={{ width: "20px", height: "20px" }} />
                     <span className="sr-only">Menu</span>
                   </Button>
                 </SheetTrigger>
@@ -211,7 +208,7 @@ export default function DashboardLayoutClient({
             </div>
           </header>
         </div>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:px-18 lg:py-12">
+        <main className="flex flex-1 flex-col gap-4 p-4 pb-12 lg:gap-6 lg:px-18 lg:py-12">
           {children}
         </main>
       </div>

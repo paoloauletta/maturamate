@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Menu, CheckCircle } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  CheckCircle,
+  ChevronLeft,
+} from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -274,7 +279,7 @@ export default function TopicsSidebar({
               className="w-full flex items-center justify-between"
             >
               <span className="truncate">{currentTopicText}</span>
-              <Menu className="h-4 w-4 ml-2 flex-shrink-0" />
+              <ChevronLeft className="h-4 w-4 ml-2 flex-shrink-0" />
             </Button>
           </SheetTrigger>
           <SheetContent

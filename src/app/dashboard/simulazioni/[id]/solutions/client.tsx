@@ -13,6 +13,7 @@ import {
   ZoomOut,
   RotateCw,
   ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -372,28 +373,18 @@ export default function SolutionsClient({
   };
 
   return (
-    <div className="py-8">
+    <div>
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <Link
-              href={`/dashboard/simulazioni/${simulation.id}`}
-              className="flex items-center text-muted-foreground hover:text-foreground mb-2"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Torna alla simulazione
-            </Link>
-            <h1 className="text-2xl font-bold">Soluzioni</h1>
-          </div>
-
-          <div className="flex items-center">
-            <Link href="/dashboard/simulazioni">
-              <Button variant="outline" size="sm" className="whitespace-nowrap">
-                <LayoutGrid className="h-4 w-4 mr-1" />
-                Tutte le simulazioni
-              </Button>
-            </Link>
-          </div>
+        <div className="mb-4">
+          <Link href="/dashboard/simulazioni">
+            <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Torna alle simulazioni</span>
+            </div>
+          </Link>
+        </div>
+        <div className="flex items-center mb-8 border-b pb-4 border-border">
+          <h1 className="text-4xl font-bold text-left">Soluzioni</h1>
         </div>
       </div>
 

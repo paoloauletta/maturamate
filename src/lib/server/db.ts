@@ -8,14 +8,9 @@
 
 import { cache } from "react";
 import { db } from "@/db/drizzle";
-import { eq, and, or, like, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import {
-  users,
-  exercisesTable,
-  completedExercisesTable,
-  topicsTable,
-} from "@/db/schema";
+import { users, exercisesTable, completedExercisesTable } from "@/db/schema";
 
 /**
  * Generic cached query function

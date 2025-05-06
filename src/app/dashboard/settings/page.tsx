@@ -32,7 +32,7 @@ export default async function SettingsPage() {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto py-12 px-4">
+    <div className="container max-w-5xl mx-auto px-4">
       <SettingsClient
         id={userData.id}
         email={userData.email}

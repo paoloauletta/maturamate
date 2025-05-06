@@ -16,7 +16,7 @@ export function LoadingSpinner({
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center py-8">
+    <div className="w-full flex flex-col items-center justify-center">
       <div
         className={`${sizeClasses[size]} border-t-primary border-primary/30 rounded-full animate-spin`}
       />

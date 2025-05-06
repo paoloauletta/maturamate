@@ -84,6 +84,7 @@ export default function DashboardLayoutClient({
   const [collapsed, setCollapsed] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -112,6 +113,22 @@ export default function DashboardLayoutClient({
   // Prevent hydration errors by only rendering on client side
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   if (!isMounted) {
@@ -143,42 +160,54 @@ export default function DashboardLayoutClient({
       <div className="flex flex-col">
         <div className="bg-background sticky top-0 z-40">
           <header className="flex h-14 items-center gap-4 px-4 lg:h-[60px] lg:px-6 border-b">
-            {/* Mobile hamburger menu */}
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-[300px] border-r">
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <SheetDescription className="sr-only">
-                  Application navigation links
-                </SheetDescription>
-                <div className="flex h-full flex-col">
-                  <Suspense
-                    fallback={
-                      <div className="h-full w-full flex justify-center items-center">
-                        Loading...
-                      </div>
-                    }
-                  >
-                    <DashboardSidebar
-                      collapsed={false}
-                      setCollapsed={() => {}}
-                      onItemClick={() => setMobileMenuOpen(false)}
-                      isMobile={true}
-                    />
-                  </Suspense>
-                </div>
-              </SheetContent>
-            </Sheet>
-
+            <div className="md:hidden font-semibold text-lg">
+              <span>
+                Matura<span className="text-primary">Mate</span>
+              </span>
+            </div>
             <div className="ml-auto flex items-center gap-x-5">
-              <Suspense fallback={<div className="h-8 w-8" />}>
-                <ThemeToggle />
-              </Suspense>
+              {/* Only show theme toggle on desktop */}
+              <div className="hidden md:block">
+                <Suspense fallback={<div className="h-8 w-8" />}>
+                  <ThemeToggle />
+                </Suspense>
+              </div>
+
+              {/* Mobile hamburger menu on the right */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden block items-center justify-center flex"
+                  >
+                    <Menu className="h-7 w-7" />
+                    <span className="sr-only">Menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="p-0 w-[300px] border-l">
+                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Application navigation links
+                  </SheetDescription>
+                  <div className="flex h-full flex-col">
+                    <Suspense
+                      fallback={
+                        <div className="h-full w-full flex justify-center items-center">
+                          Loading...
+                        </div>
+                      }
+                    >
+                      <DashboardSidebar
+                        collapsed={false}
+                        setCollapsed={() => {}}
+                        onItemClick={() => setMobileMenuOpen(false)}
+                        isMobile={true}
+                      />
+                    </Suspense>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </header>
         </div>

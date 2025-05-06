@@ -29,6 +29,7 @@ interface MobileExerciseViewProps {
   tutorState?: "none" | "showOptions" | "showTutor";
   autoExpand?: boolean;
   onExerciseComplete?: (id: string, isCorrect: boolean) => void;
+  inFavouritesPage?: boolean;
 }
 
 export default function MobileExerciseView({
@@ -42,91 +43,71 @@ export default function MobileExerciseView({
   tutorState = "none",
   autoExpand = false,
   onExerciseComplete,
+  inFavouritesPage = false,
 }: MobileExerciseViewProps) {
-  // Add a ref for the component
-  const exerciseRef = useRef<HTMLDivElement>(null);
-
-  // Main state management
-  const [isRevealed, setIsRevealed] = useState(isCompleted);
+  // State for this exercise
+  const [isExpanded, setIsExpanded] = useState(
+    autoExpand || (inFavouritesPage ? true : false)
+  );
+  const [isRevealed, setIsRevealed] = useState(isCompleted || inFavouritesPage);
   const [isIncorrect, setIsIncorrect] = useState(isCompleted && !wasCorrect);
   const [showTutor, setShowTutor] = useState(tutorState === "showTutor");
   const [attemptCount, setAttemptCount] = useState(1);
   const [exerciseCompleted, setExerciseCompleted] = useState(isCompleted);
   const [isFlagged, setIsFlagged] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(autoExpand);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Keep track of previous autoExpand value to prevent infinite loops
-  const prevAutoExpandRef = useRef(autoExpand);
+  // Ref for scrolling to the expanded exercise
+  const exerciseRef = useRef<HTMLDivElement>(null);
 
-  // Track if this is the first render
-  const isFirstRenderRef = useRef(true);
+  // Auto-expand when autoExpand changes
+  useEffect(() => {
+    // If in favorites page, always expand
+    if (inFavouritesPage) {
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(autoExpand || false); // Don't auto-expand completed exercises
+    }
 
-  // Current UI state to prevent multiple buttons from appearing
-  const [currentState, setCurrentState] = useState<
-    "initial" | "incorrect" | "tutor" | "completed"
-  >(isCompleted ? "completed" : "initial");
+    // Scroll to this exercise if it's being auto-expanded
+    if (autoExpand && exerciseRef.current) {
+      setTimeout(() => {
+        exerciseRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [autoExpand, isCompleted, inFavouritesPage]);
 
   // Initialize component state based on props
   useEffect(() => {
+    // For favorites page, solution is always revealed
+    if (inFavouritesPage) {
+      setIsRevealed(true);
+      return;
+    }
+
     // If the exercise is completed, reveal the solution
     if (isCompleted) {
       setIsRevealed(true);
       setExerciseCompleted(true);
-      setCurrentState("completed");
-
-      // Auto-collapse completed exercises unless it's marked to be expanded
-      if (!autoExpand && wasCorrect && !isFirstRenderRef.current) {
-        setIsExpanded(false);
-      }
 
       // If it was incorrect, show the tutor options
       if (!wasCorrect) {
         setIsIncorrect(true);
 
-        // Set appropriate state based on provided tutorState
+        // If the tutor state is specified, set the appropriate UI state
         if (tutorState === "showTutor") {
           setShowTutor(true);
-          setCurrentState("tutor");
-        } else if (tutorState === "showOptions") {
-          // This ensures that retrying is possible even after page reload
-          setIsIncorrect(true);
-          setShowTutor(false);
-          setCurrentState("incorrect");
         }
       }
     }
+  }, [isCompleted, wasCorrect, tutorState, inFavouritesPage]);
 
-    // After first render, mark it as not first render anymore
-    isFirstRenderRef.current = false;
-  }, [isCompleted, wasCorrect, tutorState, autoExpand]);
-
-  // Handle expanded state changes when autoExpand prop changes
+  // Check if this exercise is flagged when component mounts
   useEffect(() => {
-    // Only update if autoExpand actually changed and is not first render
-    if (prevAutoExpandRef.current !== autoExpand && !isFirstRenderRef.current) {
-      setIsExpanded(autoExpand);
-
-      if (autoExpand) {
-        // Add a slight delay to ensure the component is fully rendered before scrolling
-        setTimeout(() => {
-          if (exerciseRef.current) {
-            exerciseRef.current.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-        }, 300);
-      }
-    }
-
-    // Always update the ref to current value
-    prevAutoExpandRef.current = autoExpand;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoExpand]);
-
-  // Check if exercise is flagged
-  useEffect(() => {
-    const checkIfExerciseFlagged = async () => {
+    const checkIfFlagged = async () => {
       try {
         const response = await fetch(
           `/api/exercises/flag-exercise?exerciseId=${id}`
@@ -140,13 +121,102 @@ export default function MobileExerciseView({
       }
     };
 
-    checkIfExerciseFlagged();
+    checkIfFlagged();
   }, [id]);
+
+  // Toggle solution visibility
+  const handleRevealSolution = () => {
+    // In favorites page, solution is always revealed
+    if (inFavouritesPage) return;
+
+    // Only toggle if the exercise is not completed yet
+    if (!exerciseCompleted) {
+      setIsRevealed((prev) => !prev);
+    }
+  };
+
+  // Handle marking as correct
+  const handleMarkCorrect = async () => {
+    if (inFavouritesPage) return; // No-op in favorites page
+
+    await onMarkCorrect(id, true, attemptCount);
+    setExerciseCompleted(true);
+    setIsIncorrect(false);
+
+    // Call the onExerciseComplete callback if provided
+    if (onExerciseComplete) {
+      onExerciseComplete(id, true);
+    }
+  };
+
+  // Handle marking as incorrect
+  const handleMarkIncorrect = () => {
+    if (inFavouritesPage) return; // No-op in favorites page
+
+    // First log the incorrect attempt in the database
+    onMarkCorrect(id, false, attemptCount)
+      .then(() => {
+        console.log(
+          `Exercise ${id} marked as incorrect, attempt: ${attemptCount}`
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to record incorrect attempt:", error);
+      });
+
+    // Then show the tutor options
+    setIsIncorrect(true);
+
+    // Call the onExerciseComplete callback if provided
+    if (onExerciseComplete) {
+      onExerciseComplete(id, false);
+    }
+  };
+
+  // Handle retry after getting it wrong
+  const handleRetry = () => {
+    if (inFavouritesPage) return; // No-op in favorites page
+
+    setIsRevealed(false); // Blur the solution again
+    setIsIncorrect(false);
+    setShowTutor(false);
+    setExerciseCompleted(false); // Reset the completed state for retries
+    setAttemptCount((prev) => prev + 1);
+  };
+
+  // Handle showing the tutor
+  const handleShowTutor = () => {
+    if (inFavouritesPage) return; // No-op in favorites page
+
+    setShowTutor(true);
+  };
+
+  // Handle marking as understood after tutor help
+  const handleUnderstoodAfterHelp = async () => {
+    if (inFavouritesPage) return; // No-op in favorites page
+
+    await onMarkCorrect(id, true, attemptCount);
+    setExerciseCompleted(true);
+    setIsIncorrect(false);
+    setShowTutor(false);
+
+    // Call the onExerciseComplete callback if provided
+    if (onExerciseComplete) {
+      onExerciseComplete(id, true);
+    }
+  };
+
+  // Handle still not understanding after tutor help
+  const handleStillNotUnderstood = () => {
+    if (inFavouritesPage) return; // No-op in favorites page
+
+    setShowTutor(false); // Reset to show the tutor options again
+  };
 
   // Toggle flag status
   const handleToggleFlag = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+    e.stopPropagation(); // Prevent the accordion from toggling
+    setIsLoading(true);
 
     try {
       const response = await fetch("/api/exercises/flag-exercise", {
@@ -165,301 +235,219 @@ export default function MobileExerciseView({
       }
     } catch (error) {
       console.error("Error toggling exercise flag:", error);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  // Toggle solution visibility
-  const handleRevealSolution = () => {
-    if (!exerciseCompleted) {
-      setIsRevealed((prev) => !prev);
-    }
-  };
-
-  // Handle marking as correct
-  const handleMarkCorrect = async () => {
-    await onMarkCorrect(id, true, attemptCount);
-    setExerciseCompleted(true);
-    setIsIncorrect(false);
-    setCurrentState("completed");
-
-    // Notify parent component that this exercise is complete
-    if (onExerciseComplete) {
-      onExerciseComplete(id, true);
-    }
-
-    // Auto-collapse after marking as correct (with delay to show completion)
-    setTimeout(() => {
-      setIsExpanded(false);
-    }, 400);
-  };
-
-  // Handle marking as incorrect
-  const handleMarkIncorrect = () => {
-    onMarkCorrect(id, false, attemptCount)
-      .then(() => {
-        console.log(
-          `Exercise ${id} marked as incorrect, attempt: ${attemptCount}`
-        );
-      })
-      .catch((error) => {
-        console.error("Failed to record incorrect attempt:", error);
-      });
-
-    setIsIncorrect(true);
-    setCurrentState("incorrect");
-
-    // Notify parent component that this exercise is marked incorrect
-    if (onExerciseComplete) {
-      onExerciseComplete(id, false);
-    }
-  };
-
-  // Handle retry after getting it wrong
-  const handleRetry = () => {
-    setIsRevealed(false);
-    setIsIncorrect(false);
-    setShowTutor(false);
-    setExerciseCompleted(false);
-    setAttemptCount((prev) => prev + 1);
-    setCurrentState("initial");
-  };
-
-  // Handle showing the tutor
-  const handleShowTutor = () => {
-    setShowTutor(true);
-    setCurrentState("tutor");
-  };
-
-  // Handle marking as understood after tutor help
-  const handleUnderstoodAfterHelp = async () => {
-    await onMarkCorrect(id, true, attemptCount);
-    setExerciseCompleted(true);
-    setIsIncorrect(false);
-    setShowTutor(false);
-    setCurrentState("completed");
-
-    // Notify parent component that this exercise is complete
-    if (onExerciseComplete) {
-      onExerciseComplete(id, true);
-    }
-
-    // Auto-collapse after marking as correct (with delay to show completion)
-    setTimeout(() => {
-      setIsExpanded(false);
-    }, 300);
-  };
-
-  // Handle not understood after tutor help
-  const handleNotUnderstood = () => {
-    setShowTutor(false);
-    setCurrentState("incorrect");
   };
 
   // Toggle expanded state
   const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
+    setIsExpanded((prev) => !prev);
   };
 
   return (
-    <div ref={exerciseRef} className="border-b border-border last:border-0">
+    <div
+      ref={exerciseRef}
+      className="border-b last:border-b-0 border-border overflow-hidden transition-colors"
+    >
       {/* Exercise header - always visible */}
       <div
-        className={cn(
-          "py-4 px-1 flex justify-between items-center cursor-pointer",
-          isExpanded ? "border-b border-border/50" : ""
-        )}
         onClick={toggleExpanded}
+        className="flex items-center justify-between p-4 cursor-pointer"
       >
         <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium",
-              exerciseCompleted && wasCorrect
-                ? "bg-green-500/10 text-green-600"
-                : exerciseCompleted && !wasCorrect
-                ? "bg-amber-500/10 text-amber-600"
-                : "bg-primary/10 text-primary"
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Es {number}.</span>
+            {exerciseCompleted && wasCorrect && !inFavouritesPage && (
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
             )}
-          >
-            {number}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {exerciseCompleted && wasCorrect && (
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          {!inFavouritesPage && (
+            <button
+              onClick={handleToggleFlag}
+              disabled={isLoading}
+              className={cn(
+                "p-1 transition-colors cursor-pointer hover:scale-110 transition-transform duration-200",
+                isFlagged
+                  ? "text-yellow-500"
+                  : "text-muted-foreground hover:text-yellow-500"
+              )}
+            >
+              <Star
+                className="h-4 w-4"
+                fill={isFlagged ? "currentColor" : "none"}
+              />
+            </button>
           )}
-          <button
-            onClick={handleToggleFlag}
-            className={cn(
-              "p-1.5 hover:text-yellow-500 cursor-pointer hover:scale-105 transition-colors",
-              isFlagged ? "text-yellow-500" : "text-muted-foreground"
-            )}
-          >
-            <Star
-              className="h-4 w-4"
-              fill={isFlagged ? "currentColor" : "none"}
-            />
-          </button>
+
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            <ChevronUp className="h-5 w-5 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="h-5 w-5 text-muted-foreground" />
           )}
         </div>
       </div>
 
-      {/* Exercise content - only visible when expanded, with animations */}
+      {/* Expandable content */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              duration: 0.2,
+              ease: [0.25, 0.1, 0.25, 1],
+              opacity: { duration: 0.2 },
+            }}
+            className="px-4 pb-4 pt-2 overflow-hidden"
           >
-            <div className="px-1 pb-4 space-y-6">
-              {/* Question */}
-              <div className="prose prose-sm dark:prose-invert mt-4">
-                {question.split("\n").map((line, index) => (
+            {/* Question */}
+            <div className="prose prose-sm dark:prose-invert mb-6">
+              {question.split("\n").map((line, index) => (
+                <div key={index} className="mb-2">
+                  <MathRenderer content={line} />
+                </div>
+              ))}
+            </div>
+
+            {/* Solution Box with Blur Effect - always visible in favorites */}
+            <div
+              onClick={inFavouritesPage ? undefined : handleRevealSolution}
+              className={cn(
+                "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
+                inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
+                !inFavouritesPage && !isRevealed ? "blur-sm select-none" : ""
+              )}
+            >
+              <h4 className="text-sm font-semibold mb-3 text-primary">
+                Soluzione
+              </h4>
+              <div className="prose prose-sm dark:prose-invert">
+                {solution.split("\n").map((line, index) => (
                   <div key={index} className="mb-2">
                     <MathRenderer content={line} />
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Solution Box */}
-              <div
-                onClick={handleRevealSolution}
-                className={cn(
-                  "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
-                  !exerciseCompleted && "cursor-pointer",
-                  !isRevealed && !exerciseCompleted && "blur-sm select-none"
-                )}
-              >
-                <h4 className="text-sm font-semibold mb-3 text-primary">
-                  Soluzione
-                </h4>
-                <div className="prose prose-sm dark:prose-invert">
-                  {solution.split("\n").map((line, index) => (
-                    <div key={index} className="mb-2">
-                      <MathRenderer content={line} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Conditional UI based on exercise state */}
-              <AnimatePresence mode="wait">
-                {/* Case 1: Initial buttons when solution is revealed but not yet marked */}
-                {isRevealed &&
-                  !exerciseCompleted &&
-                  !isIncorrect &&
-                  currentState === "initial" && (
+            {/* Only show interactive elements if not in favorites page */}
+            {!inFavouritesPage && (
+              <>
+                {/* Correct/incorrect buttons - Full width with text */}
+                <AnimatePresence>
+                  {isRevealed && !exerciseCompleted && !isIncorrect && (
                     <motion.div
-                      key="initial-buttons"
+                      className="grid grid-cols-2 gap-2 my-4"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      }}
                     >
-                      <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        onClick={handleMarkIncorrect}
+                        variant="outline"
+                        className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30"
+                      >
+                        <XCircle className="h-4 w-4" />
+                        Errato
+                      </Button>
+                      <Button
+                        onClick={handleMarkCorrect}
+                        variant="outline"
+                        className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Corretto
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Tutor options when marked as incorrect */}
+                <AnimatePresence>
+                  {isIncorrect && !showTutor && (
+                    <motion.div
+                      className="mt-4 space-y-3"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      }}
+                    >
+                      <p className="text-sm text-muted-foreground">
+                        Ho visto che stai avendo difficoltà con questo
+                        esercizio. Cosa vuoi fare adesso?
+                      </p>
+                      <div className="flex flex-row w-1/2 gap-2">
                         <Button
+                          onClick={handleRetry}
                           variant="outline"
-                          className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-600 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-                          onClick={handleMarkIncorrect}
+                          className="w-full"
                         >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Non ho capito
+                          Riprova
                         </Button>
                         <Button
-                          variant="outline"
-                          className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-600 dark:text-green-500 dark:hover:bg-green-950/30 dark:hover:text-green-400"
-                          onClick={handleMarkCorrect}
+                          onClick={handleShowTutor}
+                          className="flex items-center justify-center gap-2 w-full"
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
-                          Ho capito
+                          <MessageSquareText className="h-4 w-4" />
+                          Tutor AI
                         </Button>
                       </div>
                     </motion.div>
                   )}
+                </AnimatePresence>
 
-                {/* Case 2: Showing retry or tutor options when marked as incorrect */}
-                {isIncorrect && currentState === "incorrect" && (
-                  <motion.div
-                    key="retry-options"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div
-                      className={cn(
-                        !isCompleted && "text-muted-foreground text-sm mb-3",
-                        isCompleted &&
-                          "text-muted-foreground dark:text-amber-500 text-sm mb-3"
-                      )}
+                {/* Tutor explanation */}
+                <AnimatePresence>
+                  {showTutor && (
+                    <motion.div
+                      className="mt-4 space-y-4"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      }}
                     >
-                      {isCompleted
-                        ? "Vedo che stai avendo difficoltà con questo esercizio."
-                        : "Non hai capito questo esercizio. Cosa vuoi fare?"}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        variant="outline"
-                        className="w-full cursor-pointer"
-                        onClick={handleRetry}
-                      >
-                        Riprova
-                      </Button>
-                      <Button
-                        className="w-full bg-primary hover:bg-primary/90 text-white cursor-pointer"
-                        onClick={handleShowTutor}
-                      >
-                        <MessageSquareText className="h-4 w-4 mr-2" />
-                        Tutor
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
+                      <p className="text-sm">
+                        Dopo l'aiuto del tutor hai capito l'esercizio?
+                      </p>
 
-                {/* Case 3: Showing suggestion when tutor help is requested */}
-                {currentState === "tutor" && (
-                  <motion.div
-                    key="tutor-help"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-3"
-                  >
-                    <div className="text-sm text-start">
-                      Dopo l'aiuto del Tutor, hai capito l'esercizio?
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        variant="outline"
-                        className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-600 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-                        onClick={handleNotUnderstood}
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Non ancora
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-600 dark:text-green-500 dark:hover:bg-green-950/30 dark:hover:text-green-400"
-                        onClick={handleUnderstoodAfterHelp}
-                      >
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Sì, ho capito
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                      <div className="flex flex-row gap-2">
+                        <Button
+                          onClick={handleStillNotUnderstood}
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30 w-1/2"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Errato
+                        </Button>
+                        <Button
+                          onClick={handleUnderstoodAfterHelp}
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30 w-1/2"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Corretto
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

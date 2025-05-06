@@ -36,7 +36,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import dynamic from "next/dynamic";
 import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
-import { Flag } from "lucide-react";
 
 // Dynamically import MobileExerciseView to reduce initial bundle size
 const MobileExerciseView = dynamic(
@@ -242,6 +241,48 @@ export default function FavoritesClient({
     setCompletionFilter(null);
   };
 
+  // Calculate filter counts for badges
+  const activeFilterCount =
+    (difficultyFilter !== null ? 1 : 0) + (completionFilter !== null ? 1 : 0);
+
+  // Filter the cards and exercises based on the selected filters
+  const filteredCards = localFlaggedCards.filter((card) => {
+    // Apply difficulty filter
+    if (difficultyFilter !== null && card.difficulty !== difficultyFilter) {
+      return false;
+    }
+    return true;
+  });
+
+  // Filter the exercises
+  const filteredExercises = localFlaggedExercises.filter((exercise) => {
+    // Apply difficulty filter
+    if (difficultyFilter !== null && exercise.difficulty !== difficultyFilter) {
+      return false;
+    }
+    return true;
+  });
+
+  // Re-group filtered cards by topic
+  const filteredCardsByTopic: Record<string, FlaggedCard[]> = {};
+  filteredCards.forEach((card) => {
+    const topicId = card.topic_id || "unknown";
+    if (!filteredCardsByTopic[topicId]) {
+      filteredCardsByTopic[topicId] = [];
+    }
+    filteredCardsByTopic[topicId].push(card);
+  });
+
+  // Re-group filtered exercises by topic
+  const filteredExercisesByTopic: Record<string, FlaggedExercise[]> = {};
+  filteredExercises.forEach((exercise) => {
+    const topicId = exercise.topic_id || "unknown";
+    if (!filteredExercisesByTopic[topicId]) {
+      filteredExercisesByTopic[topicId] = [];
+    }
+    filteredExercisesByTopic[topicId].push(exercise);
+  });
+
   // Filter and render the exercises by topic
   const renderExercises = () => {
     if (localFlaggedExercises.length === 0) {
@@ -442,7 +483,7 @@ export default function FavoritesClient({
       ));
     }
 
-    // Desktop view (unchanged)
+    // Desktop view remains unchanged
     return Object.entries(filteredCardsByTopic).map(([topicId, cards]) => (
       <div key={topicId} className="mb-8">
         <h3 className="text-lg font-semibold mb-4">

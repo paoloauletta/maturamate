@@ -37,6 +37,13 @@ export function MobileExerciseItem({
     exercise_card_id,
   } = exercise;
 
+  // Always expand in favorites by default
+  useEffect(() => {
+    if (!isExpanded) {
+      onToggleExpand();
+    }
+  }, []);
+
   // Format content for display
   const formatContent = (data: any): string => {
     if (typeof data === "string") {

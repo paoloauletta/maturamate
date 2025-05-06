@@ -200,11 +200,6 @@ export default function ClientSimulationsPage({
                             <Calendar className="h-4 w-4 mr-1.5" />
                             <span>{card.year}</span>
                           </div>
-                          <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-                          <div className="flex items-center">
-                            <Rows3 className="h-4 w-4 mr-1.5" />
-                            <span>{card.simulations.length} simulazioni</span>
-                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="pt-0 pb-3">
@@ -303,7 +298,7 @@ export default function ClientSimulationsPage({
                                         size="sm"
                                         className={cn(
                                           simulation.is_completed
-                                            ? "border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400"
+                                            ? "border-green-200 text-green-500 hover:bg-green-50 hover:text-green-600 hover:border-green-300"
                                             : simulation.is_started
                                             ? "bg-blue-600 hover:bg-blue-700"
                                             : ""

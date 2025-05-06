@@ -22,6 +22,7 @@ import {
   RotateCw,
   ChevronLeft,
   ChevronRight,
+  TabletSmartphone,
 } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
@@ -360,51 +361,63 @@ export default function SimulationClient({
     cleanup();
 
     const loadPDF = async () => {
-      try {
-        // Dynamically import PDF.js
-        const pdfjsLib = await import("pdfjs-dist");
+      let retries = 3;
+      const loadWithRetry = async () => {
+        try {
+          // Dynamically import PDF.js
+          const pdfjsLib = await import("pdfjs-dist");
 
-        // Set up the worker using the file we copied to the public directory
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+          // Set up the worker using the file we copied to the public directory
+          pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
 
-        // Get the document using our proxy for external URLs
-        const proxyUrl = getProxyUrl(simulation.pdf_url);
+          // Get the document using our proxy for external URLs
+          const proxyUrl = getProxyUrl(simulation.pdf_url);
 
-        // Create loading task with better error handling
-        const loadingTask = pdfjsLib.getDocument(proxyUrl);
-        loadingTask.onPassword = (
-          updatePassword: (password: string) => void,
-          reason: number
-        ) => {
-          console.log("Password required for PDF:", reason);
-          // You could implement a password prompt here
-          return Promise.resolve();
-        };
+          // Create loading task with better error handling
+          const loadingTask = pdfjsLib.getDocument(proxyUrl);
+          loadingTask.onPassword = (
+            updatePassword: (password: string) => void,
+            reason: number
+          ) => {
+            console.log("Password required for PDF:", reason);
+            // You could implement a password prompt here
+            return Promise.resolve();
+          };
 
-        // Await the document with a timeout
-        const pdfDoc = (await Promise.race([
-          loadingTask.promise,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("PDF loading timeout")), 30000)
-          ),
-        ])) as any; // Type assertion to handle the PDF document
+          // Await the document with a timeout
+          const pdfDoc = (await Promise.race([
+            loadingTask.promise,
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("PDF loading timeout")), 30000)
+            ),
+          ])) as any; // Type assertion to handle the PDF document
 
-        // Check if component is still mounted before updating state
-        if (!isComponentMounted) {
-          pdfDoc.destroy();
-          return;
+          // Check if component is still mounted before updating state
+          if (!isComponentMounted) {
+            pdfDoc.destroy();
+            return;
+          }
+
+          // Store the PDF document reference
+          pdfDocRef.current = pdfDoc;
+          setNumPages(pdfDoc.numPages);
+
+          // Render the first page
+          await renderPage(1);
+        } catch (error) {
+          console.error("Error loading PDF:", error);
+          if (retries > 0) {
+            console.log(`Retrying PDF load... (${3 - retries + 1}/3)`);
+            retries -= 1;
+            await loadWithRetry();
+          } else {
+            setIsLoading(false);
+            console.error("Failed to load PDF after multiple attempts.");
+          }
         }
+      };
 
-        // Store the PDF document reference
-        pdfDocRef.current = pdfDoc;
-        setNumPages(pdfDoc.numPages);
-
-        // Render the first page
-        await renderPage(1);
-      } catch (error) {
-        console.error("Error loading PDF:", error);
-        setIsLoading(false);
-      }
+      await loadWithRetry();
     };
 
     loadPDF();
@@ -504,7 +517,7 @@ export default function SimulationClient({
   // If the user has completed this simulation, show solutions page
   if (isCompleted) {
     return (
-      <div className="py-8">
+      <div>
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -524,7 +537,7 @@ export default function SimulationClient({
           <CardFooter className="flex justify-between">
             <Button
               variant="outline"
-              onClick={handleStartOver}
+              onClick={handleStartSimulation}
               disabled={isRestarting}
             >
               {isRestarting ? (
@@ -551,16 +564,16 @@ export default function SimulationClient({
   // Show confirmation page before starting the simulation
   if (showConfirmation) {
     return (
-      <div className="py-8 px-4 flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <Card className="max-w-2xl w-full border-border/30">
+      <div className="px-4 flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <Card className="max-w-2xl w-full border-border">
           <CardHeader>
             <CardTitle className="text-2xl">
               Sei pronto per iniziare la simulazione?
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-6 space-y-6">
+          <CardContent className="pb-6">
             {/* Main simulation information */}
-            <div>
+            <div className="mb-6">
               <h2 className="text-lg font-medium mb-1">{simulation.title}</h2>
               <div className="flex items-center text-sm text-muted-foreground">
                 <span>{simulation.subject}</span>
@@ -570,42 +583,27 @@ export default function SimulationClient({
             </div>
 
             {/* Duration information */}
-            <div className="flex items-center text-muted-foreground border border-border/30 rounded-md p-3 bg-muted/20">
-              <Clock className="h-5 w-5 mr-3 flex-shrink-0" />
-              <div>
+            <div className="flex-col items-start text-muted-foreground border border-border/50 rounded-md p-3 bg-muted/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-5 w-5 flex-shrink-0" />
                 <p className="font-medium text-foreground">
                   Durata: {getHumanReadableDuration(simulation.time_in_min)}
                 </p>
-                <p className="text-sm">
-                  Avrai questo tempo per completare tutti gli esercizi.
-                </p>
               </div>
+              <p className="text-sm">
+                Avrai questo tempo per completare tutti gli esercizi.
+              </p>
             </div>
             {/* Mobile disclaimer */}
-            <div className="md:hidden flex items-start bg-blue-50 border border-blue-200 text-blue-700 rounded-md p-4 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-3 flex-shrink-0 mt-0.5"
-              >
-                <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-                <path d="M12 18h.01" />
-              </svg>
-              <div>
-                <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
-                  Consiglio
-                </p>
-                <p>
-                  È consigliato svolgere le simulazioni da desktop o tablet per
-                  una migliore esperienza.
-                </p>
+            <div className="mt-6 md:hidden flex-col items-start bg-primary/10 border border-primary/20 text-primary rounded-md p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TabletSmartphone className="h-5 w-5 flex-shrink-0" />
+                <p className="font-medium">Consiglio</p>
               </div>
+              <p className="text-sm text-primary/80">
+                È consigliato svolgere le simulazioni da desktop o tablet per
+                una migliore esperienza.
+              </p>
             </div>
           </CardContent>
           <CardFooter className="border-t border-border/30 pt-4 flex flex-col sm:flex-row gap-3 sm:justify-between">

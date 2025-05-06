@@ -194,10 +194,20 @@ export function FavoritesList() {
   };
 
   const toggleExerciseExpand = (exerciseId: string) => {
-    setExpandedExerciseId(
-      expandedExerciseId === exerciseId ? null : exerciseId
-    );
+    setExpandedExerciseId((prev) => (prev === exerciseId ? null : exerciseId));
   };
+
+  // Ensure all exercises are expanded by default in favorites
+  useEffect(() => {
+    if (
+      flaggedExercises &&
+      flaggedExercises.length > 0 &&
+      expandedExerciseId === null
+    ) {
+      // Set all exercises as expanded initially
+      setExpandedExerciseId(flaggedExercises[0].id);
+    }
+  }, [flaggedExercises]);
 
   const formatTimeInHours = (minutes: number) => {
     const hours = Math.floor(minutes / 60);

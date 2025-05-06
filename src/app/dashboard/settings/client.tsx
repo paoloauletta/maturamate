@@ -132,26 +132,26 @@ export default function SettingsClient({
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Header with Title and Logout Button */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Impostazioni Account</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Impostazioni Account</h1>
         <LogoutButton />
       </div>
 
       {/* Profile Information Section */}
       <Card className="shadow-sm">
-        <CardHeader className="pb-6">
+        <CardHeader className="pb-4 sm:pb-6">
           <CardTitle>Informazioni Profilo</CardTitle>
           <CardDescription>
             Gestisci le tue informazioni personali
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8 px-6 pb-8">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+        <CardContent className="space-y-6 px-4 sm:px-6 pb-6 sm:pb-8">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
             {/* Profile Image */}
-            <div className="flex flex-col items-center mx-auto md:mx-0">
-              <div className="relative h-40 w-40 rounded-full overflow-hidden border-2 border-border">
+            <div className="flex flex-col items-center">
+              <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-full overflow-hidden border-2 border-border">
                 {profileImage ? (
                   <Image
                     src={profileImage}
@@ -170,10 +170,10 @@ export default function SettingsClient({
             </div>
 
             {/* Profile Details */}
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 w-full space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" value={email} disabled className="mt-2" />
+                <Input id="email" value={email} disabled className="mt-1" />
                 <p className="text-xs text-muted-foreground mt-1">
                   La tua email non può essere modificata
                 </p>
@@ -183,7 +183,7 @@ export default function SettingsClient({
                 <>
                   <div className="space-y-2">
                     <Label>Nome Completo</Label>
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-1">
                       <p>{fullName || "Non impostato"}</p>
                       <Button
                         variant="ghost"
@@ -197,7 +197,7 @@ export default function SettingsClient({
 
                   <div className="space-y-2">
                     <Label>Username</Label>
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-1">
                       <p>{username || "Non impostato"}</p>
                       <Button
                         variant="ghost"
@@ -218,7 +218,7 @@ export default function SettingsClient({
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Il tuo nome completo"
-                      className="mt-2"
+                      className="mt-1"
                     />
                   </div>
 
@@ -229,7 +229,7 @@ export default function SettingsClient({
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Il tuo username"
-                      className="mt-2"
+                      className="mt-1"
                     />
                   </div>
 
@@ -254,49 +254,56 @@ export default function SettingsClient({
         </CardContent>
       </Card>
 
-      {/* Delete Account Section */}
-      <Card className="border-destructive/50 shadow-sm px-4">
-        <CardHeader className="pb-2 pt-4">
-          <CardTitle className="text-destructive">Elimina Account</CardTitle>
+      {/* Account Danger Section */}
+      <Card className="shadow-sm border-destructive/30">
+        <CardHeader className="pb-4 sm:pb-6">
+          <CardTitle className="text-destructive">Zona Pericolosa</CardTitle>
           <CardDescription>
-            Elimina permanentemente il tuo account e tutti i dati associati
+            Azioni irreversibili per il tuo account
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-6 pb-4">
-          <div className="bg-destructive/5 p-4 rounded-lg border border-destructive/20 mb-4">
-            <p className="text-sm text-destructive/90">
-              Attenzione: L'eliminazione dell'account è irreversibile. Tutti i
-              tuoi dati e le tue attività saranno rimossi definitivamente.
-            </p>
-          </div>
+        <CardContent className="space-y-6 px-4 sm:px-6 pb-6 sm:pb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <p className="font-medium">Elimina Account</p>
+              <p className="text-sm text-muted-foreground">
+                Questa azione è irreversibile e tutti i tuoi dati verranno
+                eliminati.
+              </p>
+            </div>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="gap-2">
-                <Trash2 className="h-4 w-4" />
-                Elimina Account
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Questa azione non può essere annullata. Eliminerà
-                  permanentemente il tuo account e rimuoverà i tuoi dati dai
-                  nostri server.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Annulla</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={deleteAccount}
-                  className="bg-destructive hover:bg-destructive/90"
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="sm:w-auto w-full mt-2 sm:mt-0 gap-2"
                 >
-                  {isSubmitting ? "Eliminazione..." : "Elimina Account"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <Trash2 className="h-4 w-4" />
+                  Elimina Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Questa azione è irreversibile. Tutti i tuoi dati, inclusi
+                    progressi, preferiti e statistiche verranno eliminati
+                    permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={deleteAccount}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Eliminazione..." : "Sì, elimina account"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardContent>
       </Card>
     </div>

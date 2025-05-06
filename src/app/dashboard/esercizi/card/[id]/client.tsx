@@ -1,7 +1,7 @@
 "use client";
 
 import { Exercise } from "@/app/components/exercises/Exercise";
-import MobileExerciseView from "@/app/components/exercises/MobileExerciseView";
+import dynamic from "next/dynamic";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,31 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, Star } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+const MobileExerciseView = dynamic<MobileExerciseViewProps>(
+  () =>
+    import("@/app/components/exercises/MobileExerciseView").then(
+      (mod) => mod.default
+    ),
+  { ssr: false }
+);
+
+interface MobileExerciseViewProps {
+  id: string;
+  number: number;
+  question: string;
+  solution: string;
+  onMarkCorrect: (
+    exerciseId: string,
+    isCorrect: boolean,
+    attempt: number
+  ) => Promise<void>;
+  isCompleted: boolean;
+  wasCorrect: boolean;
+  tutorState: "none" | "showOptions" | "showTutor";
+  autoExpand: boolean;
+  onExerciseComplete: (exerciseId: string, isCorrect: boolean) => void;
+}
 
 // Define types for question and solution data
 interface QuestionData {
@@ -250,7 +275,7 @@ export default function ExerciseCardClient({
       if (allExercisesCorrect) {
         setTimeout(() => {
           setExpandedExerciseIds([]);
-        }, 300);
+        }, 400);
         return;
       }
 
@@ -276,17 +301,17 @@ export default function ExerciseCardClient({
       if (nextIncompleteIndex !== -1) {
         setTimeout(() => {
           setExpandedExerciseIds([sortedExercises[nextIncompleteIndex].id]);
-        }, 300);
+        }, 400);
       } else if (currentIndex === sortedExercises.length - 1) {
         // This was the last exercise, keep it expanded for a moment then collapse
         setTimeout(() => {
           setExpandedExerciseIds([]);
-        }, 300);
+        }, 400);
       } else {
         // If no next incomplete exercise, collapse all after delay
         setTimeout(() => {
           setExpandedExerciseIds([]);
-        }, 300);
+        }, 400);
       }
     }
   };
@@ -378,7 +403,7 @@ export default function ExerciseCardClient({
       if (isCorrect && currentExerciseIndex < sortedExercises.length - 1) {
         setTimeout(() => {
           setCurrentExerciseIndex((prev) => prev + 1);
-        }, 300);
+        }, 400);
       }
 
       // Refresh the UI if all exercises are completed
@@ -451,13 +476,13 @@ export default function ExerciseCardClient({
   };
 
   return (
-    <div className="py-6">
+    <div>
       {/* Back button and header */}
       <div className="mb-6 flex flex-col lg:gap-2 gap-1">
         <Link
           href={fromFavorites ? "/dashboard/preferiti" : "/dashboard/esercizi"}
         >
-          <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:border-b hover:border-foreground/50 transition-all">
+          <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
             <ArrowLeft className="h-4 w-4" />
             <span>
               {fromFavorites ? "Torna ai preferiti" : "Torna agli esercizi"}

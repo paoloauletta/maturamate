@@ -55,11 +55,11 @@ export function NavbarDemo() {
   };
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative light">
       <div className="absolute w-full top-5 z-50">
         <Navbar>
           {/* Desktop Navigation */}
-          <NavBody className="bg-white">
+          <NavBody className="bg-white shadow-md">
             <Logo />
             <NavItems items={navItems} />
             <div className="flex items-center gap-4">
@@ -91,7 +91,7 @@ export function NavbarDemo() {
           </NavBody>
 
           {/* Mobile Navigation */}
-          <MobileNav className="bg-white">
+          <MobileNav className="bg-white shadow-md">
             <MobileNavHeader>
               <div className="pl-4">
                 <Logo />
@@ -107,13 +107,14 @@ export function NavbarDemo() {
             <MobileNavMenu
               isOpen={isMobileMenuOpen}
               onClose={() => setIsMobileMenuOpen(false)}
+              className="bg-white text-gray-800"
             >
               {navItems.map((item, idx) => (
                 <a
                   key={`mobile-link-${idx}`}
                   href={item.link}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="relative text-neutral-600 dark:text-neutral-300"
+                  className="relative text-gray-700"
                 >
                   <span className="block">{item.name}</span>
                 </a>

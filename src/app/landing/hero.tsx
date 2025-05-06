@@ -5,7 +5,7 @@ import { Spotlight } from "@/components/ui/spotlight-new";
 export function Hero() {
   return (
     <>
-      <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-800 to-blue-400 antialiased bg-grid-white/[0.02] relative overflow-hidden">
+      <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-800 to-blue-400 antialiased bg-grid-white/[0.02] relative overflow-hidden light">
         <Spotlight />
         <div className="px-6 max-w-7xl mx-auto relative w-full text-center">
           <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-l from-neutral-200 to-neutral-50 bg-opacity-50">

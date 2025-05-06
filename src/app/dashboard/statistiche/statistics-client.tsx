@@ -11,42 +11,31 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Flag, XCircle, BookOpen, PenTool, GraduationCap } from "lucide-react";
-import { UserStatistics } from "@/lib/data/user-statistics";
 import Link from "next/link";
-
-interface CompletionData {
-  totalTopics: number;
-  completedTopics: number;
-  topicsCompletionPercentage: number;
-  totalSubtopics: number;
-  completedSubtopics: number;
-  subtopicsCompletionPercentage: number;
-  firstUncompletedTopic: any;
-  firstUncompletedSubtopic: any;
-}
+import { StatisticsData } from "./statistics-data-server";
+import { useState, useEffect } from "react";
 
 interface StatisticsClientProps {
-  userStats: UserStatistics;
-  completionData: CompletionData;
+  data: StatisticsData;
 }
 
-export function StatisticsClient({
-  userStats,
-  completionData,
-}: StatisticsClientProps) {
+export function StatisticsClient({ data }: StatisticsClientProps) {
+  const { userStats, completionData, continueUrl } = data;
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
   // Calculate percentages
   const correctPercentage = Math.round(
     (userStats.correctExercises / userStats.totalExercises) * 100 || 0
   );
-
-  // Build the continue learning URL
-  let continueUrl = "/dashboard/teoria";
-  if (completionData.firstUncompletedTopic) {
-    continueUrl = `/dashboard/teoria/${completionData.firstUncompletedTopic.id}`;
-    if (completionData.firstUncompletedSubtopic) {
-      continueUrl += `?subtopic=${completionData.firstUncompletedSubtopic.id}`;
-    }
-  }
 
   return (
     <div className="flex flex-col gap-8">

@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Component Structure
+- Use Server Components (.server.tsx) for:
+  - Data fetching (e.g. getStaticProps, getServerSideProps)
+  - Static rendering logic
+  - Any UI that doesn't require interactivity or React hooks
+- Use Client Components ('use client') only when needed, e.g.:
+  - useState, useEffect, event handlers, or third-party client libraries
+
+Data Fetching & Loading States
+- Wrap dynamic or async client components with <React.Suspense fallback={...}>
+- Use next/dynamic with ssr: false for components not needed at first paint
+
+Dynamic Imports
+- Use dynamic(() => import('...'), { ssr: false }) for:
+  - Modal windows, charts, editors, etc.
+  - Any non-critical UI element
+
+Image Optimization
+- Replace <img> with <Image> from next/image
+- Set width, height, and priority where applicable
+- Use WebP or AVIF where possible
+
+Code Splitting & Prefetching
+- Use page-based routing to let Next.js handle code splitting
+- Use <Link prefetch> for client-side routing between pages
+- Lazy-load large libraries with dynamic import
+
+Caching & Static Optimization
+- Prefer getStaticProps + ISR for pages that don't need SSR
+- Cache external API requests where possible (e.g., revalidate with ISR)
+- Use headers (Cache-Control) to manage caching on CDN edges
+
+Network Review
+- Regularly audit DevTools > Network:
+  - Remove unnecessary API calls
+  - Prioritize critical-path resources (fonts, core scripts)
+  - Identify layout shifts and blocking JS
+

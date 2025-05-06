@@ -1,19 +1,20 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
-import DashboardSidebar from "@/app/components/dashboard/sidebar";
+import { ReactNode, useState, useEffect, lazy, Suspense } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
+  Menu,
+  Home,
   Book,
   BookOpen,
-  Bot,
-  ChartNoAxesColumn,
   ClipboardCheck,
-  Home,
+  Bot,
   Star,
-  Menu,
+  ChartNoAxesColumn,
 } from "lucide-react";
-import { ThemeToggle } from "../components/dashboard/themeToggle";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -21,10 +22,18 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
+// Dynamic imports for non-critical components
+const DashboardSidebar = lazy(
+  () => import("@/app/components/dashboard/sidebar")
+);
+const ThemeToggle = lazy(() =>
+  import("@/app/components/dashboard/themeToggle").then((mod) => ({
+    default: mod.ThemeToggle,
+  }))
+);
+
+// Navigation links can be exported separately
 export const navLinks = [
   {
     name: "Dashboard",
@@ -120,11 +129,15 @@ export default function DashboardLayoutClient({
     >
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <DashboardSidebar
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-          onItemClick={() => {}}
-        />
+        <Suspense
+          fallback={<div className="bg-background h-screen w-full border-r" />}
+        >
+          <DashboardSidebar
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            onItemClick={() => {}}
+          />
+        </Suspense>
       </div>
 
       <div className="flex flex-col">
@@ -144,18 +157,28 @@ export default function DashboardLayoutClient({
                   Application navigation links
                 </SheetDescription>
                 <div className="flex h-full flex-col">
-                  <DashboardSidebar
-                    collapsed={false}
-                    setCollapsed={() => {}}
-                    onItemClick={() => setMobileMenuOpen(false)}
-                    isMobile={true}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="h-full w-full flex justify-center items-center">
+                        Loading...
+                      </div>
+                    }
+                  >
+                    <DashboardSidebar
+                      collapsed={false}
+                      setCollapsed={() => {}}
+                      onItemClick={() => setMobileMenuOpen(false)}
+                      isMobile={true}
+                    />
+                  </Suspense>
                 </div>
               </SheetContent>
             </Sheet>
 
             <div className="ml-auto flex items-center gap-x-5">
-              <ThemeToggle />
+              <Suspense fallback={<div className="h-8 w-8" />}>
+                <ThemeToggle />
+              </Suspense>
             </div>
           </header>
         </div>

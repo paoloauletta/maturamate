@@ -18,51 +18,16 @@ import ExerciseCard from "@/app/components/exercises/ExerciseCard";
 import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-
-interface SubtopicType {
-  id: string;
-  name: string;
-  order_index: number | null;
-}
-
-interface TopicType {
-  id: string;
-  name: string;
-  order_index: number | null;
-  subtopics: SubtopicType[];
-}
-
-interface ExerciseCardType {
-  id: string;
-  subtopic_id: string | null;
-  subtopic_name: string | null;
-  topic_name: string | null;
-  topic_id: string | null;
-  description: string;
-  difficulty: number;
-  created_at: Date;
-  topic_order: number | null;
-  subtopic_order: number | null;
-  is_completed: boolean;
-  total_exercises?: number;
-  score?: number;
-}
-
-interface SubtopicGroupType {
-  subtopic_name: string;
-  subtopic_order: number | null;
-  exercise_cards: ExerciseCardType[];
-}
-
-interface TopicGroupType {
-  topic_name: string;
-  topic_order: number | null;
-  subtopics: Record<string, SubtopicGroupType>;
-}
+import {
+  TopicType,
+  TopicGroup,
+  SubtopicGroup,
+  ExerciseCard as ExerciseCardType,
+} from "./exercises-data-server";
 
 interface ClientExercisesPageProps {
   topicsWithSubtopics: TopicType[];
-  exerciseCardsByTopic: Record<string, TopicGroupType>;
+  exerciseCardsByTopic: Record<string, TopicGroup>;
 }
 
 export default function ClientExercisesPage({
@@ -76,8 +41,12 @@ export default function ClientExercisesPage({
   const activeTopicId = searchParams.get("topic") || undefined;
 
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Prevent hydration mismatch
+    setMounted(true);
+
     // Function to check if viewport is mobile sized
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -92,6 +61,10 @@ export default function ClientExercisesPage({
     // Cleanup
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   const [difficultyFilter, setDifficultyFilter] = useState<number | null>(null);
   const [completionFilter, setCompletionFilter] = useState<string | null>(null);
@@ -135,7 +108,7 @@ export default function ClientExercisesPage({
     exerciseCardsByTopic
   ).reduce((acc, [topicId, topic]) => {
     const filteredSubtopics = Object.entries(topic.subtopics).reduce(
-      (subAcc, [subtopicId, subtopic]: [string, SubtopicGroupType]) => {
+      (subAcc, [subtopicId, subtopic]: [string, SubtopicGroup]) => {
         // Filter exercise cards by difficulty
         let filteredCards = subtopic.exercise_cards;
 
@@ -160,7 +133,7 @@ export default function ClientExercisesPage({
 
         return subAcc;
       },
-      {} as Record<string, SubtopicGroupType>
+      {} as Record<string, SubtopicGroup>
     );
 
     if (Object.keys(filteredSubtopics).length > 0) {
@@ -171,7 +144,7 @@ export default function ClientExercisesPage({
     }
 
     return acc;
-  }, {} as Record<string, TopicGroupType>);
+  }, {} as Record<string, TopicGroup>);
 
   const updateSubtopicParam = (subtopicId: string) => {
     const params = new URLSearchParams(searchParams);

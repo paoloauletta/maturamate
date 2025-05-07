@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Star, ChevronRight } from "lucide-react";
+import { Star, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
 
 interface MobileExerciseItemProps {
   id: string;
@@ -22,10 +21,6 @@ interface MobileExerciseItemProps {
 
 export default function MobileExerciseItem({
   id,
-  topicName,
-  topicOrder,
-  subtopicName,
-  subtopicOrder,
   description,
   difficulty,
   isCompleted,

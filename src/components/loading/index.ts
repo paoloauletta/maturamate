@@ -9,3 +9,6 @@ export * from "./dashboard-skeleton";
 export * from "./exercises-skeleton";
 export * from "./exercises-mobile-skeleton";
 export * from "./statistics-skeleton";
+export * from "./theory-skeleton";
+export * from "./favorites-skeleton";
+export * from "./simulations-skeleton";

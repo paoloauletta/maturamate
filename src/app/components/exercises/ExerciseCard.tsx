@@ -99,7 +99,7 @@ export default function ExerciseCard({
 
   return (
     <Link href={linkHref}>
-      <Card className="h-full transition-all duration-300 hover:ring-primary/50 hover:ring-1 flex flex-col relative">
+      <Card className="h-full transition-all duration-300 hover:bg-muted/50 flex flex-col relative">
         <CardHeader className="pb-2">
           {!disableHeader && (
             <div>

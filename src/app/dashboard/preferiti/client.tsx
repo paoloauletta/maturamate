@@ -22,7 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import MathRenderer from "@/app/components/renderer/mathRenderer";
+import MathRenderer from "@/app/components/renderer/math-renderer";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {

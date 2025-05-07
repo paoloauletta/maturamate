@@ -1,12 +1,3 @@
-import { db } from "@/db/drizzle";
-import {
-  exercisesTable,
-  topicsTable,
-  subtopicsTable,
-  exercisesCardsTable,
-  completedExercisesTable,
-} from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getTopics } from "@/utils/cache";
 

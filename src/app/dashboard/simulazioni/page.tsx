@@ -10,6 +10,8 @@ import { auth } from "@/lib/auth";
 import ClientSimulationsPage from "./client-page";
 import { cache } from "react";
 import { PageLoading } from "@/app/components/loading/page-loading.server";
+import { Suspense } from "react";
+import { SimulationsSkeleton } from "@/components/loading";
 
 // Cache simulations and cards data - these change very infrequently
 const getSimulationData = cache(async () => {
@@ -31,7 +33,15 @@ const getSimulationData = cache(async () => {
 // Set revalidation period
 export const revalidate = 3600;
 
-export default async function Simulations() {
+export default function SimulationsWrapper() {
+  return (
+    <Suspense fallback={<SimulationsSkeleton />}>
+      <Simulations />
+    </Suspense>
+  );
+}
+
+async function Simulations() {
   const session = await auth();
   const user = session?.user;
 

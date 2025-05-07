@@ -1,13 +1,12 @@
 import { eq, and, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
-import { getTopicsWithSubtopics, getTopics, getSubtopics } from "@/utils/cache";
+import { getTopicsWithSubtopics } from "@/utils/cache";
 import { db } from "@/db/drizzle";
 import {
   exercisesCardsTable,
   exercisesTable,
   completedExercisesTable,
-  topicsTable,
   subtopicsTable,
 } from "@/db/schema";
 

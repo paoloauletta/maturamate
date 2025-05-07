@@ -17,8 +17,17 @@ import { auth } from "@/lib/auth";
 // Import client component
 import FavoritesClient from "./client";
 import { type ContentType } from "./client"; // Import ContentType from client
+import { FavoritesSkeleton } from "@/components/loading";
 
-export default async function FavoritesPage() {
+export default async function FavoritesPageWrapper() {
+  return (
+    <Suspense fallback={<FavoritesSkeleton />}>
+      <FavoritesPage />
+    </Suspense>
+  );
+}
+
+async function FavoritesPage() {
   const session = await auth();
   const user = session?.user;
 
@@ -206,13 +215,9 @@ export default async function FavoritesPage() {
   });
 
   return (
-    <Suspense
-      fallback={<div className="container">Caricamento preferiti...</div>}
-    >
-      <FavoritesClient
-        flaggedCards={flaggedCards}
-        flaggedExercises={flaggedExercises}
-      />
-    </Suspense>
+    <FavoritesClient
+      flaggedCards={flaggedCards}
+      flaggedExercises={flaggedExercises}
+    />
   );
 }

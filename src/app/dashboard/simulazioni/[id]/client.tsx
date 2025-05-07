@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -11,21 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Clock,
-  CheckCircle,
-  FileText,
-  Minimize2,
-  Maximize,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  ChevronLeft,
-  ChevronRight,
-  TabletSmartphone,
-} from "lucide-react";
+import { Clock, CheckCircle, FileText, TabletSmartphone } from "lucide-react";
 import Link from "next/link";
-import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PdfViewer from "@/app/components/renderer/pdf-renderer";
 
 interface Simulation {
   id: string;
@@ -68,20 +56,7 @@ export default function SimulationClient({
   const router = useRouter();
   const [showConfirmation, setShowConfirmation] = useState(!hasStarted);
   const [fullscreen, setFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
-
-  // PDF.js state
-  const [pageNum, setPageNum] = useState(1);
-  const [numPages, setNumPages] = useState(0);
-  const [scale, setScale] = useState(1.5);
-  const [rotation, setRotation] = useState(0);
-
-  // PDF.js refs
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pdfDocRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const renderTaskRef = useRef<any>(null);
 
   // Calculate initial time remaining based on start time
   const calculateInitialTimeRemaining = () => {
@@ -251,268 +226,6 @@ export default function SimulationClient({
       setIsRestarting(false);
     }
   };
-
-  // Function to get proxy URL for PDFs
-  const getProxyUrl = (originalUrl: string) => {
-    // For local PDFs (those hosted on our server), use them directly
-    if (typeof window === "undefined") return originalUrl;
-
-    if (
-      originalUrl.startsWith("/") ||
-      originalUrl.startsWith(window.location.origin)
-    ) {
-      return originalUrl;
-    }
-
-    // For external PDFs, use our proxy
-    return `/api/pdf-proxy?url=${encodeURIComponent(originalUrl)}`;
-  };
-
-  // Function to render PDF page
-  const renderPage = async (num: number) => {
-    if (!pdfDocRef.current) return;
-
-    setIsLoading(true);
-
-    try {
-      // Cancel any ongoing render task
-      if (renderTaskRef.current) {
-        try {
-          await renderTaskRef.current.cancel();
-        } catch (e) {
-          console.log("Error cancelling previous render task:", e);
-        }
-        renderTaskRef.current = null;
-      }
-
-      const page = await pdfDocRef.current.getPage(num);
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      // Clear previous content
-      const context = canvas.getContext("2d");
-      if (!context) return;
-
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      const viewport = page.getViewport({ scale, rotation: rotation });
-
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-      };
-
-      // Store the render task to be able to cancel it if needed
-      const renderTask = page.render(renderContext);
-      renderTaskRef.current = renderTask;
-
-      await renderTask.promise;
-      renderTaskRef.current = null;
-      setIsLoading(false);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("cancelled")) {
-        console.log("Rendering was cancelled");
-      } else if (
-        error instanceof Error &&
-        error.message.includes("Transport destroyed")
-      ) {
-        console.log("Transport destroyed - PDF document may have been closed");
-      } else {
-        console.error("Error rendering page:", error);
-      }
-      setIsLoading(false);
-    }
-  };
-
-  // Load the PDF document
-  useEffect(() => {
-    let isComponentMounted = true;
-
-    if (!simulation.pdf_url) return;
-
-    setIsLoading(true);
-    setPageNum(1);
-
-    // Clean up previous resources
-    const cleanup = () => {
-      if (renderTaskRef.current) {
-        try {
-          renderTaskRef.current.cancel();
-        } catch (e) {
-          console.log("Error cancelling render task during cleanup:", e);
-        }
-        renderTaskRef.current = null;
-      }
-
-      if (pdfDocRef.current) {
-        try {
-          pdfDocRef.current.destroy();
-        } catch (e) {
-          console.log("Error destroying PDF document during cleanup:", e);
-        }
-        pdfDocRef.current = null;
-      }
-    };
-
-    // Clean up previous instance
-    cleanup();
-
-    const loadPDF = async () => {
-      let retries = 3;
-      const loadWithRetry = async () => {
-        try {
-          // Dynamically import PDF.js
-          const pdfjsLib = await import("pdfjs-dist");
-
-          // Set up the worker using the file we copied to the public directory
-          pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
-
-          // Get the document using our proxy for external URLs
-          const proxyUrl = getProxyUrl(simulation.pdf_url);
-
-          // Create loading task with better error handling
-          const loadingTask = pdfjsLib.getDocument(proxyUrl);
-          loadingTask.onPassword = (
-            updatePassword: (password: string) => void,
-            reason: number
-          ) => {
-            console.log("Password required for PDF:", reason);
-            // You could implement a password prompt here
-            return Promise.resolve();
-          };
-
-          // Await the document with a timeout
-          const pdfDoc = (await Promise.race([
-            loadingTask.promise,
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("PDF loading timeout")), 30000)
-            ),
-          ])) as any; // Type assertion to handle the PDF document
-
-          // Check if component is still mounted before updating state
-          if (!isComponentMounted) {
-            pdfDoc.destroy();
-            return;
-          }
-
-          // Store the PDF document reference
-          pdfDocRef.current = pdfDoc;
-          setNumPages(pdfDoc.numPages);
-
-          // Render the first page
-          await renderPage(1);
-        } catch (error) {
-          console.error("Error loading PDF:", error);
-          if (retries > 0) {
-            console.log(`Retrying PDF load... (${3 - retries + 1}/3)`);
-            retries -= 1;
-            await loadWithRetry();
-          } else {
-            setIsLoading(false);
-            console.error("Failed to load PDF after multiple attempts.");
-          }
-        }
-      };
-
-      await loadWithRetry();
-    };
-
-    loadPDF();
-
-    // Cleanup function
-    return () => {
-      isComponentMounted = false;
-      cleanup();
-    };
-  }, [simulation.pdf_url]);
-
-  // Re-render the page when scale or rotation changes
-  useEffect(() => {
-    if (pdfDocRef.current) {
-      renderPage(pageNum);
-    }
-  }, [scale, rotation]);
-
-  // Navigation functions
-  const goToPreviousPage = () => {
-    if (pageNum <= 1) return;
-    setPageNum((prev) => {
-      const newPage = prev - 1;
-      renderPage(newPage);
-      return newPage;
-    });
-  };
-
-  const goToNextPage = () => {
-    if (pageNum >= numPages) return;
-    setPageNum((prev) => {
-      const newPage = prev + 1;
-      renderPage(newPage);
-      return newPage;
-    });
-  };
-
-  // Zoom functions
-  const zoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.25, 3));
-  };
-
-  const zoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.25, 0.5));
-  };
-
-  // Rotation function
-  const rotate = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
-
-  // Toggle fullscreen mode for the PDF canvas
-  const toggleFullscreen = () => {
-    if (containerRef.current) {
-      if (!fullscreen) {
-        if (containerRef.current.requestFullscreen) {
-          containerRef.current.requestFullscreen();
-          setFullscreen(true);
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-          setFullscreen(false);
-        }
-      }
-    }
-  };
-
-  // Handle fullscreen change events
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "mozfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "MSFullscreenChange",
-        handleFullscreenChange
-      );
-    };
-  }, []);
 
   // If the user has completed this simulation, show solutions page
   if (isCompleted) {
@@ -702,108 +415,14 @@ export default function SimulationClient({
           fullscreen ? "h-[calc(100vh-112px)]" : "h-[calc(100vh-180px)]"
         }`}
       >
-        <div className="absolute inset-0 py-4  sm:p-6 flex flex-col">
+        <div className="absolute inset-0 py-4 sm:p-6 flex flex-col">
           <div className="flex-1 bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-border/30 flex flex-col">
-            {/* PDF.js Canvas Renderer */}
-            <div
-              ref={containerRef}
-              className="flex-1 w-full h-full relative overflow-auto"
-            >
-              <div className="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between items-center">
-                {/* Page navigation controls */}
-                <div className="bg-background/90 rounded-full px-3 py-1">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={goToPreviousPage}
-                      disabled={pageNum <= 1}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm">
-                      {pageNum} / {numPages}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={goToNextPage}
-                      disabled={pageNum >= numPages}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* PDF controls */}
-                <div className="bg-background/90 rounded-lg p-1 flex">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={zoomOut}
-                    title="Zoom Out"
-                    className="h-8 w-8 p-0"
-                  >
-                    <ZoomOut className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={zoomIn}
-                    title="Zoom In"
-                    className="h-8 w-8 p-0"
-                  >
-                    <ZoomIn className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={rotate}
-                    title="Rotate"
-                    className="h-8 w-8 p-0"
-                  >
-                    <RotateCw className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleFullscreen}
-                    title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                    className="h-8 w-8 p-0"
-                  >
-                    {fullscreen ? (
-                      <Minimize2 className="h-4 w-4" />
-                    ) : (
-                      <Maximize className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex justify-center items-center min-h-[100%]">
-                <canvas
-                  ref={canvasRef}
-                  style={{
-                    margin: "0 auto",
-                    display: "block",
-                    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-                  }}
-                />
-              </div>
-
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                  <div className="flex flex-col items-center">
-                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                    <p className="mt-4 text-muted-foreground">
-                      Caricamento PDF...
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Use the unified PDF Viewer component */}
+            <PdfViewer
+              pdfUrl={simulation.pdf_url}
+              height="100%"
+              className="flex-1"
+            />
           </div>
         </div>
       </div>

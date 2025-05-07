@@ -68,7 +68,7 @@ export default function ClientTheoryPage({
             {topicsWithSubtopics.map((topic) => (
               <Card
                 key={topic.id}
-                className="cursor-pointer hover:ring-1 hover:ring-blue-600 transition-all"
+                className="cursor-pointer hover:ring-1 hover:ring-bg-primary transition-all"
                 onClick={() => handleTopicClick(topic.id)}
               >
                 <CardHeader className="pb-3">

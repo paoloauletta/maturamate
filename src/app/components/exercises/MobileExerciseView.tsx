@@ -11,7 +11,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import MathRenderer from "@/app/components/renderer/mathRenderer";
+import MathRenderer from "@/app/components/renderer/math-renderer";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface MobileExerciseViewProps {
@@ -292,162 +292,147 @@ export default function MobileExerciseView({
       </div>
 
       {/* Expandable content */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{
-              duration: 0.2,
+              duration: 0.3,
               ease: [0.25, 0.1, 0.25, 1],
               opacity: { duration: 0.2 },
             }}
-            className="px-4 pb-4 pt-2 overflow-hidden"
+            style={{ overflow: "hidden" }}
           >
-            {/* Question */}
-            <div className="prose prose-sm dark:prose-invert mb-6">
-              {question.split("\n").map((line, index) => (
-                <div key={index} className="mb-2">
-                  <MathRenderer content={line} />
-                </div>
-              ))}
-            </div>
-
-            {/* Solution Box with Blur Effect - always visible in favorites */}
-            <div
-              onClick={inFavouritesPage ? undefined : handleRevealSolution}
-              className={cn(
-                "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
-                inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
-                !inFavouritesPage && !isRevealed ? "blur-sm select-none" : ""
-              )}
-            >
-              <h4 className="text-sm font-semibold mb-3 text-primary">
-                Soluzione
-              </h4>
-              <div className="prose prose-sm dark:prose-invert">
-                {solution.split("\n").map((line, index) => (
+            <div className="px-4 py-4">
+              {/* Question */}
+              <div className="prose prose-sm dark:prose-invert mb-6">
+                {question.split("\n").map((line, index) => (
                   <div key={index} className="mb-2">
                     <MathRenderer content={line} />
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Only show interactive elements if not in favorites page */}
-            {!inFavouritesPage && (
-              <>
-                {/* Correct/incorrect buttons - Full width with text */}
-                <AnimatePresence>
-                  {isRevealed && !exerciseCompleted && !isIncorrect && (
-                    <motion.div
-                      className="grid grid-cols-2 gap-2 my-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{
-                        duration: 0.2,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
+              {/* Solution Box with Blur Effect - always visible in favorites */}
+              <div
+                onClick={inFavouritesPage ? undefined : handleRevealSolution}
+                className={cn(
+                  "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
+                  inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
+                  !inFavouritesPage && !isRevealed ? "blur-sm select-none" : ""
+                )}
+              >
+                <h4 className="text-sm font-semibold mb-3 text-primary">
+                  Soluzione
+                </h4>
+                <div className="prose prose-sm dark:prose-invert">
+                  {solution.split("\n").map((line, index) => (
+                    <div key={index} className="mb-2">
+                      <MathRenderer content={line} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Only show interactive elements if not in favorites page */}
+              {!inFavouritesPage && (
+                <>
+                  {/* Correct/incorrect buttons */}
+                  <div
+                    className={cn(
+                      "grid grid-cols-2 gap-2 my-4 transition-all duration-200",
+                      isRevealed && !exerciseCompleted && !isIncorrect
+                        ? "opacity-100 max-h-24"
+                        : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
+                    )}
+                  >
+                    <Button
+                      onClick={handleMarkIncorrect}
+                      variant="outline"
+                      className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30"
                     >
+                      <XCircle className="h-4 w-4" />
+                      Errato
+                    </Button>
+                    <Button
+                      onClick={handleMarkCorrect}
+                      variant="outline"
+                      className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Corretto
+                    </Button>
+                  </div>
+
+                  {/* Tutor options when marked as incorrect */}
+                  <div
+                    className={cn(
+                      "mt-4 space-y-3 transition-all duration-200",
+                      isIncorrect && !showTutor
+                        ? "opacity-100 max-h-60"
+                        : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
+                    )}
+                  >
+                    <p className="text-sm text-muted-foreground">
+                      Ho visto che stai avendo difficoltà con questo esercizio.
+                      Cosa vuoi fare adesso?
+                    </p>
+                    <div className="flex flex-row w-1/2 gap-2">
                       <Button
-                        onClick={handleMarkIncorrect}
+                        onClick={handleRetry}
                         variant="outline"
-                        className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30"
+                        className="w-full"
+                      >
+                        Riprova
+                      </Button>
+                      <Button
+                        onClick={handleShowTutor}
+                        className="flex items-center justify-center gap-2 w-full"
+                      >
+                        <MessageSquareText className="h-4 w-4" />
+                        Tutor AI
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Tutor explanation */}
+                  <div
+                    className={cn(
+                      "mt-4 space-y-4 transition-all duration-200",
+                      showTutor
+                        ? "opacity-100 max-h-60"
+                        : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
+                    )}
+                  >
+                    <p className="text-sm">
+                      Dopo l'aiuto del tutor hai capito l'esercizio?
+                    </p>
+
+                    <div className="flex flex-row gap-2">
+                      <Button
+                        onClick={handleStillNotUnderstood}
+                        variant="outline"
+                        className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30 w-1/2"
                       >
                         <XCircle className="h-4 w-4" />
                         Errato
                       </Button>
                       <Button
-                        onClick={handleMarkCorrect}
+                        onClick={handleUnderstoodAfterHelp}
                         variant="outline"
-                        className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30"
+                        className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30 w-1/2"
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         Corretto
                       </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Tutor options when marked as incorrect */}
-                <AnimatePresence>
-                  {isIncorrect && !showTutor && (
-                    <motion.div
-                      className="mt-4 space-y-3"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{
-                        duration: 0.2,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
-                    >
-                      <p className="text-sm text-muted-foreground">
-                        Ho visto che stai avendo difficoltà con questo
-                        esercizio. Cosa vuoi fare adesso?
-                      </p>
-                      <div className="flex flex-row w-1/2 gap-2">
-                        <Button
-                          onClick={handleRetry}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          Riprova
-                        </Button>
-                        <Button
-                          onClick={handleShowTutor}
-                          className="flex items-center justify-center gap-2 w-full"
-                        >
-                          <MessageSquareText className="h-4 w-4" />
-                          Tutor AI
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Tutor explanation */}
-                <AnimatePresence>
-                  {showTutor && (
-                    <motion.div
-                      className="mt-4 space-y-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{
-                        duration: 0.2,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
-                    >
-                      <p className="text-sm">
-                        Dopo l'aiuto del tutor hai capito l'esercizio?
-                      </p>
-
-                      <div className="flex flex-row gap-2">
-                        <Button
-                          onClick={handleStillNotUnderstood}
-                          variant="outline"
-                          className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30 w-1/2"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          Errato
-                        </Button>
-                        <Button
-                          onClick={handleUnderstoodAfterHelp}
-                          variant="outline"
-                          className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30 w-1/2"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                          Corretto
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
-            )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

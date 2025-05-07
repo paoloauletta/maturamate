@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import ExerciseCard from "@/app/components/exercises/ExerciseCard.client";
+import ExerciseCard from "@/app/components/exercises/ExerciseCard";
 import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
-import { BookOpen, Filter, ChevronRight, Book } from "lucide-react";
+import { Filter, ChevronRight, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -92,7 +92,6 @@ export default function ExercisesTopicClient({
   userId,
 }: ExerciseTopicClientProps) {
   const router = useRouter();
-  const isMobile = useIsMobile();
   const subtopicRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Use local state to manage active subtopic ID

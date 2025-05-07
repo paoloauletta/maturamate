@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import TopicsSidebar from "@/app/components/dashboard/topics-sidebar";
 import { useRouter } from "next/navigation";
-import MarkdownRenderer from "@/app/components/renderer/markdownRenderer";
+import MarkdownRenderer from "@/app/components/renderer/markdown-renderer";
 import Link from "next/link";
 import { BookOpen, ChevronRight, Check, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";

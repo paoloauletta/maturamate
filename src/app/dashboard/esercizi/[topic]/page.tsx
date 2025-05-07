@@ -1,17 +1,6 @@
-import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
-import { Suspense } from "react";
 import { getTopicData } from "./topic-data-server";
 import ExercisesTopicClient from "./client";
-import { getTopicsWithSubtopics, getTopics, getSubtopics } from "@/utils/cache";
-import { db } from "@/db/drizzle";
-import {
-  exercisesCardsTable,
-  exercisesTable,
-  completedExercisesTable,
-} from "@/db/schema";
-import { ExercisesSkeleton } from "@/components/loading";
+import { getTopics } from "@/utils/cache";
 
 // Set revalidation period - revalidate every hour
 export const revalidate = 3600;

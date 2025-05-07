@@ -4,18 +4,43 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  CheckCircle,
-  Clock,
-  Calendar,
-  School,
-  Star,
-  CircleDot,
-  BookOpen,
-  Rows3,
-} from "lucide-react";
+import { CheckCircle, Clock, Calendar, School, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Animation variants
+const cardVariants = {
+  hidden: { opacity: 0, y: 10, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.15,
+      ease: "easeOut",
+    },
+  },
+};
+
+const expandVariants = {
+  hidden: { opacity: 0, height: 0, overflow: "hidden" },
+  visible: {
+    opacity: 1,
+    height: "auto",
+    transition: {
+      height: { duration: 0.2, ease: [0.04, 0.62, 0.23, 0.98] },
+      opacity: { duration: 0.15 },
+    },
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    transition: {
+      height: { duration: 0.2, ease: [0.04, 0.62, 0.23, 0.98] },
+      opacity: { duration: 0.1 },
+    },
+  },
+};
 
 interface Simulation {
   id: string;
@@ -129,7 +154,6 @@ export default function ClientSimulationsPage({
   };
 
   return (
-    // DO NOT CHANGE FROM HERE
     <div className="">
       <div className="flex justify-between items-center lg:mt-0 lg:mb-8 lg:pb-4 border-b border-border my-6 pb-2">
         <h1 className="text-4xl font-bold text-left">Simulazioni</h1>
@@ -150,175 +174,196 @@ export default function ClientSimulationsPage({
                 Simulazioni {year}
               </h2>
 
-              {/* TILL HERE, FROM HERE ON YOU CAN CHANGE THE CODE */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredCards.map((card) => {
                   const [isExpanded, setIsExpanded] = useState(false);
                   return (
-                    <Card
+                    <motion.div
                       key={card.id}
-                      className="border border-border/80 dark:border-border bg-background"
+                      variants={cardVariants}
+                      initial="hidden"
+                      animate="visible"
                     >
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="text-xl">
-                            {card.title}
-                          </CardTitle>
-                          <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="text-muted-foreground hover:text-primary transition-colors"
-                            aria-label={
-                              isExpanded
-                                ? "Nascondi simulazioni"
-                                : "Mostra simulazioni"
-                            }
-                          >
-                            <svg
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className={`transition-transform duration-200 ${
-                                isExpanded ? "rotate-180" : ""
-                              }`}
+                      <Card className="border border-border/80 dark:border-border bg-background overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-center">
+                            <CardTitle className="text-xl">
+                              {card.title}
+                            </CardTitle>
+                            <button
+                              onClick={() => setIsExpanded(!isExpanded)}
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                              aria-label={
+                                isExpanded
+                                  ? "Nascondi simulazioni"
+                                  : "Mostra simulazioni"
+                              }
                             >
-                              <path d="m6 9 6 6 6-6" />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground mt-2">
-                          <div className="flex items-center">
-                            <School className="h-4 w-4 mr-1.5" />
-                            <span>{card.subject}</span>
-                          </div>
-                          <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-1.5" />
-                            <span>{card.year}</span>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0 pb-3">
-                        <p className="text-sm text-muted-foreground">
-                          {card.description.length > 120
-                            ? `${card.description.substring(0, 120)}...`
-                            : card.description}
-                        </p>
-                      </CardContent>
-
-                      {isExpanded && (
-                        <div className="px-6 pb-4 space-y-2">
-                          {card.simulations.map((simulation) => {
-                            let simulationType = "Simulazione Completa";
-
-                            if (
-                              simulation.title.toLowerCase().includes("problem")
-                            ) {
-                              simulationType = "Solo Problemi";
-                            } else if (
-                              simulation.title.toLowerCase().includes("quesit")
-                            ) {
-                              simulationType = "Solo Quesiti";
-                            }
-
-                            return (
-                              <div
-                                key={simulation.id}
-                                className="py-3 first:pt-4 border-b border-border/30 last:border-b-0"
+                              <motion.svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                animate={{ rotate: isExpanded ? 180 : 0 }}
+                                transition={{ duration: 0.2 }}
                               >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="text-sm font-medium">
-                                      <span>{simulationType}</span>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1.5">
-                                      <div className="flex items-center">
-                                        <Clock className="h-3.5 w-3.5 mr-1" />
-                                        <span>
-                                          {formatTimeInHours(
-                                            simulation.time_in_min
+                                <path d="m6 9 6 6 6-6" />
+                              </motion.svg>
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-2">
+                            <div className="flex items-center">
+                              <School className="h-4 w-4 mr-1.5" />
+                              <span>{card.subject}</span>
+                            </div>
+                            <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1.5" />
+                              <span>{card.year}</span>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-0 pb-3">
+                          <p className="text-sm text-muted-foreground">
+                            {card.description.length > 120
+                              ? `${card.description.substring(0, 120)}...`
+                              : card.description}
+                          </p>
+                        </CardContent>
+
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              variants={expandVariants}
+                              className="px-6 space-y-2"
+                            >
+                              {card.simulations.map((simulation, index) => {
+                                let simulationType = "Simulazione Completa";
+
+                                if (
+                                  simulation.title
+                                    .toLowerCase()
+                                    .includes("problem")
+                                ) {
+                                  simulationType = "Solo Problemi";
+                                } else if (
+                                  simulation.title
+                                    .toLowerCase()
+                                    .includes("quesit")
+                                ) {
+                                  simulationType = "Solo Quesiti";
+                                }
+
+                                return (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{
+                                      duration: 0.15,
+                                      delay: index * 0.05, // Stagger children animations
+                                    }}
+                                    key={simulation.id}
+                                    className="py-3 first:pt-4 border-b border-border/30 last:border-b-0"
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <div className="text-sm font-medium">
+                                          <span>{simulationType}</span>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1.5">
+                                          <div className="flex items-center">
+                                            <Clock className="h-3.5 w-3.5 mr-1" />
+                                            <span>
+                                              {formatTimeInHours(
+                                                simulation.time_in_min
+                                              )}
+                                            </span>
+                                          </div>
+
+                                          {simulation.is_completed && (
+                                            <div className="flex items-center text-green-600 dark:text-green-400">
+                                              <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                                              <span>Completata</span>
+                                            </div>
                                           )}
-                                        </span>
+
+                                          {simulation.is_started &&
+                                            !simulation.is_completed && (
+                                              <div className="flex items-center text-bg-primary dark:text-bg-primary">
+                                                <Clock className="h-3.5 w-3.5 mr-1" />
+                                                <span>In corso</span>
+                                              </div>
+                                            )}
+                                        </div>
                                       </div>
 
-                                      {simulation.is_completed && (
-                                        <div className="flex items-center text-green-600 dark:text-green-400">
-                                          <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                                          <span>Completata</span>
-                                        </div>
-                                      )}
+                                      <div className="flex items-center gap-2">
+                                        <motion.button
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFavorite(simulation.id, e);
+                                          }}
+                                          className="focus:outline-none text-muted-foreground"
+                                          aria-label={
+                                            simulation.is_flagged
+                                              ? "Rimuovi dai preferiti"
+                                              : "Aggiungi ai preferiti"
+                                          }
+                                        >
+                                          <Star
+                                            className={cn(
+                                              "h-5 w-5 transition-colors",
+                                              simulation.is_flagged
+                                                ? "fill-yellow-400 text-yellow-400"
+                                                : "hover:text-yellow-400"
+                                            )}
+                                          />
+                                        </motion.button>
 
-                                      {simulation.is_started &&
-                                        !simulation.is_completed && (
-                                          <div className="flex items-center text-blue-600 dark:text-blue-400">
-                                            <Clock className="h-3.5 w-3.5 mr-1" />
-                                            <span>In corso</span>
-                                          </div>
-                                        )}
+                                        <Link
+                                          href={`/dashboard/simulazioni/${simulation.id}`}
+                                        >
+                                          <Button
+                                            variant={
+                                              simulation.is_completed ||
+                                              !simulation.is_started
+                                                ? "outline"
+                                                : "default"
+                                            }
+                                            size="sm"
+                                            className={cn(
+                                              simulation.is_completed
+                                                ? "border-green-200 text-green-500 hover:bg-green-50 hover:text-green-600 hover:border-green-300"
+                                                : simulation.is_started
+                                                ? "bg-bg-primary hover:bg-blue-700"
+                                                : ""
+                                            )}
+                                          >
+                                            {simulation.is_completed
+                                              ? "Rivedi"
+                                              : simulation.is_started
+                                              ? "Continua"
+                                              : "Inizia"}
+                                          </Button>
+                                        </Link>
+                                      </div>
                                     </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleFavorite(simulation.id, e);
-                                      }}
-                                      className="focus:outline-none text-muted-foreground"
-                                      aria-label={
-                                        simulation.is_flagged
-                                          ? "Rimuovi dai preferiti"
-                                          : "Aggiungi ai preferiti"
-                                      }
-                                    >
-                                      <Star
-                                        className={cn(
-                                          "h-5 w-5 transition-colors",
-                                          simulation.is_flagged
-                                            ? "fill-yellow-400 text-yellow-400"
-                                            : "hover:text-yellow-400"
-                                        )}
-                                      />
-                                    </button>
-
-                                    <Link
-                                      href={`/dashboard/simulazioni/${simulation.id}`}
-                                    >
-                                      <Button
-                                        variant={
-                                          simulation.is_completed ||
-                                          !simulation.is_started
-                                            ? "outline"
-                                            : "default"
-                                        }
-                                        size="sm"
-                                        className={cn(
-                                          simulation.is_completed
-                                            ? "border-green-200 text-green-500 hover:bg-green-50 hover:text-green-600 hover:border-green-300"
-                                            : simulation.is_started
-                                            ? "bg-blue-600 hover:bg-blue-700"
-                                            : ""
-                                        )}
-                                      >
-                                        {simulation.is_completed
-                                          ? "Rivedi"
-                                          : simulation.is_started
-                                          ? "Continua"
-                                          : "Inizia"}
-                                      </Button>
-                                    </Link>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </Card>
+                                  </motion.div>
+                                );
+                              })}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Card>
+                    </motion.div>
                   );
                 })}
               </div>

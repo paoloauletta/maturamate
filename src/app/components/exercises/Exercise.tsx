@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, MessageSquareText, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import MathRenderer from "@/app/components/renderer/mathRenderer";
+import MathRenderer from "@/app/components/renderer/math-renderer";
 
 interface ExerciseProps {
   id: string;
@@ -182,7 +182,7 @@ export function Exercise({
         "mb-6 transition-all duration-300",
         // Only apply hover effect if NOT the current card
         !isCurrent && "hover:ring-1 hover:ring-primary/50",
-        isCurrent && !exerciseCompleted ? "ring-2 ring-primary/50" : "",
+        isCurrent && !exerciseCompleted ? "ring-1 ring-primary/50" : "",
         exerciseCompleted ? "opacity-100" : ""
       )}
     >

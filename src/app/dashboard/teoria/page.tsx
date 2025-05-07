@@ -7,11 +7,19 @@ import {
 } from "@/db/schema";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { TheorySkeleton } from "@/components/loading";
 
-export default async function TheoryPage() {
+export default function TheoryPageWrapper() {
+  return (
+    <Suspense fallback={<TheorySkeleton />}>
+      <TheoryPage />
+    </Suspense>
+  );
+}
+
+async function TheoryPage() {
   const session = await auth();
   const user = session?.user;
 
@@ -28,14 +36,12 @@ export default async function TheoryPage() {
   if (allTopics.length === 0) {
     // If no topics exist, create a placeholder message
     return (
-      <Suspense fallback={<LoadingSpinner text="Caricamento teoria..." />}>
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Teoria</h1>
-          <p className="text-muted-foreground">
-            Non ci sono ancora argomenti disponibili.
-          </p>
-        </div>
-      </Suspense>
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-4">Teoria</h1>
+        <p className="text-muted-foreground">
+          Non ci sono ancora argomenti disponibili.
+        </p>
+      </div>
     );
   }
 

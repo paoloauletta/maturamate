@@ -1,30 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import {
-  Maximize2,
-  Minimize2,
-  ChevronLeft,
-  ChevronUp,
-  ChevronDown,
-  LayoutGrid,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  ChevronRight,
-  ArrowLeft,
-} from "lucide-react";
+import { ChevronUp, ChevronDown, ArrowLeft, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
+import PdfViewer from "@/app/components/renderer/pdf-renderer";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Simulation {
   id: string;
@@ -57,20 +40,8 @@ export default function SolutionsClient({
   const [selectedSolution, setSelectedSolution] = useState<Solution | null>(
     solutions.length > 0 ? solutions[0] : null
   );
-  const [fullscreen, setFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [pageNum, setPageNum] = useState(1);
-  const [numPages, setNumPages] = useState(0);
-  const [scale, setScale] = useState(1.5);
-  const [rotation, setRotation] = useState(0);
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pdfDocRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const renderTaskRef = useRef<any>(null);
-
-  const router = useRouter();
   const [isRestarting, setIsRestarting] = useState(false);
+  const router = useRouter();
 
   // State for collapsible sections
   const [problemiExpanded, setProblemiExpanded] = useState(true);
@@ -93,240 +64,6 @@ export default function SolutionsClient({
   const otherSolutions = solutions.filter(
     (sol) => !problemiSolutions.includes(sol) && !quesitiSolutions.includes(sol)
   );
-
-  // Toggle fullscreen mode for the PDF canvas
-  const toggleFullscreen = () => {
-    if (containerRef.current) {
-      if (!fullscreen) {
-        if (containerRef.current.requestFullscreen) {
-          containerRef.current.requestFullscreen();
-          setFullscreen(true);
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-          setFullscreen(false);
-        }
-      }
-    }
-  };
-
-  // Handle fullscreen change events
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
-
-  // Function to render PDF page
-  const renderPage = async (num: number) => {
-    if (!pdfDocRef.current) return;
-
-    setIsLoading(true);
-
-    try {
-      // Cancel any ongoing render task
-      if (renderTaskRef.current) {
-        try {
-          await renderTaskRef.current.cancel();
-        } catch (e) {
-          console.log("Error cancelling previous render task:", e);
-        }
-        renderTaskRef.current = null;
-      }
-
-      const page = await pdfDocRef.current.getPage(num);
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      // Clear previous content
-      const context = canvas.getContext("2d");
-      if (!context) return;
-
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      const viewport = page.getViewport({ scale, rotation: rotation });
-
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-      };
-
-      // Store the render task to be able to cancel it if needed
-      const renderTask = page.render(renderContext);
-      renderTaskRef.current = renderTask;
-
-      await renderTask.promise;
-      renderTaskRef.current = null;
-      setIsLoading(false);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("cancelled")) {
-        console.log("Rendering was cancelled");
-      } else if (
-        error instanceof Error &&
-        error.message.includes("Transport destroyed")
-      ) {
-        console.log("Transport destroyed - PDF document may have been closed");
-      } else {
-        console.error("Error rendering page:", error);
-      }
-      setIsLoading(false);
-    }
-  };
-
-  // Function to get proxy URL for PDFs
-  const getProxyUrl = (originalUrl: string) => {
-    // For local PDFs (those hosted on our server), use them directly
-    if (typeof window === "undefined") return originalUrl;
-
-    if (
-      originalUrl.startsWith("/") ||
-      originalUrl.startsWith(window.location.origin)
-    ) {
-      return originalUrl;
-    }
-
-    // For external PDFs, use our proxy
-    return `/api/pdf-proxy?url=${encodeURIComponent(originalUrl)}`;
-  };
-
-  // Load the PDF document when selectedSolution changes
-  useEffect(() => {
-    let isComponentMounted = true;
-
-    if (!selectedSolution) return;
-
-    setIsLoading(true);
-    setPageNum(1);
-
-    // Clean up previous resources
-    const cleanup = () => {
-      if (renderTaskRef.current) {
-        try {
-          renderTaskRef.current.cancel();
-        } catch (e) {
-          console.log("Error cancelling render task during cleanup:", e);
-        }
-        renderTaskRef.current = null;
-      }
-
-      if (pdfDocRef.current) {
-        try {
-          pdfDocRef.current.destroy();
-        } catch (e) {
-          console.log("Error destroying PDF document during cleanup:", e);
-        }
-        pdfDocRef.current = null;
-      }
-    };
-
-    // Clean up previous instance
-    cleanup();
-
-    const loadPDF = async () => {
-      try {
-        // Dynamically import PDF.js
-        const pdfjsLib = await import("pdfjs-dist");
-
-        // Set up the worker using the file we copied to the public directory
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
-
-        // Get the document using our proxy for external URLs
-        const proxyUrl = getProxyUrl(selectedSolution.pdf_url);
-
-        // Create loading task with better error handling
-        const loadingTask = pdfjsLib.getDocument(proxyUrl);
-        loadingTask.onPassword = (
-          updatePassword: (password: string) => void,
-          reason: number
-        ) => {
-          console.log("Password required for PDF:", reason);
-          // You could implement a password prompt here
-          return Promise.resolve();
-        };
-
-        // Await the document with a timeout
-        const pdfDoc = (await Promise.race([
-          loadingTask.promise,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("PDF loading timeout")), 30000)
-          ),
-        ])) as any; // Type assertion to handle the PDF document
-
-        // Check if component is still mounted before updating state
-        if (!isComponentMounted) {
-          pdfDoc.destroy();
-          return;
-        }
-
-        // Store the PDF document reference
-        pdfDocRef.current = pdfDoc;
-        setNumPages(pdfDoc.numPages);
-
-        // Render the first page
-        await renderPage(1);
-      } catch (error) {
-        console.error("Error loading PDF:", error);
-        setIsLoading(false);
-      }
-    };
-
-    loadPDF();
-
-    // Cleanup function
-    return () => {
-      isComponentMounted = false;
-      cleanup();
-    };
-  }, [selectedSolution]);
-
-  // Re-render the page when scale or rotation changes
-  useEffect(() => {
-    if (pdfDocRef.current) {
-      renderPage(pageNum);
-    }
-  }, [scale, rotation]);
-
-  // Navigation functions
-  const goToPreviousPage = () => {
-    if (pageNum <= 1) return;
-    setPageNum((prev) => {
-      const newPage = prev - 1;
-      renderPage(newPage);
-      return newPage;
-    });
-  };
-
-  const goToNextPage = () => {
-    if (pageNum >= numPages) return;
-    setPageNum((prev) => {
-      const newPage = prev + 1;
-      renderPage(newPage);
-      return newPage;
-    });
-  };
-
-  // Zoom functions
-  const zoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.25, 3));
-  };
-
-  const zoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.25, 0.5));
-  };
-
-  // Rotation function
-  const rotate = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
 
   // Format time in minutes to hours and minutes
   const formatTimeInHours = (minutes: number) => {
@@ -401,34 +138,43 @@ export default function SolutionsClient({
                   <CardTitle className="text-base">
                     Problemi ({problemiSolutions.length})
                   </CardTitle>
-                  {problemiExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
+                  <motion.div
+                    animate={{ rotate: problemiExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  </motion.div>
                 </div>
               </CardHeader>
-              {problemiExpanded && (
-                <CardContent className="pt-2 space-y-2">
-                  {problemiSolutions.map((solution) => (
-                    <Button
-                      key={solution.id}
-                      variant={
-                        selectedSolution?.id === solution.id
-                          ? "default"
-                          : "outline"
-                      }
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setSelectedSolution(solution);
-                        setIsLoading(true);
-                      }}
-                    >
-                      {solution.title}
-                    </Button>
-                  ))}
-                </CardContent>
-              )}
+              <AnimatePresence>
+                {problemiExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <CardContent className="pt-2 space-y-2">
+                      {problemiSolutions.map((solution) => (
+                        <Button
+                          key={solution.id}
+                          variant={
+                            selectedSolution?.id === solution.id
+                              ? "default"
+                              : "outline"
+                          }
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setSelectedSolution(solution);
+                          }}
+                        >
+                          {solution.title}
+                        </Button>
+                      ))}
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Card>
           )}
 
@@ -443,34 +189,43 @@ export default function SolutionsClient({
                   <CardTitle className="text-base">
                     Quesiti ({quesitiSolutions.length})
                   </CardTitle>
-                  {quesitiExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
+                  <motion.div
+                    animate={{ rotate: quesitiExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  </motion.div>
                 </div>
               </CardHeader>
-              {quesitiExpanded && (
-                <CardContent className="pt-2 space-y-2">
-                  {quesitiSolutions.map((solution) => (
-                    <Button
-                      key={solution.id}
-                      variant={
-                        selectedSolution?.id === solution.id
-                          ? "default"
-                          : "outline"
-                      }
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setSelectedSolution(solution);
-                        setIsLoading(true);
-                      }}
-                    >
-                      {solution.title}
-                    </Button>
-                  ))}
-                </CardContent>
-              )}
+              <AnimatePresence>
+                {quesitiExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <CardContent className="pt-2 space-y-2">
+                      {quesitiSolutions.map((solution) => (
+                        <Button
+                          key={solution.id}
+                          variant={
+                            selectedSolution?.id === solution.id
+                              ? "default"
+                              : "outline"
+                          }
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setSelectedSolution(solution);
+                          }}
+                        >
+                          {solution.title}
+                        </Button>
+                      ))}
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Card>
           )}
 
@@ -492,7 +247,6 @@ export default function SolutionsClient({
                     className="w-full justify-start"
                     onClick={() => {
                       setSelectedSolution(solution);
-                      setIsLoading(true);
                     }}
                   >
                     {solution.title}
@@ -505,116 +259,55 @@ export default function SolutionsClient({
 
         <div className="md:col-span-2">
           {selectedSolution ? (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>{selectedSolution.title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="relative min-h-[500px]">
-                {selectedSolution && (
-                  <div
-                    ref={containerRef}
-                    style={{
-                      width: "100%",
-                      height: "500px",
-                      position: "relative",
-                      overflow: "auto",
-                    }}
-                  >
-                    <div className="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between items-center">
-                      {/* Page navigation controls */}
-                      <div className="bg-background/90 rounded-full px-3 py-1">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={goToPreviousPage}
-                            disabled={pageNum <= 1}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <span className="text-sm">
-                            {pageNum} / {numPages}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={goToNextPage}
-                            disabled={pageNum >= numPages}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* PDF controls */}
-                      <div className="bg-background/90 rounded-lg p-1 flex">
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>{selectedSolution.title}</CardTitle>
+                    <div className="hidden md:block">
+                      <Link href="/dashboard/tutor">
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={zoomOut}
-                          title="Zoom Out"
-                          className="h-8 w-8 p-0"
+                          variant="default"
+                          size="default"
+                          className="text-white"
                         >
-                          <ZoomOut className="h-4 w-4" />
+                          <Bot className="mr-2 h-5 w-5" />
+                          Chiedi a Mathy
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={zoomIn}
-                          title="Zoom In"
-                          className="h-8 w-8 p-0"
-                        >
-                          <ZoomIn className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={rotate}
-                          title="Rotate"
-                          className="h-8 w-8 p-0"
-                        >
-                          <RotateCw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={toggleFullscreen}
-                          title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                          className="h-8 w-8 p-0"
-                        >
-                          {fullscreen ? (
-                            <Minimize2 className="h-4 w-4" />
-                          ) : (
-                            <Maximize2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                      </Link>
                     </div>
-
-                    <div className="flex justify-center items-center min-h-[500px]">
-                      <canvas
-                        ref={canvasRef}
-                        style={{
-                          margin: "0 auto",
-                          display: "block",
-                          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-                        }}
-                      />
-                    </div>
-
-                    {isLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                        <LoadingSpinner text="Caricamento PDF..." size="sm" />
-                      </div>
-                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent className="relative min-h-[500px]">
+                  <PdfViewer
+                    pdfUrl={selectedSolution.pdf_url}
+                    height={500}
+                    className="w-full"
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Help card only visible on mobile - improved styling */}
+              <Card className="py-4 px-4 md:hidden bg-primary/10 border-primary/20">
+                <CardContent className="py-0 px-0">
+                  <div className="flex flex-col items-center gap-0 text-center">
+                    <p className="text-primary font-medium text-lg mb-2">
+                      Non capisci la soluzione?
+                    </p>
+                    <Link href="/dashboard/tutor">
+                      <Button
+                        variant="default"
+                        size="lg"
+                        className="text-white"
+                      >
+                        <Bot className="mr-2 h-5 w-5" />
+                        Chiedi a Mathy
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full bg-muted/30 rounded-lg p-12">
               <p className="text-muted-foreground">

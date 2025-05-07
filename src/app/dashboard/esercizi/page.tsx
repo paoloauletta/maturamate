@@ -1,18 +1,5 @@
-import { db } from "@/db/drizzle";
-import {
-  exercisesTable,
-  topicsTable,
-  subtopicsTable,
-  exercisesCardsTable,
-  completedExercisesTable,
-} from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import ClientExercisesPage from "./client-page";
 import { redirect } from "next/navigation";
-import { getTopics } from "@/utils/cache";
 import { Suspense } from "react";
-import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
 import { getExercisesData } from "./exercises-data-server";
 import { ExercisesSkeleton } from "@/components/loading";
 
@@ -62,7 +49,6 @@ async function ExercisesContent() {
   // If there's a first topic, redirect to it
   if (exercisesData.firstTopic) {
     redirect(`/dashboard/esercizi/${exercisesData.firstTopic}`);
-    return null;
   }
 
   // If no topics are available, display message

@@ -176,7 +176,7 @@ export default function TopicsSidebar({
                     ? "border-l-primary text-primary dark:text-primary"
                     : isCompleted
                     ? "border-l-green-500"
-                    : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-blue-500"
+                    : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-bg-primary"
                 )}
               >
                 {/* Chevron with its own click handler for expanding/collapsing */}
@@ -222,7 +222,7 @@ export default function TopicsSidebar({
                             ? "border-l-primary text-primary dark:text-primary font-medium"
                             : isSubtopicCompleted
                             ? "border-l-green-500"
-                            : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-blue-500"
+                            : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-bg-primary"
                         )}
                         onClick={() =>
                           sheetOpen

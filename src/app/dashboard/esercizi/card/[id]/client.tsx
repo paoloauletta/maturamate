@@ -126,9 +126,7 @@ export default function ExerciseCardClient({
   id,
   description,
   difficulty,
-  topicId,
   topicName,
-  subtopicId,
   subtopicName,
   exercises,
   completedExercises,
@@ -476,7 +474,7 @@ export default function ExerciseCardClient({
   };
 
   return (
-    <div>
+    <div className="lg:w-[67%] mx-auto">
       {/* Back button and header */}
       <div className="mb-6 flex flex-col lg:gap-2 gap-1">
         <Link

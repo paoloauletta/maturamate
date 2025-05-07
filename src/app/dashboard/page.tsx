@@ -5,8 +5,8 @@ import { DashboardActions } from "@/components/dashboard/action-buttons-client";
 import { FlaggedExercises } from "@/components/dashboard/flagged-exercises-client";
 import { DashboardSkeleton } from "@/components/loading";
 
-// Force dynamic rendering for this route
-export const dynamic = "force-dynamic";
+// Set revalidation period - revalidate every 10 minutes to keep dashboard data fresh
+export const revalidate = 600;
 
 export default async function DashboardIndexPage() {
   return (

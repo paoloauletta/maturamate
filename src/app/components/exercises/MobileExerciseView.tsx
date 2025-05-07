@@ -246,196 +246,200 @@ export default function MobileExerciseView({
   };
 
   return (
-    <div
-      ref={exerciseRef}
-      className="border-b last:border-b-0 border-border overflow-hidden transition-colors"
-    >
-      {/* Exercise header - always visible */}
+    <>
       <div
-        onClick={toggleExpanded}
-        className="flex items-center justify-between p-4 cursor-pointer"
+        ref={exerciseRef}
+        className="border-b last:border-b-0 border-border overflow-hidden transition-colors"
       >
-        <div className="flex items-center gap-3">
+        {/* Exercise header - always visible */}
+        <div
+          onClick={toggleExpanded}
+          className="flex items-center justify-between p-4 cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Es {number}.</span>
+              {exerciseCompleted && wasCorrect && !inFavouritesPage && (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
-            <span className="font-medium">Es {number}.</span>
-            {exerciseCompleted && wasCorrect && !inFavouritesPage && (
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+            {!inFavouritesPage && (
+              <button
+                onClick={handleToggleFlag}
+                disabled={isLoading}
+                className={cn(
+                  "p-1 transition-colors cursor-pointer hover:scale-110 transition-transform duration-200",
+                  isFlagged
+                    ? "text-yellow-500"
+                    : "text-muted-foreground hover:text-yellow-500"
+                )}
+              >
+                <Star
+                  className="h-4 w-4"
+                  fill={isFlagged ? "currentColor" : "none"}
+                />
+              </button>
+            )}
+
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {!inFavouritesPage && (
-            <button
-              onClick={handleToggleFlag}
-              disabled={isLoading}
-              className={cn(
-                "p-1 transition-colors cursor-pointer hover:scale-110 transition-transform duration-200",
-                isFlagged
-                  ? "text-yellow-500"
-                  : "text-muted-foreground hover:text-yellow-500"
-              )}
+        {/* Expandable content */}
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <motion.div
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.25, 0.1, 0.25, 1],
+                opacity: { duration: 0.2 },
+              }}
+              style={{ overflow: "hidden" }}
             >
-              <Star
-                className="h-4 w-4"
-                fill={isFlagged ? "currentColor" : "none"}
-              />
-            </button>
-          )}
-
-          {isExpanded ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          )}
-        </div>
-      </div>
-
-      {/* Expandable content */}
-      <AnimatePresence initial={false}>
-        {isExpanded && (
-          <motion.div
-            layout
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: 0.3,
-              ease: [0.25, 0.1, 0.25, 1],
-              opacity: { duration: 0.2 },
-            }}
-            style={{ overflow: "hidden" }}
-          >
-            <div className="px-4 py-4">
-              {/* Question */}
-              <div className="prose prose-sm dark:prose-invert mb-6">
-                {question.split("\n").map((line, index) => (
-                  <div key={index} className="mb-2">
-                    <MathRenderer content={line} />
-                  </div>
-                ))}
-              </div>
-
-              {/* Solution Box with Blur Effect - always visible in favorites */}
-              <div
-                onClick={inFavouritesPage ? undefined : handleRevealSolution}
-                className={cn(
-                  "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
-                  inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
-                  !inFavouritesPage && !isRevealed ? "blur-sm select-none" : ""
-                )}
-              >
-                <h4 className="text-sm font-semibold mb-3 text-primary">
-                  Soluzione
-                </h4>
-                <div className="prose prose-sm dark:prose-invert">
-                  {solution.split("\n").map((line, index) => (
+              <div className="px-4 py-4">
+                {/* Question */}
+                <div className="prose prose-sm dark:prose-invert mb-6">
+                  {question.split("\n").map((line, index) => (
                     <div key={index} className="mb-2">
                       <MathRenderer content={line} />
                     </div>
                   ))}
                 </div>
-              </div>
 
-              {/* Only show interactive elements if not in favorites page */}
-              {!inFavouritesPage && (
-                <>
-                  {/* Correct/incorrect buttons */}
-                  <div
-                    className={cn(
-                      "grid grid-cols-2 gap-2 my-4 transition-all duration-200",
-                      isRevealed && !exerciseCompleted && !isIncorrect
-                        ? "opacity-100 max-h-24"
-                        : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
-                    )}
-                  >
-                    <Button
-                      onClick={handleMarkIncorrect}
-                      variant="outline"
-                      className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Errato
-                    </Button>
-                    <Button
-                      onClick={handleMarkCorrect}
-                      variant="outline"
-                      className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Corretto
-                    </Button>
+                {/* Solution Box with Blur Effect - always visible in favorites */}
+                <div
+                  onClick={inFavouritesPage ? undefined : handleRevealSolution}
+                  className={cn(
+                    "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
+                    inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
+                    !inFavouritesPage && !isRevealed
+                      ? "blur-sm select-none"
+                      : ""
+                  )}
+                >
+                  <h4 className="text-sm font-semibold mb-3 text-primary">
+                    Soluzione
+                  </h4>
+                  <div className="prose prose-sm dark:prose-invert">
+                    {solution.split("\n").map((line, index) => (
+                      <div key={index} className="mb-2">
+                        <MathRenderer content={line} />
+                      </div>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Tutor options when marked as incorrect */}
-                  <div
-                    className={cn(
-                      "mt-4 space-y-3 transition-all duration-200",
-                      isIncorrect && !showTutor
-                        ? "opacity-100 max-h-60"
-                        : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
-                    )}
-                  >
-                    <p className="text-sm text-muted-foreground">
-                      Ho visto che stai avendo difficoltà con questo esercizio.
-                      Cosa vuoi fare adesso?
-                    </p>
-                    <div className="flex flex-row w-1/2 gap-2">
+                {/* Only show interactive elements if not in favorites page */}
+                {!inFavouritesPage && (
+                  <>
+                    {/* Correct/incorrect buttons */}
+                    <div
+                      className={cn(
+                        "grid grid-cols-2 gap-2 my-4 transition-all duration-200",
+                        isRevealed && !exerciseCompleted && !isIncorrect
+                          ? "opacity-100 max-h-24"
+                          : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
+                      )}
+                    >
                       <Button
-                        onClick={handleRetry}
+                        onClick={handleMarkIncorrect}
                         variant="outline"
-                        className="w-full"
-                      >
-                        Riprova
-                      </Button>
-                      <Button
-                        onClick={handleShowTutor}
-                        className="flex items-center justify-center gap-2 w-full"
-                      >
-                        <MessageSquareText className="h-4 w-4" />
-                        Tutor AI
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Tutor explanation */}
-                  <div
-                    className={cn(
-                      "mt-4 space-y-4 transition-all duration-200",
-                      showTutor
-                        ? "opacity-100 max-h-60"
-                        : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
-                    )}
-                  >
-                    <p className="text-sm">
-                      Dopo l'aiuto del tutor hai capito l'esercizio?
-                    </p>
-
-                    <div className="flex flex-row gap-2">
-                      <Button
-                        onClick={handleStillNotUnderstood}
-                        variant="outline"
-                        className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30 w-1/2"
+                        className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30"
                       >
                         <XCircle className="h-4 w-4" />
                         Errato
                       </Button>
                       <Button
-                        onClick={handleUnderstoodAfterHelp}
+                        onClick={handleMarkCorrect}
                         variant="outline"
-                        className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30 w-1/2"
+                        className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30"
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         Corretto
                       </Button>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+
+                    {/* Tutor options when marked as incorrect */}
+                    <div
+                      className={cn(
+                        "mt-4 space-y-3 transition-all duration-200",
+                        isIncorrect && !showTutor
+                          ? "opacity-100 max-h-60"
+                          : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
+                      )}
+                    >
+                      <p className="text-sm text-muted-foreground">
+                        Ho visto che stai avendo difficoltà con questo
+                        esercizio. Cosa vuoi fare adesso?
+                      </p>
+                      <div className="flex flex-row w-1/2 gap-2">
+                        <Button
+                          onClick={handleRetry}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Riprova
+                        </Button>
+                        <Button
+                          onClick={handleShowTutor}
+                          className="flex items-center justify-center gap-2 w-full"
+                        >
+                          <MessageSquareText className="h-4 w-4" />
+                          Tutor AI
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Tutor explanation */}
+                    <div
+                      className={cn(
+                        "mt-4 space-y-4 transition-all duration-200",
+                        showTutor
+                          ? "opacity-100 max-h-60"
+                          : "opacity-0 max-h-0 overflow-hidden pointer-events-none"
+                      )}
+                    >
+                      <p className="text-sm">
+                        Dopo l'aiuto del tutor hai capito l'esercizio?
+                      </p>
+
+                      <div className="flex flex-row gap-2">
+                        <Button
+                          onClick={handleStillNotUnderstood}
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 border-red-600/50 text-red-600 hover:bg-red-600/30 w-1/2"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Errato
+                        </Button>
+                        <Button
+                          onClick={handleUnderstoodAfterHelp}
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 border-green-600/50 text-green-600 hover:bg-green-600/30 w-1/2"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Corretto
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }

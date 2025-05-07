@@ -13,6 +13,8 @@ import {
   getWeeklyGoals,
 } from "@/lib/data/user-statistics";
 import { auth } from "@/lib/auth";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 export type DashboardData = {
   userData: {
@@ -47,6 +49,61 @@ export type DashboardData = {
   randomQuote: string;
   continueUrl: string;
 };
+
+// Cache all topics data - this doesn't change often
+const getCachedTopics = unstable_cache(
+  async () => {
+    return await db.select().from(topicsTable).orderBy(topicsTable.order_index);
+  },
+  ["all-topics-data"],
+  { revalidate: 3600 }
+);
+
+// Cache all subtopics data - this doesn't change often
+const getCachedSubtopics = unstable_cache(
+  async () => {
+    return await db
+      .select()
+      .from(subtopicsTable)
+      .orderBy(subtopicsTable.order_index);
+  },
+  ["all-subtopics-data"],
+  { revalidate: 3600 }
+);
+
+// Cache motivational quotes - these are static and can be cached for longer
+const getCachedQuotes = unstable_cache(
+  async () => {
+    return [
+      "La costanza è la chiave del successo.",
+      "Ogni giorno di studio ti avvicina all'obiettivo.",
+      "Non conta quanto vai veloce, l'importante è non fermarsi.",
+      "Il successo è la somma di piccoli sforzi ripetuti giorno dopo giorno.",
+    ];
+  },
+  ["motivational-quotes"],
+  { revalidate: 86400 } // Cache for 24 hours
+);
+
+// Use React's cache for user-specific data during a request
+const getUserCompletedTopics = cache(async (userId: string) => {
+  return await db
+    .select({
+      topic_id: completedTopicsTable.topic_id,
+    })
+    .from(completedTopicsTable)
+    .where(eq(completedTopicsTable.user_id, userId));
+});
+
+// Use React's cache for user-specific data during a request
+const getUserCompletedSubtopics = cache(async (userId: string) => {
+  return await db
+    .select({
+      subtopic_id: completedSubtopicsTable.subtopic_id,
+    })
+    .from(completedSubtopicsTable)
+    .where(eq(completedSubtopicsTable.user_id, userId));
+});
 
 export async function getDashboardData(): Promise<DashboardData> {
   const session = await auth();
@@ -83,6 +140,11 @@ export async function getDashboardData(): Promise<DashboardData> {
     firstUncompletedSubtopic: null as any,
   };
 
+  // Get cached data (non-user specific)
+  const allTopics = await getCachedTopics();
+  const allSubtopics = await getCachedSubtopics();
+  const quotes = await getCachedQuotes();
+
   // Get real data if we have a userId
   if (userId) {
     const userStats = await getUserStatistics(userId);
@@ -117,29 +179,9 @@ export async function getDashboardData(): Promise<DashboardData> {
       uniqueCompletedExercises: userStats.uniqueCompletedExercises,
     };
 
-    // Get topics and subtopics completion statistics
-    const allTopics = await db
-      .select()
-      .from(topicsTable)
-      .orderBy(topicsTable.order_index);
-    const allSubtopics = await db
-      .select()
-      .from(subtopicsTable)
-      .orderBy(subtopicsTable.order_index);
-
-    const completedTopics = await db
-      .select({
-        topic_id: completedTopicsTable.topic_id,
-      })
-      .from(completedTopicsTable)
-      .where(eq(completedTopicsTable.user_id, userId));
-
-    const completedSubtopics = await db
-      .select({
-        subtopic_id: completedSubtopicsTable.subtopic_id,
-      })
-      .from(completedSubtopicsTable)
-      .where(eq(completedSubtopicsTable.user_id, userId));
+    // Get user-specific data (not cached between requests)
+    const completedTopics = await getUserCompletedTopics(userId);
+    const completedSubtopics = await getUserCompletedSubtopics(userId);
 
     // Create sets for faster lookup
     const completedTopicIds = new Set(completedTopics.map((t) => t.topic_id));
@@ -184,14 +226,6 @@ export async function getDashboardData(): Promise<DashboardData> {
       firstUncompletedSubtopic,
     };
   }
-
-  // Mock motivational quotes
-  const quotes = [
-    "La costanza è la chiave del successo.",
-    "Ogni giorno di studio ti avvicina all'obiettivo.",
-    "Non conta quanto vai veloce, l'importante è non fermarsi.",
-    "Il successo è la somma di piccoli sforzi ripetuti giorno dopo giorno.",
-  ];
 
   // Random quote
   const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];

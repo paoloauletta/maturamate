@@ -9,6 +9,8 @@ import {
   subtopicsTable,
   exercisesCardsTable,
 } from "@/db/schema";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 // Define the StatisticsData interface for the client component
 export interface StatisticsData {
@@ -45,6 +47,45 @@ export interface StatisticsData {
   continueUrl: string;
 }
 
+// Cache general exercise statistics data - not user specific
+const getCachedExerciseStats = unstable_cache(
+  async () => {
+    return await db
+      .select({
+        total: sql<number>`COUNT(DISTINCT ${exercisesTable.id})`,
+      })
+      .from(exercisesTable);
+  },
+  ["total-exercises-stats"],
+  { revalidate: 3600 }
+);
+
+// Cache general topic data - not user specific
+const getCachedTopicData = unstable_cache(
+  async () => {
+    return await db
+      .select({
+        id: topicsTable.id,
+        name: topicsTable.name,
+      })
+      .from(topicsTable)
+      .orderBy(topicsTable.name);
+  },
+  ["topic-data"],
+  { revalidate: 3600 }
+);
+
+// Use React's cache for user-specific data during a request
+const getUserCompletedExercises = cache(async (userId: string) => {
+  return await db
+    .select({
+      exercise_id: completedExercisesTable.exercise_id,
+      is_correct: completedExercisesTable.is_correct,
+    })
+    .from(completedExercisesTable)
+    .where(sql`${completedExercisesTable.user_id} = ${userId}`);
+});
+
 export async function getStatisticsData() {
   const session = await auth();
 
@@ -54,6 +95,13 @@ export async function getStatisticsData() {
   }
 
   const userId = session.user.id;
+
+  // Get cached data (non-user specific)
+  const totalExercises = await getCachedExerciseStats();
+  const topicData = await getCachedTopicData();
+
+  // Get user-specific data (not cached between requests)
+  const userCompletedExercises = await getUserCompletedExercises(userId);
 
   // Get total exercises and completed exercises
   const exerciseStats = await db

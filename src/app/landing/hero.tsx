@@ -1,154 +1,145 @@
-"use client";
-import React from "react";
-import { Spotlight } from "@/components/ui/spotlight-new";
-import { FlipWords } from "@/components/ui/flip-words";
+import { Button, type ButtonProps } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRightIcon } from "lucide-react";
+import { Section } from "@/components/ui/section";
+import { Mockup, MockupFrame } from "@/components/ui/mockup";
+import Glow from "@/components/ui/glow";
+import { ReactNode } from "react";
+import Screenshot from "@/components/ui/screenshot";
 import { cn } from "@/lib/utils";
-import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
-import { motion } from "framer-motion";
-import Image from "next/image";
+import Link from "next/link";
+import { signIn } from "next-auth/react";
 
-const AceternityLogo = () => {
+const underlineImage = "/underline2.svg";
+
+interface HeroButtonProps {
+  href: string;
+  text: string;
+  variant?: ButtonProps["variant"];
+  icon?: ReactNode;
+  iconRight?: ReactNode;
+}
+
+interface HeroProps {
+  title?: string;
+  description?: string;
+  mockup?: ReactNode | false;
+  badge?: ReactNode | false;
+  buttons?: HeroButtonProps[] | false;
+  className?: string;
+}
+
+export default function Hero({
+  description = "Lo strumento più avanzato per la tua preparazione all'esame di maturità: teoria, esercizi, simulazioni e molto altro.",
+  mockup = (
+    <Screenshot
+      srcLight="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/dashboard.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L2Rhc2hib2FyZC5wbmciLCJpYXQiOjE3NDY3NDQzNDQsImV4cCI6MjA2MjEwNDM0NH0.UlWOn6nes4nou9QXIBzTS3bruoHVrxebgknXo6MNAUw"
+      srcDark="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/dashboard.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2Rhc2hib2FyZC5wbmciLCJpYXQiOjE3NDY3NDQzNTcsImV4cCI6MjA2MjEwNDM1N30.nXd4TpvLX_abdDgtz8-8OjLZG8UU37WW7wSXlem06S0"
+      mobileSrcLight="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/dashboard-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L2Rhc2hib2FyZC1tb2JpbGUucG5nIiwiaWF0IjoxNzQ2NzQ1NzgyLCJleHAiOjE3NzgyODE3ODJ9.MrbHJl7N8Z94CJyiHIiYciNr6WZBKShifklaivQrv-g"
+      mobileSrcDark="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/landing-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2xhbmRpbmctbW9iaWxlLnBuZyIsImlhdCI6MTc0Njc0NTYyMCwiZXhwIjoxNzc4MjgxNjIwfQ.1P2Vde_5zNJsW_QCQlDwlMox1uTnhFJ8HjITn-W_m14"
+      alt="MaturaMate dashboard screenshot"
+      width={1248}
+      height={765}
+      className="w-full"
+      mobileBreakpoint={768}
+    />
+  ),
+  badge = (
+    <Badge variant="outline" className="animate-appear">
+      <span className="text-muted-foreground">
+        In arrivo Pit, il tuo AI tutor
+      </span>
+      <Link href="/" className="flex items-center gap-1">
+        Scopri di più
+        <ArrowRightIcon className="size-3" />
+      </Link>
+    </Badge>
+  ),
+  buttons = [
+    {
+      href: "/",
+      text: "Migliora la tua preparazione",
+      variant: "default",
+    },
+  ],
+  className,
+}: HeroProps) {
   return (
-    <>
-      <svg
-        width="66"
-        height="65"
-        viewBox="0 0 66 65"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-3 w-3 text-black"
-      >
-        <path
-          d="M8 8.05571C8 8.05571 54.9009 18.1782 57.8687 30.062C60.8365 41.9458 9.05432 57.4696 9.05432 57.4696"
-          stroke="currentColor"
-          strokeWidth="15"
-          strokeMiterlimit="3.86874"
-          strokeLinecap="round"
-        />
-      </svg>
-    </>
-  );
-};
-
-export function Hero() {
-  const words = ["MaturaMate"];
-
-  return (
-    <div className="relative">
-      {/* Blue gradient section with fixed height */}
-      <div className="w-full h-screen flex items-center justify-center bg-gradient-to-b from-blue-600 to-blue-400 antialiased bg-grid-trasparent/[0.02] relative overflow-hidden">
-        <div className="relative flex h-full w-full items-center justify-center">
-          <div
-            className={cn(
-              "absolute inset-0",
-              "[background-size:30px_30px]",
-              "[background-image:radial-gradient(#51a2ff_1px,transparent_1px)]"
-            )}
-          />
-          {/* Radial gradient for the container to give a faded look */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-blue-500 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-          <Spotlight />
-
-          {/* Main content container with better padding and positioning */}
-          <div className="flex flex-col items-center justify-center w-full px-6 z-10">
-            <div className="flex flex-col items-start md:items-center justify-center gap-5 max-w-7xl w-full">
-              <div className="w-full text-left md:text-center">
-                <h1 className="hidden lg:block text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-l from-white to-white/80">
-                  Migliora la tua preparazione
-                  <br className="hidden md:block" />
-                  <span>con </span>
-                  <FlipWords words={words} className="text-white" />
-                </h1>
-                <h1 className="block lg:hidden text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-l from-white to-white/80">
-                  <span>
-                    Preparati al meglio
-                    <br className="hidden md:block" />
-                    <span> con</span>
-                    <FlipWords words={words} className="text-white" />
-                  </span>
-                </h1>
-                <p className="mt-4 font-normal text-md md:text-base text-white/80 max-w-lg text-left md:text-center md:mx-auto">
-                  Lo strumento più avanzato per la tua preparazione all'esame di
-                  maturità: teoria, esercizi, simulazioni e molto altro.
-                </p>
-              </div>
-              <div className="flex justify-start md:justify-center w-full mt-4">
-                <HoverBorderGradient
-                  containerClassName="rounded-full"
-                  as="button"
-                  className="bg-white text-black flex items-center space-x-2 py-2 px-4"
-                >
-                  <AceternityLogo />
-                  <span className="text-base font-medium">Provalo Gratis</span>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="ml-1"
-                  >
-                    <path
-                      d="M9 5L16 12L9 19"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </HoverBorderGradient>
-              </div>
+    <Section
+      className={cn(
+        "fade-bottom overflow-hidden pb-0 sm:pb-0 md:pb-",
+        className
+      )}
+    >
+      <div className="max-w-container mx-auto flex flex-col gap-12 pt-16 sm:gap-24">
+        <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
+          {badge !== false && badge}
+          <h1 className="animate-appear relative z-10 inline-block text-4xl leading-tight font-semibold text-balance sm:text-6xl sm:leading-tight md:text-8xl md:leading-tight">
+            <span className="dark:text-white text-blue-900 drop-shadow-2xl">
+              Preparati al meglio con
+            </span>
+            <div className="relative inline-block ml-2">
+              <span className="dark:text-primary text-blue-900">Matura</span>
+              <span className="dark:text-blue-400 text-primary">Mate</span>
+              <span
+                className="absolute w-full left-0 top-full -translate-y-1/2 h-container bg-gradient-to-r from-blue-700 to-blue-400 dark:from-blue-500 dark:to-blue-400"
+                style={{
+                  maskImage: `url(${underlineImage})`,
+                  maskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  maskPosition: "center",
+                }}
+              ></span>
             </div>
-          </div>
+          </h1>
+          <p className="text-md animate-appear text-muted-foreground relative z-10 max-w-[740px] font-medium text-balance opacity-0 delay-100 sm:text-xl">
+            {description}
+          </p>
+          {buttons !== false && buttons.length > 0 && (
+            <div className="animate-appear relative z-10 flex justify-center gap-4 opacity-0 delay-300">
+              {buttons.map((button, index) => (
+                <div key={index}>
+                  <Button
+                    onClick={() => {
+                      signIn("google", { callbackUrl: "/dashboard" });
+                    }}
+                    key={index}
+                    variant={button.variant || "default"}
+                    size="lg"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <Link href={button.href} className="text-white">
+                      {button.icon}
+                      {button.text}
+                      {button.iconRight}
+                    </Link>
+                    <ArrowRightIcon className="size-3 text-white" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          {mockup !== false && (
+            <div className="relative w-full pt-12">
+              <MockupFrame
+                className="animate-appear bg-transparent opacity-0 delay-700"
+                size="small"
+              >
+                <Mockup
+                  type="responsive"
+                  className="bg-transparent w-full rounded-xl border-0"
+                >
+                  {mockup}
+                </Mockup>
+              </MockupFrame>
+              <Glow
+                variant="top"
+                className="animate-appear-zoom opacity-0 delay-1000"
+              />
+            </div>
+          )}
         </div>
       </div>
-
-      {/* White section */}
-      <div className="w-full bg-white pb-60">
-        {/* Empty space for image overlap */}
-        <div className="h-[40vh]"></div>
-      </div>
-
-      {/* Hovering image that overlaps blue and white sections */}
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 10,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.3,
-          delay: 1.2,
-        }}
-        className="absolute left-1/2 transform -translate-x-1/2 top-[85vh] z-10 rounded-xl shadow-xl mx-auto w-[90%] max-w-6xl"
-      >
-        <div className="w-full overflow-hidden rounded-xl">
-          {/* Desktop image - only visible on md screens and above */}
-          <div className="hidden md:block">
-            <Image
-              src="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/hero.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2hlcm8ucG5nIiwiaWF0IjoxNzQ2Njk1MTg1LCJleHAiOjQ5MDAyOTUxODV9.RC5RIO9Ub_QxlQVGxXxI9IvodJwHswfkg_MNjlptpN8"
-              alt="Landing page preview"
-              className="h-auto w-full object-cover"
-              height={1000}
-              width={1000}
-            />
-          </div>
-
-          {/* Mobile image - only visible on small screens */}
-          <div className="block md:hidden">
-            <Image
-              src="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/mobile-hero.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL21vYmlsZS1oZXJvLnBuZyIsImlhdCI6MTc0NjY5NzAyMCwiZXhwIjo0OTAwMjk3MDIwfQ.m8GA7LVJ4p6QhAh5GJf1W9vHwe3KtfUMTOIwm_dNEYU"
-              alt="Landing page preview (mobile)"
-              className="h-auto w-full object-cover"
-              height={1000}
-              width={1000}
-            />
-          </div>
-        </div>
-      </motion.div>
-    </div>
+    </Section>
   );
 }

@@ -423,10 +423,21 @@ export default function ExerciseCardClient({
   useEffect(() => {
     const currentRef = exerciseRefs.current[currentExerciseIndex];
     if (currentRef) {
-      currentRef.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      // Add a small delay to ensure DOM is ready
+      setTimeout(() => {
+        // Get the element's position relative to the viewport
+        const rect = currentRef.getBoundingClientRect();
+
+        // Calculate the position to scroll to (element's top position relative to the document)
+        // minus 150px to create margin at the top
+        const scrollToY = window.scrollY + rect.top - 150;
+
+        // Perform the scroll
+        window.scrollTo({
+          top: scrollToY,
+          behavior: "smooth",
+        });
+      }, 50);
     }
   }, [currentExerciseIndex]);
 

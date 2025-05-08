@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronUp, ChevronDown, ArrowLeft, Bot } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  ArrowLeft,
+  Bot,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -112,7 +118,7 @@ export default function SolutionsClient({
   return (
     <div>
       <div className="mb-8">
-        <div className="mb-4">
+        <div className="block md:hidden mb-4">
           <Link href="/dashboard/simulazioni">
             <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
               <ArrowLeft className="h-4 w-4" />
@@ -120,8 +126,14 @@ export default function SolutionsClient({
             </div>
           </Link>
         </div>
-        <div className="flex items-center mb-8 border-b pb-4 border-border">
+        <div className="flex items-center justify-between mb-8 border-b pb-4 border-border">
           <h1 className="text-4xl font-bold text-left">Soluzioni</h1>
+          <Link href="/dashboard/simulazioni">
+            <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
+              <span>Torna alle simulazioni</span>
+              <ArrowRight className="h-4 w-4" />
+            </div>
+          </Link>
         </div>
       </div>
 
@@ -154,7 +166,7 @@ export default function SolutionsClient({
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <CardContent className="pt-2 space-y-2">
+                    <CardContent className="pt-2 space-y-2 text-white">
                       {problemiSolutions.map((solution) => (
                         <Button
                           key={solution.id}
@@ -214,7 +226,7 @@ export default function SolutionsClient({
                               ? "default"
                               : "outline"
                           }
-                          className="w-full justify-start"
+                          className="w-full justify-start text-white"
                           onClick={() => {
                             setSelectedSolution(solution);
                           }}
@@ -244,7 +256,7 @@ export default function SolutionsClient({
                         ? "default"
                         : "outline"
                     }
-                    className="w-full justify-start"
+                    className="w-full justify-start text-white"
                     onClick={() => {
                       setSelectedSolution(solution);
                     }}

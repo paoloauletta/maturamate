@@ -13,6 +13,7 @@ import React, { useRef, useState } from "react";
 interface NavbarProps {
   children: React.ReactNode;
   className?: string;
+  disableShrink?: boolean;
 }
 
 interface NavBodyProps {
@@ -48,7 +49,11 @@ interface MobileNavMenuProps {
   onClose: () => void;
 }
 
-export const Navbar = ({ children, className }: NavbarProps) => {
+export const Navbar = ({
+  children,
+  className,
+  disableShrink = false,
+}: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({
     target: ref,
@@ -57,7 +62,7 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   const [visible, setVisible] = useState<boolean>(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) {
+    if (!disableShrink && latest > 100) {
       setVisible(true);
     } else {
       setVisible(false);
@@ -74,7 +79,7 @@ export const Navbar = ({ children, className }: NavbarProps) => {
         React.isValidElement(child)
           ? React.cloneElement(
               child as React.ReactElement<{ visible?: boolean }>,
-              { visible }
+              { visible: disableShrink ? false : visible }
             )
           : child
       )}

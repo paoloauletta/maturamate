@@ -263,7 +263,7 @@ export default function SimulationClient({
               )}
             </Button>
             <Link href={`/dashboard/simulazioni/${simulation.id}/solutions`}>
-              <Button>
+              <Button variant="default" className="text-white">
                 <FileText className="mr-2 h-4 w-4" />
                 Vedi Soluzioni
               </Button>
@@ -366,7 +366,7 @@ export default function SimulationClient({
           <AlertDialogFooter>
             <AlertDialogCancel>Annulla</AlertDialogCancel>
             <AlertDialogAction onClick={handleCompleteSimulation}>
-              Conferma
+              <span className="text-white">Conferma</span>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -401,7 +401,8 @@ export default function SimulationClient({
           <div className="flex gap-2 flex-1 sm:flex-initial justify-end">
             <Button
               onClick={() => setShowCompleteDialog(true)}
-              className="bg-primary hover:bg-primary/90"
+              variant="default"
+              className="text-white"
               size="sm"
             >
               Termina Simulazione

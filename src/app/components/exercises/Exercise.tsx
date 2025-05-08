@@ -255,19 +255,19 @@ export function Exercise({
             >
               <Button
                 variant="outline"
-                className="border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 flex items-center justify-center"
+                className="border-red-600/50 text-red-600 hover:bg-red-600/10 hover:text-red-600 flex items-center justify-center"
                 onClick={handleMarkIncorrect}
               >
                 <XCircle className="h-5 w-5 mr-2" />
-                <span>Non ho capito</span>
+                <span>Errato</span>
               </Button>
               <Button
                 variant="outline"
-                className="border-green-200 text-green-500 hover:bg-green-50 hover:text-green-600 hover:border-green-300 flex items-center justify-center"
+                className="border-green-600/50 text-green-600 hover:bg-green-600/10 hover:text-green-600 flex items-center justify-center"
                 onClick={handleMarkCorrect}
               >
                 <CheckCircle2 className="h-5 w-5 mr-2" />
-                <span>Ho capito</span>
+                <span>Corretto</span>
               </Button>
             </motion.div>
           )}
@@ -328,7 +328,7 @@ export function Exercise({
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
-                  className="border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 flex items-center justify-center"
+                  className="border-red-600/50 text-red-600 hover:bg-red-600/10 hover:text-red-600 flex items-center justify-center"
                   onClick={handleStillNotUnderstood}
                 >
                   <XCircle className="h-5 w-5 mr-2" />
@@ -336,7 +336,7 @@ export function Exercise({
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-green-200 text-green-500 hover:bg-green-50 hover:text-green-600 hover:border-green-300 flex items-center justify-center"
+                  className="border-green-600/50 text-green-600 hover:bg-green-600/10 hover:text-green-600 flex items-center justify-center"
                   onClick={handleUnderstoodAfterHelp}
                 >
                   <CheckCircle2 className="h-5 w-5 mr-2" />

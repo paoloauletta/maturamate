@@ -14,6 +14,7 @@ import { Hero } from "./hero";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FeaturesSectionDemo } from "./features";
 
 // Custom MaturaMate logo component
 const Logo = () => {
@@ -165,6 +166,7 @@ export function NavbarDemo() {
         </Navbar>
       </div>
       <Hero />
+      <FeaturesSectionDemo />
     </div>
   );
 }

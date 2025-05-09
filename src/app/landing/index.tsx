@@ -8,18 +8,40 @@ import FAQ from "./faq";
 import CTA from "./cta";
 import Footer from "./footer";
 import { LandingNavbar } from "./navbar";
+import { AnimateOnScroll } from "../components/animation/animate-on-scroll";
 
 export default function Landing() {
   return (
     <div>
       <LandingNavbar />
-      <Hero />
-      <LandingTabs />
-      <Pit />
-      <Pricing />
-      <FAQ />
-      <CTA />
-      <Footer />
+
+      <AnimateOnScroll animation="fade" duration={0.7}>
+        <Hero />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll animation="slide-up" delay={0.1}>
+        <LandingTabs />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll animation="slide-up" delay={0.1}>
+        <Pit />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll animation="slide-up" delay={0.1}>
+        <Pricing />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll animation="slide-up" delay={0.1}>
+        <FAQ />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll animation="slide-up" delay={0.1}>
+        <CTA />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll animation="fade" delay={0.2}>
+        <Footer />
+      </AnimateOnScroll>
     </div>
   );
 }

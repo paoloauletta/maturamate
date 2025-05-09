@@ -69,6 +69,29 @@ export default function Pricing({
     },
   ];
 
+  // Pricing toggle component
+  const PricingToggle = () => (
+    <div className="flex items-center justify-center gap-2 mb-4">
+      <Label
+        htmlFor="pricing-toggle"
+        className={!isQuarterly ? "font-medium" : "text-muted-foreground"}
+      >
+        Monthly
+      </Label>
+      <Switch
+        id="pricing-toggle"
+        checked={isQuarterly}
+        onCheckedChange={setIsQuarterly}
+      />
+      <Label
+        htmlFor="pricing-toggle"
+        className={isQuarterly ? "font-medium" : "text-muted-foreground"}
+      >
+        3-Month
+      </Label>
+    </div>
+  );
+
   return (
     <Section id="prezzi" className={cn(className)}>
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-12">
@@ -86,47 +109,45 @@ export default function Pricing({
             )}
           </div>
         )}
-        <div className="flex items-center justify-center gap-2 mb-4 w-full">
-          <Label
-            htmlFor="pricing-toggle"
-            className={!isQuarterly ? "font-medium" : "text-muted-foreground"}
-          >
-            Monthly
-          </Label>
-          <Switch
-            id="pricing-toggle"
-            checked={isQuarterly}
-            onCheckedChange={setIsQuarterly}
-          />
-          <Label
-            htmlFor="pricing-toggle"
-            className={isQuarterly ? "font-medium" : "text-muted-foreground"}
-          >
-            3-Month
-          </Label>
-          {/* {isQuarterly && (
-            <span className="text-xs font-medium bg-brand/10 text-brand px-2 py-1 rounded-full ml-2">
-              Risparmia il{" "}
-              {Math.round((monthlyPrice * 3) / quarterlyPrice) * 10}%
-            </span>
-          )} */}
+
+        {/* Toggle visible on desktop */}
+        <div className="hidden sm:block w-full">
+          <PricingToggle />
         </div>
 
         <div className="max-w-container mx-auto grid grid-cols-1 gap-8 sm:grid-cols-2">
-          {plans.map((plan) => (
-            <PricingColumn
-              key={plan.name}
-              name={plan.name}
-              icon={plan.icon}
-              description={plan.description}
-              price={plan.price}
-              priceNote={plan.priceNote}
-              cta={plan.cta}
-              features={plan.features}
-              variant={plan.variant}
-              className={plan.className}
-            />
-          ))}
+          {/* Free plan */}
+          <PricingColumn
+            key={plans[0].name}
+            name={plans[0].name}
+            icon={plans[0].icon}
+            description={plans[0].description}
+            price={plans[0].price}
+            priceNote={plans[0].priceNote}
+            cta={plans[0].cta}
+            features={plans[0].features}
+            variant={plans[0].variant}
+            className={plans[0].className}
+          />
+
+          {/* Toggle visible only on mobile between plans */}
+          <div className="sm:hidden w-full flex justify-center my-4">
+            <PricingToggle />
+          </div>
+
+          {/* Premium plan */}
+          <PricingColumn
+            key={plans[1].name}
+            name={plans[1].name}
+            icon={plans[1].icon}
+            description={plans[1].description}
+            price={plans[1].price}
+            priceNote={plans[1].priceNote}
+            cta={plans[1].cta}
+            features={plans[1].features}
+            variant={plans[1].variant}
+            className={plans[1].className}
+          />
         </div>
       </div>
     </Section>

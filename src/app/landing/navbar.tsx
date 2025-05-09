@@ -14,6 +14,7 @@ import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Moon, Sun } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Custom MaturaMate logo component
 const Logo = () => {
@@ -122,6 +123,7 @@ export function LandingNavbar() {
   const router = useRouter();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleGoogleLogin = () => {
     signIn("google", { callbackUrl: "/dashboard" });
@@ -147,12 +149,39 @@ export function LandingNavbar() {
     }
   }, []);
 
+  // Add scroll listener effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Initialize on mount
+    handleScroll();
+
+    // Clean up
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const navbarClass = cn(
+    "bg-white dark:bg-background shadow-md",
+    isScrolled &&
+      "border-b border-muted-foreground/20 dark:border-muted transition-all duration-300"
+  );
+
   return (
     <div className="w-full fixed top-0 z-50">
       <div className="absolute w-full top-5 z-50">
         <Navbar disableShrink>
           {/* Desktop Navigation */}
-          <NavBody className="bg-white dark:bg-neutral-900 shadow-md">
+          <NavBody className={navbarClass}>
             <Logo />
 
             {/* Custom navigation links with direct scroll handling */}
@@ -204,7 +233,7 @@ export function LandingNavbar() {
           </NavBody>
 
           {/* Mobile Navigation */}
-          <MobileNav className="bg-white dark:bg-neutral-900 shadow-md">
+          <MobileNav className={navbarClass}>
             <MobileNavHeader>
               <div className="pl-4">
                 <Logo />

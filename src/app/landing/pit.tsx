@@ -14,7 +14,7 @@ export function Pit() {
   const rightBottomRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="w-full bg-white dark:bg-neutral-900 py-24">
+    <div className="w-full bg-background py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl md:text-5xl">

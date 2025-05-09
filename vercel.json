@@ -7,18 +7,10 @@
     {
       "source": "/teoria/:topic/:subtopic",
       "destination": "/dashboard/teoria/:topic?subtopic=:subtopic"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/teoria",
-      "destination": "/dashboard/teoria",
-      "permanent": false
     },
     {
-      "source": "/teoria/:path*",
-      "destination": "/dashboard/teoria/:path*",
-      "permanent": false
+      "source": "/dashboard/teoria/:path*",
+      "destination": "/dashboard/teoria/:path*"
     }
   ],
   "buildCommand": "next build",

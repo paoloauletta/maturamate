@@ -9,6 +9,24 @@
       "destination": "/dashboard/teoria/:topic?subtopic=:subtopic"
     }
   ],
+  "redirects": [
+    {
+      "source": "/teoria",
+      "destination": "/dashboard/teoria",
+      "permanent": false
+    },
+    {
+      "source": "/teoria/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<host>.*)"
+        }
+      ],
+      "destination": "https://:host/dashboard/teoria/:path*",
+      "permanent": false
+    }
+  ],
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "headers": [

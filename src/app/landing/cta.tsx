@@ -21,7 +21,7 @@ interface CTAProps {
 }
 
 export default function CTA({
-  title = "Porta la tua preparazione al livello successo",
+  title = "Porta la tua preparazione al livello successivo",
   buttons = [
     {
       href: "/",

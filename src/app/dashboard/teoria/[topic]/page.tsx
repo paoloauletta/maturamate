@@ -246,13 +246,15 @@ async function TopicPage(props: any) {
   }));
 
   return (
-    <TopicClient
-      currentTopic={topic[0]}
-      topicsWithSubtopics={topicsWithSubtopics}
-      subtopicsWithTheory={subtopicsWithTheory}
-      activeSubtopicId={subtopicId}
-      userId={user?.id as string}
-    />
+    <div className="">
+      <TopicClient
+        currentTopic={topic[0]}
+        topicsWithSubtopics={topicsWithSubtopics}
+        subtopicsWithTheory={subtopicsWithTheory}
+        activeSubtopicId={subtopicId}
+        userId={user?.id as string}
+      />
+    </div>
   );
 }
 

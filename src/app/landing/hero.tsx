@@ -35,8 +35,6 @@ export default function Hero({
     <Screenshot
       srcLight="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/dashboard.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L2Rhc2hib2FyZC5wbmciLCJpYXQiOjE3NDY3NDQzNDQsImV4cCI6MjA2MjEwNDM0NH0.UlWOn6nes4nou9QXIBzTS3bruoHVrxebgknXo6MNAUw"
       srcDark="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/dashboard.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2Rhc2hib2FyZC5wbmciLCJpYXQiOjE3NDY3NDQzNTcsImV4cCI6MjA2MjEwNDM1N30.nXd4TpvLX_abdDgtz8-8OjLZG8UU37WW7wSXlem06S0"
-      mobileSrcLight="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/dashboard-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L2Rhc2hib2FyZC1tb2JpbGUucG5nIiwiaWF0IjoxNzQ2NzQ1NzgyLCJleHAiOjE3NzgyODE3ODJ9.MrbHJl7N8Z94CJyiHIiYciNr6WZBKShifklaivQrv-g"
-      mobileSrcDark="https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/landing-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2xhbmRpbmctbW9iaWxlLnBuZyIsImlhdCI6MTc0Njc0NTYyMCwiZXhwIjoxNzc4MjgxNjIwfQ.1P2Vde_5zNJsW_QCQlDwlMox1uTnhFJ8HjITn-W_m14"
       alt="MaturaMate dashboard screenshot"
       width={1248}
       height={765}
@@ -67,14 +65,14 @@ export default function Hero({
   return (
     <Section
       className={cn(
-        "fade-bottom overflow-hidden pb-0 sm:pb-0 md:pb-",
+        "fade-bottom overflow-hidden min-h-screen flex items-center lg:pt-48",
         className
       )}
     >
-      <div className="max-w-container mx-auto flex flex-col gap-12 pt-16 sm:gap-24">
-        <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
+      <div className="max-w-container mx-auto flex flex-col gap-12 pt-24 md:pt-16 sm:gap-24">
+        <div className="flex flex-col items-center justify-center gap-6 text-center sm:gap-12">
           {badge !== false && badge}
-          <h1 className="animate-appear relative z-10 inline-block text-4xl leading-tight font-semibold text-balance sm:text-6xl sm:leading-tight md:text-8xl md:leading-tight">
+          <h1 className="animate-appear relative z-10 inline-block text-5xl leading-tight font-semibold text-balance sm:text-6xl sm:leading-tight md:text-8xl md:leading-tight">
             <span className="dark:text-white text-blue-900 drop-shadow-2xl">
               Preparati al meglio con
             </span>
@@ -120,24 +118,28 @@ export default function Hero({
             </div>
           )}
           {mockup !== false && (
-            <div className="relative w-full pt-12">
-              <MockupFrame
-                className="animate-appear bg-transparent opacity-0 delay-700"
-                size="small"
+            <div className="relative w-full pt-12 shadow-xl hidden sm:block">
+              <Mockup
+                type="responsive"
+                className="bg-transparent w-full rounded-xl border-0"
               >
-                <Mockup
-                  type="responsive"
-                  className="bg-transparent w-full rounded-xl border-0"
-                >
-                  {mockup}
-                </Mockup>
-              </MockupFrame>
+                {mockup}
+              </Mockup>
               <Glow
                 variant="top"
                 className="animate-appear-zoom opacity-0 delay-1000"
               />
             </div>
           )}
+          {/* Mobile glow without image */}
+          <div className="relative w-full pt-12 sm:hidden">
+            <div className="h-32 relative">
+              <Glow
+                variant="top"
+                className="animate-appear-zoom opacity-0 delay-1000 absolute top-0 left-0 right-0"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </Section>

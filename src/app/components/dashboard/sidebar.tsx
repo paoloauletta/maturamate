@@ -113,7 +113,10 @@ export default function DashboardSidebar({
       {/* Logo */}
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] justify-between">
         {!collapsed ? (
-          <Link href="/" className="flex items-center gap-2 font-semibold">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-semibold text-blue-900"
+          >
             <h3 className="text-2xl">
               Matura<span className="text-primary dark:text-primary">Mate</span>
             </h3>

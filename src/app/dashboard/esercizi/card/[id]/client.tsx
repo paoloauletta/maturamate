@@ -485,7 +485,7 @@ export default function ExerciseCardClient({
   };
 
   return (
-    <div className="lg:w-[67%] mx-auto">
+    <div className="lg:w-[67%] md:mx-auto">
       {/* Back button and header */}
       <div className="mb-6 flex flex-col lg:gap-2 gap-1">
         <Link

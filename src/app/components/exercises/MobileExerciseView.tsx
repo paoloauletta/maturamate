@@ -383,7 +383,7 @@ export default function MobileExerciseView({
                         Ho visto che stai avendo difficoltà con questo
                         esercizio. Cosa vuoi fare adesso?
                       </p>
-                      <div className="flex flex-row w-1/2 gap-2">
+                      <div className="flex flex-row gap-2">
                         <Button
                           onClick={handleRetry}
                           variant="outline"

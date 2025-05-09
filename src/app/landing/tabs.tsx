@@ -181,7 +181,7 @@ export function LandingTabs() {
   return (
     <div
       id="features"
-      className="max-w-7xl w-full mx-auto flex flex-col justify-center items-center my-24 px-4 sm:px-6 lg:px-8"
+      className="max-w-7xl w-full mx-auto flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8"
     >
       {/* Improved title and subtitle styling */}
       <h1 className="w-full text-center text-3xl font-bold tracking-tight text-foreground mb-6 sm:text-4xl md:text-5xl md:leading-tight">
@@ -196,10 +196,10 @@ export function LandingTabs() {
 
       <div className="w-full flex flex-col gap-8">
         {/* Content display area */}
-        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm min-h-[400px]">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-xl min-h-[400px]">
           <div className="h-full w-full p-6">
             {/* Display content based on active tab */}
-            <div className="h-full bg-gray-50 dark:bg-neutral-800 rounded-lg w-full flex items-center justify-center overflow-hidden transition-all duration-300 ease-in-out">
+            <div className="h-full bg-gray-50 dark:bg-neutral-800 rounded-lg w-full flex items-center justify-center overflow-hidden transition-all duration-300 ease-in-out p-4">
               {activeTab === "experience" && (
                 <ThemeImage
                   lightImage={tabContent.experience.lightImage}
@@ -207,7 +207,7 @@ export function LandingTabs() {
                   mobileLightImage={tabContent.experience.mobileLightImage}
                   mobileDarkImage={tabContent.experience.mobileDarkImage}
                   alt={tabContent.experience.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-md shadow-lg transition-transform duration-300 hover:scale-[1.02]"
                   mobileBreakpoint={768}
                 />
               )}
@@ -218,7 +218,7 @@ export function LandingTabs() {
                   mobileLightImage={tabContent.timeline.mobileLightImage}
                   mobileDarkImage={tabContent.timeline.mobileDarkImage}
                   alt={tabContent.timeline.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-md shadow-lg transition-transform duration-300 hover:scale-[1.02]"
                   mobileBreakpoint={768}
                 />
               )}
@@ -229,7 +229,7 @@ export function LandingTabs() {
                   mobileLightImage={tabContent.dashboard.mobileLightImage}
                   mobileDarkImage={tabContent.dashboard.mobileDarkImage}
                   alt={tabContent.dashboard.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-md shadow-lg transition-transform duration-300 hover:scale-[1.02]"
                   mobileBreakpoint={768}
                 />
               )}

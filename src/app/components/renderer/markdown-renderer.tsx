@@ -68,13 +68,13 @@ export default function MarkdownRenderer({
             return <p {...props} className="mb-4 last:mb-0" />;
           },
           h1: (props) => (
-            <h1 {...props} className="text-2xl font-bold mt-6 mb-4" />
+            <h1 {...props} className="text-2xl font-semibold mt-8 mb-4" />
           ),
           h2: (props) => (
-            <h2 {...props} className="text-xl font-bold mt-5 mb-3" />
+            <h2 {...props} className="text-xl font-semibold mt-6 mb-3" />
           ),
           h3: (props) => (
-            <h3 {...props} className="text-lg font-bold mt-4 mb-2" />
+            <h3 {...props} className="text-lg font-semibold mt-4 mb-2" />
           ),
           ul: (props) => <ul {...props} className="list-disc pl-5 mb-4" />,
           ol: (props) => <ol {...props} className="list-decimal pl-5 mb-4" />,

@@ -304,7 +304,7 @@ export default function TopicClient({
   }
 
   return (
-    <div>
+    <div className="">
       {/* Mobile Topic Menu - Show above topic name on mobile */}
       <div className="block md:hidden mb-4">
         <TopicsSidebar
@@ -438,7 +438,7 @@ export default function TopicClient({
                               Completato
                             </>
                           ) : (
-                            <div className="flex gap-1 items-center cursor-pointer">
+                            <div className="flex gap-1 items-center cursor-pointer text-white">
                               <Check className="h-4 w-4 mr-1" />
                               Segna come completato
                             </div>

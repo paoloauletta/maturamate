@@ -50,12 +50,10 @@ export default function TopicsSidebar({
   completedTopicIds = [],
   completedSubtopicIds = [],
 }: TopicsSidebarProps) {
-  // Initialize expanded state based on completion
+  // Initialize expanded state based on active topic only
   const initialExpandedState = topics.reduce((acc, topic) => {
-    // If the topic is completed, it should be collapsed by default
-    const isCompleted = completedTopicIds.includes(topic.id);
-    // Only expand if this is the active topic or it's not completed
-    acc[topic.id] = activeTopicId === topic.id || !isCompleted;
+    // Only expand if this is the active topic
+    acc[topic.id] = activeTopicId === topic.id;
     return acc;
   }, {} as Record<string, boolean>);
 
@@ -67,26 +65,38 @@ export default function TopicsSidebar({
   const [expandedTopics, setExpandedTopics] =
     useState<Record<string, boolean>>(initialExpandedState);
 
-  // This effect ensures completed topics stay collapsed, even after component rerenders
+  // Track whether a topic has been manually toggled
+  const [manuallyToggled, setManuallyToggled] = useState<
+    Record<string, boolean>
+  >({});
+
+  // This effect ensures only the active topic is expanded, but respects manual toggles
   useEffect(() => {
-    // Update the expanded state whenever completedTopicIds changes
-    // This ensures completed topics are always collapsed (unless they're active)
+    // Only manage the automatic state when topics or active topic changes
     const newExpandedState = { ...expandedTopics };
 
-    // First, collapse all completed topics
-    completedTopicIds.forEach((topicId) => {
-      if (topicId !== activeTopicId) {
-        newExpandedState[topicId] = false;
+    // First, collapse all topics that haven't been manually toggled
+    topics.forEach((topic) => {
+      if (!manuallyToggled[topic.id]) {
+        newExpandedState[topic.id] = false;
       }
     });
 
-    // Then, ensure the topic with the active subtopic is expanded
+    // Then, expand the active topic if it hasn't been manually toggled
+    if (activeTopicId && !manuallyToggled[activeTopicId]) {
+      newExpandedState[activeTopicId] = true;
+    }
+
+    // Finally, ensure the topic with the active subtopic is expanded if it hasn't been manually toggled
     if (activeSubtopicId) {
       const topicWithActiveSubtopic = topics.find((topic) =>
         topic.subtopics.some((sub) => sub.id === activeSubtopicId)
       );
 
-      if (topicWithActiveSubtopic) {
+      if (
+        topicWithActiveSubtopic &&
+        !manuallyToggled[topicWithActiveSubtopic.id]
+      ) {
         newExpandedState[topicWithActiveSubtopic.id] = true;
       }
     }
@@ -96,17 +106,22 @@ export default function TopicsSidebar({
       setExpandedTopics(newExpandedState);
     }
   }, [
-    completedTopicIds,
     activeTopicId,
     activeSubtopicId,
     topics,
     expandedTopics,
+    manuallyToggled,
   ]);
 
   // Toggle topic expansion without navigation
   const toggleTopic = (topicId: string, e: React.MouseEvent) => {
     e.preventDefault(); // Prevent any navigation
     e.stopPropagation(); // Prevent event bubbling to parent
+
+    // Mark this topic as manually toggled
+    setManuallyToggled((prev) => ({ ...prev, [topicId]: true }));
+
+    // Toggle the expansion state
     setExpandedTopics((prev) => ({ ...prev, [topicId]: !prev[topicId] }));
   };
 
@@ -261,11 +276,7 @@ export default function TopicsSidebar({
   // Current topic and subtopic text for mobile display
   const currentTopicText =
     activeSubtopic && activeTopic
-      ? `${activeTopic.name} > ${
-          activeSubtopic.order_index !== null
-            ? `${activeSubtopic.order_index}.`
-            : ""
-        } ${activeSubtopic.name}`
+      ? `${activeTopic.name}`
       : "Seleziona un argomento";
 
   return (

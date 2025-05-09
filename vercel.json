@@ -17,13 +17,7 @@
     },
     {
       "source": "/teoria/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "(?<host>.*)"
-        }
-      ],
-      "destination": "https://:host/dashboard/teoria/:path*",
+      "destination": "/dashboard/teoria/:path*",
       "permanent": false
     }
   ],

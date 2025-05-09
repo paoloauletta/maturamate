@@ -103,6 +103,29 @@ export default function MarkdownRenderer({
               style={{ display: "block" }}
             />
           ),
+          // Table components
+          table: (props) => (
+            <div className="overflow-x-auto my-6">
+              <table
+                {...props}
+                className="w-full border-collapse border border-border rounded-md"
+              />
+            </div>
+          ),
+          thead: (props) => <thead {...props} className="bg-muted/50" />,
+          tbody: (props) => <tbody {...props} />,
+          tr: (props) => (
+            <tr {...props} className="border-b border-border last:border-0" />
+          ),
+          th: (props) => (
+            <th
+              {...props}
+              className="px-4 py-2 text-left font-semibold text-foreground"
+            />
+          ),
+          td: (props) => (
+            <td {...props} className="px-4 py-2 text-foreground" />
+          ),
         }}
       >
         {formattedContent}

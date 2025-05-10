@@ -285,9 +285,6 @@ export default function TopicsSidebar({
                               : ""}
                             {subtopic.name}
                           </span>
-                          {isSubtopicCompleted && (
-                            <CheckCircle className="ml-1.5 h-3 w-3 text-green-500 flex-shrink-0" />
-                          )}
                         </span>
                       </div>
                     );

@@ -65,20 +65,33 @@ export default function MarkdownRenderer({
             }
 
             // Otherwise render a normal paragraph
-            return <p {...props} className="mb-4 last:mb-0" />;
+            return <p {...props} className="mb-2 last:mb-0" />;
           },
           h1: (props) => (
-            <h1 {...props} className="text-2xl font-semibold mt-8 mb-4" />
+            <h1
+              {...props}
+              className="text-2xl font-semibold mt-8 first:mt-0 mb-4"
+            />
           ),
           h2: (props) => (
-            <h2 {...props} className="text-xl font-semibold mt-6 mb-3" />
+            <h2
+              {...props}
+              className="text-xl font-semibold mt-8 first:mt-0 mb-3"
+            />
           ),
           h3: (props) => (
-            <h3 {...props} className="text-lg font-semibold mt-4 mb-2" />
+            <h3
+              {...props}
+              className="text-lg font-semibold mt-8 first:mt-0 mb-2"
+            />
           ),
-          ul: (props) => <ul {...props} className="list-disc pl-5 mb-4" />,
-          ol: (props) => <ol {...props} className="list-decimal pl-5 mb-4" />,
-          li: (props) => <li {...props} className="mb-1" />,
+          ul: (props) => (
+            <ul {...props} className="list-disc pl-5 mb-2 last:mb-0" />
+          ),
+          ol: (props) => (
+            <ol {...props} className="list-decimal pl-5 mb-2 last:mb-0" />
+          ),
+          li: (props) => <li {...props} className="mb-2 last:mb-0" />,
           code: (props) => (
             <code {...props} className="bg-muted rounded px-1 py-0.5" />
           ),

@@ -100,29 +100,25 @@ export default function ExerciseCard({
   return (
     <Link href={linkHref}>
       <Card className="h-full transition-all duration-300 hover:bg-muted/50 flex flex-col relative">
-        <CardHeader className="pb-2">
+        <CardHeader>
           {!disableHeader && (
             <div>
-              <div className="flex w-full justify-between items-center mb-2">
-                <div className="text-xs text-muted-foreground">
-                  {formattedTopic} &gt; {formattedSubtopic}
+              <CardTitle className="text-base">
+                <div className="flex w-full justify-between items-center">
+                  <span className="line-clamp-2 overflow-hidden">
+                    {description}
+                  </span>
+                  {isFlagged && !disableStar && (
+                    <div
+                      className="rounded-full text-yellow-500 cursor-pointer hover:scale-110 transition-transform duration-200"
+                      onClick={handleToggleFlag}
+                      title="Rimuovi dai preferiti"
+                      data-star-icon="true"
+                    >
+                      <Star className="h-4 w-4" fill="currentColor" />
+                    </div>
+                  )}
                 </div>
-
-                {isFlagged && !disableStar && (
-                  <div
-                    className="rounded-full text-yellow-500 cursor-pointer hover:scale-110 transition-transform duration-200"
-                    onClick={handleToggleFlag}
-                    title="Rimuovi dai preferiti"
-                    data-star-icon="true"
-                  >
-                    <Star className="h-4 w-4" fill="currentColor" />
-                  </div>
-                )}
-              </div>
-              <CardTitle className="text-base pr-6">
-                <span className="line-clamp-2 overflow-hidden">
-                  {description}
-                </span>
               </CardTitle>
             </div>
           )}

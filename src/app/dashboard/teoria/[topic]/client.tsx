@@ -447,7 +447,7 @@ export default function TopicClient({
       </div>
 
       <div className="flex justify-between items-center lg:mt-0 lg:mb-8 lg:pb-4 border-b border-border mt-12 mb-6 pb-2">
-        <h1 className="text-4xl font-bold text-left">
+        <h1 className="md:text-4xl text-3xl font-bold text-left">
           {currentTopic.name}
           {completionStatus.completedTopicIds.includes(currentTopic.id) && (
             <CheckCircle className="inline-block ml-2 h-6 w-6 text-green-500" />
@@ -487,11 +487,13 @@ export default function TopicClient({
 
                 <div>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-semibold text-foreground/95">
-                      {subtopic.order_index !== null
-                        ? `${subtopic.order_index}. `
-                        : ""}
-                      {subtopic.name}
+                    <h2 className="md:text-3xl text-2xl font-semibold text-foreground/95">
+                      <span className="text-primary">
+                        {subtopic.order_index !== null
+                          ? `${subtopic.order_index}. `
+                          : ""}
+                      </span>
+                      <span>{subtopic.name}</span>
                       {completionStatus.completedSubtopicIds.includes(
                         subtopic.id
                       ) && (

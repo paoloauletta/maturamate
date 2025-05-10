@@ -90,6 +90,11 @@ export default function TopicClient({
     initialActiveSubtopicId
   );
 
+  // Add state to track reading progress for each subtopic (0-100%)
+  const [readingProgress, setReadingProgress] = useState<
+    Record<string, number>
+  >({});
+
   // State to track completion status
   const [completionStatus, setCompletionStatus] = useState<CompletionStatus>({
     completedTopicIds: [],
@@ -161,6 +166,78 @@ export default function TopicClient({
     topicsWithSubtopics,
   ]);
 
+  // Add useEffect for scroll tracking
+  useEffect(() => {
+    // Function to calculate reading progress of an element
+    const calculateReadingProgress = (element: HTMLElement): number => {
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const currentScroll = window.scrollY;
+
+      // If element is not rendered yet or has no height
+      if (!element || rect.height === 0) return 0;
+
+      // Element hasn't entered viewport yet
+      if (rect.top > viewportHeight) return 0;
+
+      // Element has been completely scrolled past
+      if (rect.bottom < 0) return 100;
+
+      // Element is partially visible - calculate progress based on how much has been scrolled through
+      const elementTop = rect.top + currentScroll - 100; // Adding some offset to start progress earlier
+      const elementBottom = elementTop + rect.height;
+
+      // How far through the element we've scrolled
+      const scrollProgress = (currentScroll - elementTop) / rect.height;
+
+      // Ensure the value is between 0-100
+      return Math.min(100, Math.max(0, scrollProgress * 100));
+    };
+
+    // Function to handle scroll events with debounce
+    let timeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        // Update reading progress for all subtopics
+        const newProgress: Record<string, number> = { ...readingProgress };
+
+        Object.entries(subtopicRefs.current).forEach(
+          ([subtopicId, element]) => {
+            if (element) {
+              const progress = calculateReadingProgress(element);
+
+              // Only update if:
+              // 1. Progress is higher than before (user reads forward), or
+              // 2. Progress dropped significantly (user jumped to different section)
+              if (
+                progress > (newProgress[subtopicId] || 0) ||
+                (newProgress[subtopicId] || 0) - progress > 20
+              ) {
+                newProgress[subtopicId] = progress;
+              }
+            }
+          }
+        );
+
+        setReadingProgress(newProgress);
+      }, 100); // Debounce for 100ms to avoid excessive updates
+    };
+
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Calculate initial state
+    handleScroll();
+
+    // Clean up the event listener
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeout);
+    };
+  }, [subtopicsWithTheory, readingProgress]);
+
   // Function to mark a subtopic as completed
   const markSubtopicAsCompleted = async (subtopicId: string) => {
     setLoadingSubtopic(subtopicId);
@@ -173,15 +250,22 @@ export default function TopicClient({
         body: JSON.stringify({ subtopic_id: subtopicId }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        // Update local state
+        // Update local state - don't add if already present
         setCompletionStatus((prev) => ({
           ...prev,
-          completedSubtopicIds: [...prev.completedSubtopicIds, subtopicId],
+          completedSubtopicIds: prev.completedSubtopicIds.includes(subtopicId)
+            ? prev.completedSubtopicIds
+            : [...prev.completedSubtopicIds, subtopicId],
         }));
         toast.success("Sottotopico completato con successo!");
       } else {
-        toast.error("Errore nel salvare il completamento del sottotopico");
+        console.error("Error response:", data);
+        toast.error(
+          data.error || "Errore nel salvare il completamento del sottotopico"
+        );
       }
     } catch (error) {
       console.error("Error marking subtopic as completed:", error);
@@ -203,15 +287,41 @@ export default function TopicClient({
         body: JSON.stringify({ topic_id: topicId }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        // Update local state
-        setCompletionStatus((prev) => ({
-          ...prev,
-          completedTopicIds: [...prev.completedTopicIds, topicId],
-        }));
+        // Get all subtopics for the current topic from the API response or fetch from props
+        const topicSubtopicIds =
+          data.completedSubtopicIds ||
+          topicsWithSubtopics
+            .find((t) => t.id === topicId)
+            ?.subtopics.map((s) => s.id) ||
+          [];
+
+        // Update local state for both topic and all its subtopics
+        setCompletionStatus((prev) => {
+          // Don't add the topic if it's already in the array
+          const updatedTopicIds = prev.completedTopicIds.includes(topicId)
+            ? prev.completedTopicIds
+            : [...prev.completedTopicIds, topicId];
+
+          // Get unique list of completed subtopic IDs (existing + new ones)
+          const updatedSubtopicIds = Array.from(
+            new Set([...prev.completedSubtopicIds, ...topicSubtopicIds])
+          );
+
+          return {
+            completedTopicIds: updatedTopicIds,
+            completedSubtopicIds: updatedSubtopicIds,
+          };
+        });
+
         toast.success("Argomento completato con successo!");
       } else {
-        toast.error("Errore nel salvare il completamento dell'argomento");
+        console.error("Error response:", data);
+        toast.error(
+          data.error || "Errore nel salvare il completamento dell'argomento"
+        );
       }
     } catch (error) {
       console.error("Error marking topic as completed:", error);
@@ -288,10 +398,19 @@ export default function TopicClient({
   // Handle click on "Vai al prossimo argomento" button
   const handleNextTopicClick = async () => {
     if (nextTopicId) {
-      // Mark the current topic as completed
-      await markTopicAsCompleted(currentTopic.id);
-      // Navigate to the next topic
-      router.push(`/dashboard/teoria/${nextTopicId}`);
+      try {
+        // Mark the current topic as completed
+        await markTopicAsCompleted(currentTopic.id);
+
+        // Only navigate if we're not in loading state (indicating success)
+        if (!loadingTopic) {
+          // Navigate to the next topic
+          router.push(`/dashboard/teoria/${nextTopicId}`);
+        }
+      } catch (error) {
+        console.error("Error navigating to next topic:", error);
+        toast.error("Errore nel passare all'argomento successivo");
+      }
     }
   };
 
@@ -323,6 +442,7 @@ export default function TopicClient({
           }}
           completedTopicIds={completionStatus.completedTopicIds}
           completedSubtopicIds={completionStatus.completedSubtopicIds}
+          readingProgress={readingProgress}
         />
       </div>
 
@@ -701,6 +821,7 @@ export default function TopicClient({
               }}
               completedTopicIds={completionStatus.completedTopicIds}
               completedSubtopicIds={completionStatus.completedSubtopicIds}
+              readingProgress={readingProgress}
             />
           </div>
         </div>

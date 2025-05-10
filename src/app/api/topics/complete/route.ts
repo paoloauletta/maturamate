@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/drizzle";
-import { completedTopicsTable } from "@/db/schema";
+import {
+  completedTopicsTable,
+  completedSubtopicsTable,
+  subtopicsTable,
+} from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -16,6 +20,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Ensure user.id is string
+    const userId = user.id.toString();
 
     // Parse the request body
     const body = await request.json();
@@ -34,7 +41,7 @@ export async function POST(request: NextRequest) {
       .from(completedTopicsTable)
       .where(
         and(
-          eq(completedTopicsTable.user_id, user.id),
+          eq(completedTopicsTable.user_id, userId),
           eq(completedTopicsTable.topic_id, topic_id)
         )
       )
@@ -48,14 +55,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Mark the topic as completed
+    // Get all subtopics for this topic
+    const subtopics = await db
+      .select()
+      .from(subtopicsTable)
+      .where(eq(subtopicsTable.topic_id, topic_id));
+
+    // Mark the topic as completed first
     await db.insert(completedTopicsTable).values({
-      user_id: user.id,
+      user_id: userId,
       topic_id: topic_id,
     });
 
+    // Then mark all related subtopics as completed
+    for (const subtopic of subtopics) {
+      // Check if the subtopic is already completed
+      const existingSubtopicCompletion = await db
+        .select()
+        .from(completedSubtopicsTable)
+        .where(
+          and(
+            eq(completedSubtopicsTable.user_id, userId),
+            eq(completedSubtopicsTable.subtopic_id, subtopic.id)
+          )
+        )
+        .limit(1);
+
+      // Only insert if not already completed
+      if (existingSubtopicCompletion.length === 0) {
+        await db.insert(completedSubtopicsTable).values({
+          user_id: userId,
+          subtopic_id: subtopic.id,
+        });
+      }
+    }
+
     return NextResponse.json(
-      { message: "Topic marked as completed successfully" },
+      {
+        message: "Topic and all subtopics marked as completed successfully",
+        completedSubtopicIds: subtopics.map((s) => s.id),
+      },
       { status: 201 }
     );
   } catch (error) {

@@ -147,7 +147,7 @@ export default function SettingsClient({
             Gestisci le tue informazioni personali
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 px-4 sm:px-6 pb-6 sm:pb-8">
+        <CardContent className="space-y-6 px-4 sm:px-6 md:pb-6">
           <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
             {/* Profile Image */}
             <div className="flex flex-col items-center">
@@ -262,7 +262,7 @@ export default function SettingsClient({
             Azioni irreversibili per il tuo account
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 px-4 sm:px-6 pb-6 sm:pb-8">
+        <CardContent className="space-y-6 px-4 sm:px-6 md:pb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <p className="font-medium">Elimina Account</p>

@@ -159,7 +159,7 @@ export default function DashboardLayoutClient({
 
       <div className="flex flex-col">
         <div className="bg-background sticky top-0 z-40">
-          <header className="flex h-14 items-center gap-4 px-4 lg:h-[60px] lg:px-6 border-b">
+          <header className="flex h-14 items-center gap-4 px-6 lg:h-[60px] lg:px-6 border-b">
             {/* Theme toggle on mobile - placed where the logo was */}
             <div className="md:hidden">
               <Suspense fallback={<div className="h-8 w-8" />}>
@@ -177,7 +177,10 @@ export default function DashboardLayoutClient({
               {/* Mobile hamburger menu on the right */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild className="md:hidden block">
-                  <Button variant="ghost">
+                  <Button
+                    variant="ghost"
+                    className="align-end items-end flex p-0 h-auto"
+                  >
                     <Menu style={{ width: "20px", height: "20px" }} />
                     <span className="sr-only">Menu</span>
                   </Button>

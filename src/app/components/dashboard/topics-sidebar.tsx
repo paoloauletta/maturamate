@@ -38,6 +38,7 @@ interface TopicsSidebarProps {
   basePath?: string;
   completedTopicIds?: string[];
   completedSubtopicIds?: string[];
+  readingProgress?: Record<string, number>;
 }
 
 export default function TopicsSidebar({
@@ -49,6 +50,7 @@ export default function TopicsSidebar({
   basePath = "/dashboard/teoria",
   completedTopicIds = [],
   completedSubtopicIds = [],
+  readingProgress = {},
 }: TopicsSidebarProps) {
   // Initialize expanded state based on active topic only
   const initialExpandedState = topics.reduce((acc, topic) => {
@@ -209,13 +211,15 @@ export default function TopicsSidebar({
                 {/* Topic name with its own click handler for navigation */}
                 <span
                   className={cn(
-                    "truncate cursor-pointer ml-1 font-medium flex items-center",
+                    "cursor-pointer ml-1 font-medium flex items-center justify-between w-full",
                     isActive ? "font-bold" : "hover:text-primary"
                   )}
                   onClick={() => handleTopicClick(topic.id)}
                 >
-                  {topic.order_index !== null ? `${topic.order_index}. ` : ""}
-                  {topic.name}
+                  <span className="truncate max-w-[85%]">
+                    {topic.order_index !== null ? `${topic.order_index}. ` : ""}
+                    {topic.name}
+                  </span>
                   {isCompleted && (
                     <CheckCircle className="ml-1.5 h-3.5 w-3.5 text-green-500 flex-shrink-0" />
                   )}
@@ -228,29 +232,59 @@ export default function TopicsSidebar({
                     const isSubtopicCompleted = completedSubtopicIds.includes(
                       subtopic.id
                     );
+                    const progress = readingProgress[subtopic.id] || 0;
+
+                    // Create CSS classes based on state instead of complex inline styles
+                    const subtopicClasses = cn(
+                      "cursor-pointer py-1 px-4 text-sm transition-all duration-200 flex items-center -ml-px relative",
+                      activeSubtopicId === subtopic.id
+                        ? "text-primary dark:text-primary font-medium"
+                        : "hover:text-primary dark:hover:text-bg-primary"
+                    );
+
                     return (
                       <div
                         key={subtopic.id}
-                        className={cn(
-                          "cursor-pointer py-1 px-4 text-sm transition-all duration-200 flex items-center border-l-2 -ml-px",
-                          activeSubtopicId === subtopic.id
-                            ? "border-l-primary text-primary dark:text-primary font-medium"
-                            : isSubtopicCompleted
-                            ? "border-l-green-500"
-                            : "border-l-transparent hover:border-l-muted hover:text-primary dark:hover:text-bg-primary"
-                        )}
+                        className={subtopicClasses}
                         onClick={() =>
                           sheetOpen
                             ? handleSubtopicClickWithClose(subtopic.id)
                             : handleSubtopicClick(subtopic.id)
                         }
                       >
-                        <span className="truncate flex items-center">
-                          {topic.order_index !== null &&
-                          subtopic.order_index !== null
-                            ? `${topic.order_index}.${subtopic.order_index} `
-                            : ""}
-                          {subtopic.name}
+                        {/* Left border indicator */}
+                        {isSubtopicCompleted ? (
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-green-500" />
+                        ) : activeSubtopicId === subtopic.id ? (
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5">
+                            <div
+                              className="bg-primary"
+                              style={{
+                                height: `${progress}%`,
+                                width: "100%",
+                              }}
+                            />
+                          </div>
+                        ) : progress > 0 ? (
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5">
+                            <div
+                              className="bg-muted-foreground/40"
+                              style={{
+                                height: `${progress}%`,
+                                width: "100%",
+                              }}
+                            />
+                          </div>
+                        ) : null}
+
+                        <span className="flex items-center justify-between w-full">
+                          <span className="truncate max-w-[85%]">
+                            {topic.order_index !== null &&
+                            subtopic.order_index !== null
+                              ? `${topic.order_index}.${subtopic.order_index} `
+                              : ""}
+                            {subtopic.name}
+                          </span>
                           {isSubtopicCompleted && (
                             <CheckCircle className="ml-1.5 h-3 w-3 text-green-500 flex-shrink-0" />
                           )}
@@ -289,17 +323,19 @@ export default function TopicsSidebar({
               variant="outline"
               className="w-full flex items-center justify-between"
             >
-              <span className="truncate">{currentTopicText}</span>
+              <span className="truncate max-w-[90%]">{currentTopicText}</span>
               <ChevronLeft className="h-4 w-4 ml-2 flex-shrink-0" />
             </Button>
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="w-[85%] sm:w-[380px] px-0 p-0"
+            className="w-full sm:w-[380px] px-0 p-0"
             onClick={(e) => e.stopPropagation()}
           >
             <SheetTitle className="sr-only">Menu degli argomenti</SheetTitle>
-            <div className="h-full overflow-y-auto py-12">{sidebarContent}</div>
+            <div className="h-full overflow-y-auto py-12 px-4 sm:px-0">
+              {sidebarContent}
+            </div>
           </SheetContent>
         </Sheet>
       </div>

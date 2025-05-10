@@ -21,9 +21,10 @@ export function Pit() {
             Un tutor intelligente, sempre con te
           </h2>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-            Pit è il tuo tutor intelligente. Conosce la teoria, gli esercizi, le
-            simulazioni e le tue statistiche personali. Ti segue passo dopo
-            passo, aiutandoti a prepararti al meglio.
+            Pit è il tuo Personal Intelligent Tutor. Conosce la teoria, gli
+            esercizi, le simulazioni e le tue statistiche personali. Ti segue
+            passo dopo passo, aiutandoti a prepararti al meglio per il tuo
+            esame.
           </p>
         </div>
 

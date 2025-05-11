@@ -376,11 +376,9 @@ export default function ExercisesTopicClient({
               >
                 <div className="mb-6">
                   <h2 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
-                    <span className="text-primary">
-                      {subtopic.order_index !== null
-                        ? `${subtopic.order_index}. `
-                        : ""}
-                    </span>
+                    {subtopic.order_index !== null
+                      ? `${subtopic.order_index}. `
+                      : ""}
                     {subtopic.name}
                   </h2>
 

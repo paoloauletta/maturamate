@@ -488,11 +488,9 @@ export default function TopicClient({
                 <div>
                   <div className="flex items-center justify-between">
                     <h2 className="md:text-3xl text-2xl font-semibold text-foreground/95">
-                      <span className="text-primary">
-                        {subtopic.order_index !== null
-                          ? `${subtopic.order_index}. `
-                          : ""}
-                      </span>
+                      {subtopic.order_index !== null
+                        ? `${subtopic.order_index}. `
+                        : ""}
                       <span>{subtopic.name}</span>
                       {completionStatus.completedSubtopicIds.includes(
                         subtopic.id

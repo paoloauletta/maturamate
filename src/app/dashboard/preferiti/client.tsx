@@ -22,7 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import MathRenderer from "@/app/components/renderer/math-renderer";
+import MathRenderer from "@/app/components/shared/renderer/math-renderer";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -35,13 +35,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import dynamic from "next/dynamic";
-import MobileExerciseItem from "@/app/components/exercises/MobileExerciseItem";
+import MobileExerciseItem from "@/app/components/shared/exercises/MobileExerciseCard";
 import { Flag } from "lucide-react";
 
 // Dynamically import MobileExerciseView to reduce initial bundle size
 const MobileExerciseView = dynamic(
   () =>
-    import("@/app/components/exercises/MobileExerciseView").then(
+    import("@/app/components/shared/exercises/MobileExercise").then(
       (mod) => mod.default
     ),
   { ssr: false }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Funnel_Display, DM_Sans } from "next/font/google";
+import { Funnel_Display } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "./components/dashboard/themeProvider";
+import { ThemeProvider } from "./components/shared/theme/themeProvider";
 import { SessionProvider } from "next-auth/react";
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel-display",

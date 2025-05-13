@@ -1,77 +1,131 @@
-import { getTopicData } from "./topic-data-server";
-import ExercisesTopicClient from "./client";
-import { getTopics } from "@/utils/cache";
+import { notFound } from "next/navigation";
+import TopicExercisesPage from "@/app/components/esercizi/exercises-cards-page";
+import { Suspense } from "react";
+import { ExercisesSkeleton } from "@/app/components/shared/loading";
+import { auth } from "@/lib/auth";
+import {
+  getAllTopics,
+  getTopicsWithSubtopics,
+  getSubtopicsByTopic,
+} from "@/utils/topics-subtopics";
+import { getExerciseCardsWithCompletion } from "@/utils/exercise-data";
 
-// Set revalidation period - revalidate every hour
-export const revalidate = 3600;
+interface ExercisesTopicPageProps {
+  params: Promise<{
+    topic: string;
+  }>;
+  searchParams: Promise<{
+    subtopic?: string;
+    [key: string]: string | string[] | undefined;
+  }>;
+}
 
 // Generate static params for all topics - this enables static generation
 export async function generateStaticParams() {
-  const topics = await getTopics();
+  const topics = await getAllTopics();
   return topics.map((topic) => ({ topic: topic.id }));
 }
 
-// types.ts
-export interface TopicType {
-  id: string;
-  name: string;
-  description: string | null;
-  order_index: number | null;
-}
-
-export interface SubtopicType {
-  id: string;
-  topic_id: string;
-  name: string;
-  order_index: number | null;
-}
-
-export interface ExerciseCardType {
-  id: string;
-  subtopic_id: string | null;
-  description: string;
-  difficulty: number;
-  order_index: number | null;
-  total_exercises: number;
-  completed_exercises: number;
-  is_completed: boolean;
-}
-
-export interface SubtopicWithExercisesType extends SubtopicType {
-  exercise_cards: ExerciseCardType[];
-}
-
-export interface TopicWithSubtopicsType extends TopicType {
-  subtopics: SubtopicType[];
-}
-
-export interface ExerciseTopicClientProps {
-  currentTopic: TopicType;
-  topicsWithSubtopics: TopicWithSubtopicsType[];
-  subtopicsWithExercises: SubtopicWithExercisesType[];
-  activeSubtopicId?: string;
-  userId: string;
-}
-
-// Using the `any` type to bypass the specific Next.js constraint
-// This is a last resort solution when type errors persist
-export default async function ExercisesTopicPage(props: any) {
-  // Properly await the params
-  const params = await props.params;
-  const searchParams = await props.searchParams;
-
-  const topicId = params.topic;
-  const subtopicId = searchParams?.subtopic;
-
-  const topicData = await getTopicData(topicId, subtopicId);
+export default async function ExercisesTopicPage({
+  params,
+  searchParams,
+}: ExercisesTopicPageProps) {
+  // Extract the topic ID from params properly
+  const { topic: topicId } = await params;
+  const { subtopic: subtopicId } = await searchParams;
 
   return (
-    <ExercisesTopicClient
-      currentTopic={topicData.currentTopic}
-      topicsWithSubtopics={topicData.topicsWithSubtopics}
-      subtopicsWithExercises={topicData.subtopicsWithExercises}
-      activeSubtopicId={topicData.activeSubtopicId}
-      userId={topicData.userId}
+    <Suspense fallback={<ExercisesSkeleton />}>
+      <ExercisesTopicContent topicId={topicId} subtopicId={subtopicId} />
+    </Suspense>
+  );
+}
+
+async function ExercisesTopicContent({
+  topicId,
+  subtopicId,
+}: {
+  topicId: string;
+  subtopicId?: string;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return (
+      <div className="text-center p-10">
+        <h2 className="text-2xl font-bold mb-4">Accesso negato</h2>
+        <p>Devi effettuare il login per accedere a questa pagina.</p>
+      </div>
+    );
+  }
+
+  // Get all topics with their subtopics
+  const topicsWithSubtopics = await getTopicsWithSubtopics();
+
+  // Find the current topic
+  const currentTopic = topicsWithSubtopics.find(
+    (topic) => topic.id === topicId
+  );
+
+  if (!currentTopic) {
+    notFound();
+  }
+
+  // Get subtopics for this topic
+  const subtopics = await getSubtopicsByTopic(topicId);
+
+  if (!subtopics.length) {
+    // No subtopics found for this topic
+    return (
+      <TopicExercisesPage
+        currentTopic={currentTopic}
+        topicsWithSubtopics={topicsWithSubtopics}
+        subtopicsWithExercises={[]}
+        activeSubtopicId={subtopicId}
+        userId={userId}
+      />
+    );
+  }
+
+  // Get exercise cards with completion information for all subtopics
+  const subtopicIds = subtopics.map((subtopic) => subtopic.id);
+  const exerciseCards = await getExerciseCardsWithCompletion(
+    subtopicIds,
+    userId
+  );
+
+  // Group exercise cards by subtopic
+  const subtopicsWithExercises = subtopics.map((subtopic) => {
+    const cardsForSubtopic = exerciseCards.filter(
+      (card) => card.subtopic_id === subtopic.id
+    );
+
+    return {
+      id: subtopic.id,
+      name: subtopic.name,
+      order_index: subtopic.order_index,
+      topic_id: subtopic.topic_id,
+      exercise_cards: cardsForSubtopic.map((card) => ({
+        id: card.id,
+        subtopic_id: card.subtopic_id,
+        description: card.description || "",
+        difficulty: card.difficulty,
+        is_completed: card.is_completed,
+        total_exercises: card.total_exercises,
+        completed_exercises: card.completed_exercises,
+        is_flagged: card.is_flagged,
+      })),
+    };
+  });
+
+  return (
+    <TopicExercisesPage
+      currentTopic={currentTopic}
+      topicsWithSubtopics={topicsWithSubtopics}
+      subtopicsWithExercises={subtopicsWithExercises}
+      activeSubtopicId={subtopicId}
+      userId={userId}
     />
   );
 }

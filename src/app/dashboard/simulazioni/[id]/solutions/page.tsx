@@ -9,7 +9,7 @@ import { eq, and } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import SolutionsClient from "./client";
 import { cache, Suspense } from "react";
-import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
+import { LoadingSpinner } from "@/app/components/shared/loading/loading-spinner";
 import { auth } from "@/lib/auth";
 
 // Cache simulation details - these change very infrequently

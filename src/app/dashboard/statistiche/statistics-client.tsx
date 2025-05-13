@@ -12,8 +12,53 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Flag, XCircle, BookOpen, PenTool, GraduationCap } from "lucide-react";
 import Link from "next/link";
-import { StatisticsData } from "./statistics-data-server";
 import { useState, useEffect } from "react";
+
+// Define types locally instead of importing them
+export interface CompletionData {
+  totalTopics: number;
+  completedTopics: number;
+  topicsCompletionPercentage: number;
+  totalSubtopics: number;
+  completedSubtopics: number;
+  subtopicsCompletionPercentage: number;
+  firstUncompletedTopic: any;
+  firstUncompletedSubtopic: any;
+}
+
+export interface UserStatistics {
+  name: string;
+  overallProgress: number;
+  uniqueCompletedExercises: number;
+  totalAvailableExercises: number;
+  totalExercises: number;
+  correctExercises: number;
+  incorrectExercises: number;
+  simulationsCompleted: number;
+  flaggedExercises: {
+    total: number;
+    items: Array<{ title: string; path: string }>;
+  };
+  topicProgress: Array<{
+    topic: string;
+    completed: number;
+    total: number;
+    totalAttempts: number;
+    correctAttempts: number;
+  }>;
+  weakSubtopics: Array<{
+    subtopic: string;
+    wrongCount: number;
+    topicId: string;
+    subtopicId: string;
+  }>;
+}
+
+export interface StatisticsData {
+  userStats: UserStatistics;
+  completionData: CompletionData;
+  continueUrl: string;
+}
 
 interface StatisticsClientProps {
   data: StatisticsData;

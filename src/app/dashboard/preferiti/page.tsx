@@ -17,7 +17,7 @@ import { auth } from "@/lib/auth";
 // Import client component
 import FavoritesClient from "./client";
 import { type ContentType } from "./client"; // Import ContentType from client
-import { FavoritesSkeleton } from "@/components/loading";
+import { FavoritesSkeleton } from "@/app/components/shared/loading";
 
 export default async function FavoritesPageWrapper() {
   return (

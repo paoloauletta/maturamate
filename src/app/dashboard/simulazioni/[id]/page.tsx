@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import SimulationClient from "./client";
 import { cache, Suspense } from "react";
-import { LoadingSpinner } from "@/app/components/loading/loading-spinner";
+import { LoadingSpinner } from "@/app/components/shared/loading/loading-spinner";
 
 // Cache simulation details - these change very infrequently
 const getSimulation = cache(async (id: string) => {

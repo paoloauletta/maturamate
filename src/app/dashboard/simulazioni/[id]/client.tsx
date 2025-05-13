@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import PdfViewer from "@/app/components/renderer/pdf-renderer";
+import PdfViewer from "@/app/components/shared/renderer/pdf-renderer";
 
 interface Simulation {
   id: string;

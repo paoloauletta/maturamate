@@ -44,7 +44,10 @@ export default function Hero({
       <span className="text-muted-foreground">
         New version of Launch UI is out!
       </span>
-      <a href="https://www.launchuicomponents.com/" className="flex items-center gap-1">
+      <a
+        href="https://www.launchuicomponents.com/"
+        className="flex items-center gap-1"
+      >
         Get started
         <ArrowRightIcon className="size-3" />
       </a>
@@ -69,7 +72,7 @@ export default function Hero({
     <Section
       className={cn(
         "fade-bottom overflow-hidden pb-0 sm:pb-0 md:pb-0",
-        className,
+        className
       )}
     >
       <div className="max-w-container mx-auto flex flex-col gap-12 pt-16 sm:gap-24">

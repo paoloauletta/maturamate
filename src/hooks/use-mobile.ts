@@ -4,12 +4,16 @@ import { useEffect, useState } from "react";
 
 /**
  * Hook to detect if the current device is a mobile device.
- * Returns true if the screen width is less than 768px.
+ * Returns object with isMobile flag and mounted state for hydration safety.
  */
-export function useIsMobile(): boolean {
+export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Prevent hydration mismatch
+    setMounted(true);
+
     // Default to false on the server
     if (typeof window === "undefined") {
       return;
@@ -32,5 +36,5 @@ export function useIsMobile(): boolean {
     };
   }, []);
 
-  return isMobile;
+  return { isMobile, mounted };
 }

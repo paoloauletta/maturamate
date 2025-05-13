@@ -9,9 +9,9 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import ClientSimulationsPage from "./client-page";
 import { cache } from "react";
-import { PageLoading } from "@/app/components/loading/page-loading.server";
+import { PageLoading } from "@/app/components/shared/loading/page-loading.server";
 import { Suspense } from "react";
-import { SimulationsSkeleton } from "@/components/loading";
+import { SimulationsSkeleton } from "@/app/components/shared/loading";
 
 // Cache simulations and cards data - these change very infrequently
 const getSimulationData = cache(async () => {

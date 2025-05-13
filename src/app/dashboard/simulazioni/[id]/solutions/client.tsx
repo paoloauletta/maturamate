@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import PdfViewer from "@/app/components/renderer/pdf-renderer";
+import PdfViewer from "@/app/components/shared/renderer/pdf-renderer";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Simulation {

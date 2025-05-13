@@ -1,15 +1,49 @@
 import { Suspense } from "react";
-import { getDashboardData } from "@/app/dashboard/data/dashboard-data-server";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats-client";
-import { DashboardActions } from "@/components/dashboard/action-buttons-client";
-import { FlaggedExercises } from "@/components/dashboard/flagged-exercises-client";
-import { DashboardSkeleton } from "@/components/loading";
+import { DashboardSkeleton } from "@/app/components/shared/loading";
+import { DashboardStats } from "@/app/components/dashboard/dashboard-stats-client";
+import { DashboardActions } from "@/app/components/dashboard/action-buttons-client";
+import { FlaggedExercises } from "@/app/components/dashboard/flagged-exercises-client";
 
 // Force dynamic rendering since this page uses headers() indirectly through auth()
 export const dynamic = "force-dynamic";
 
 // Set revalidation period - revalidate every 10 minutes to keep dashboard data fresh
 export const revalidate = 600;
+
+// Mock data for the dashboard
+const mockDashboardData = {
+  userData: {
+    name: "Studente",
+    overallProgress: 65,
+    uniqueCompletedExercises: 78,
+    totalAvailableExercises: 120,
+    totalExercises: 85,
+    correctExercises: 70,
+    incorrectExercises: 15,
+    simulationsCompleted: 3,
+    daysToExam: 42,
+    weakestTopic: "Analisi Matematica",
+    flaggedExercises: [
+      {
+        id: "ex1",
+        title: "Derivate di funzioni composte",
+        path: "/dashboard/esercizi/matematica",
+      },
+      {
+        id: "ex2",
+        title: "Integrali definiti",
+        path: "/dashboard/esercizi/matematica",
+      },
+    ],
+  },
+  completionData: {
+    topicsCompletionPercentage: 58,
+    completedTopics: 7,
+    totalTopics: 12,
+  },
+  randomQuote: "La matematica è la ginnastica dell'intelligenza.",
+  continueUrl: "/dashboard/teoria/matematica",
+};
 
 export default async function DashboardIndexPage() {
   return (
@@ -21,9 +55,9 @@ export default async function DashboardIndexPage() {
 
 async function DashboardContent() {
   try {
-    const dashboardData = await getDashboardData();
-    const { userData, completionData, randomQuote, continueUrl } =
-      dashboardData;
+    // Use mock data instead of fetching
+    const dashboardData = mockDashboardData;
+    const { userData, randomQuote, continueUrl } = dashboardData;
 
     // Extract flagged exercises items with proper fallback
     const flaggedItems = userData.flaggedExercises || [];

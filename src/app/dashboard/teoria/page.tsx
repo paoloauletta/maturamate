@@ -1,15 +1,16 @@
+import { auth } from "@/lib/auth";
 import { db } from "@/db/drizzle";
-import {
-  topicsTable,
-  completedTopicsTable,
-  completedSubtopicsTable,
-  subtopicsTable,
-} from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { subtopicsTable } from "@/db/schema";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import { TheorySkeleton } from "@/components/loading";
+import { TheorySkeleton } from "@/app/components/shared/loading";
+
+import {
+  getAllTopics,
+  getCompletedTopics,
+  getCompletedSubtopics,
+} from "@/utils/topics-subtopics";
 
 export default function TheoryPageWrapper() {
   return (
@@ -22,16 +23,13 @@ export default function TheoryPageWrapper() {
 async function TheoryPage() {
   const session = await auth();
   const user = session?.user;
+  const userId = user?.id as string;
 
   if (!user) {
     redirect("/api/auth/login");
   }
 
-  // Fetch all topics ordered by order_index
-  const allTopics = await db
-    .select()
-    .from(topicsTable)
-    .orderBy(topicsTable.order_index);
+  const allTopics = await getAllTopics();
 
   if (allTopics.length === 0) {
     // If no topics exist, create a placeholder message
@@ -45,20 +43,17 @@ async function TheoryPage() {
     );
   }
 
-  // Get completed topics for this user
-  const completedTopics = await db
-    .select({
-      topic_id: completedTopicsTable.topic_id,
-    })
-    .from(completedTopicsTable)
-    .where(eq(completedTopicsTable.user_id, user.id as string));
+  // Use completedTopicIds only
+  const completedTopics = await getCompletedTopics(userId);
+  const completedSubtopics = await getCompletedSubtopics(userId);
 
-  // Create a set of completed topic IDs for faster lookup
-  const completedTopicIds = new Set(completedTopics.map((t) => t.topic_id));
+  // Create a set of completed topic and subtopics IDs for faster lookup
+  const completedTopicIds = completedTopics.map((t) => t.topic_id);
+  const completedSubtopicIds = completedSubtopics.map((s) => s.subtopic_id);
 
   // Find first uncompleted topic
   const firstUncompletedTopic = allTopics.find(
-    (topic) => !completedTopicIds.has(topic.id)
+    (topic) => !completedTopicIds.includes(topic.id),
   );
 
   // If we have an uncompleted topic, let's check its subtopics
@@ -70,28 +65,15 @@ async function TheoryPage() {
       .where(eq(subtopicsTable.topic_id, firstUncompletedTopic.id))
       .orderBy(subtopicsTable.order_index);
 
-    // Get completed subtopics for this user
-    const completedSubtopics = await db
-      .select({
-        subtopic_id: completedSubtopicsTable.subtopic_id,
-      })
-      .from(completedSubtopicsTable)
-      .where(eq(completedSubtopicsTable.user_id, user.id as string));
-
-    // Create a set of completed subtopic IDs for faster lookup
-    const completedSubtopicIds = new Set(
-      completedSubtopics.map((s) => s.subtopic_id)
-    );
-
     // Find first uncompleted subtopic
     const firstUncompletedSubtopic = subtopics.find(
-      (subtopic) => !completedSubtopicIds.has(subtopic.id)
+      (subtopic) => !completedSubtopicIds.includes(subtopic.id),
     );
 
     // If we have an uncompleted subtopic, redirect to it
     if (firstUncompletedSubtopic) {
       redirect(
-        `/dashboard/teoria/${firstUncompletedTopic.id}?subtopic=${firstUncompletedSubtopic.id}`
+        `/dashboard/teoria/${firstUncompletedTopic.id}?subtopic=${firstUncompletedSubtopic.id}`,
       );
     }
 

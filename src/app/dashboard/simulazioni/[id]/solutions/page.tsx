@@ -1,54 +1,14 @@
-import { db } from "@/db/drizzle";
-import {
-  simulationsTable,
-  simulationsSolutionsTable,
-  relationSimulationSolutionTable,
-  completedSimulationsTable,
-} from "@/db/schema";
-import { eq, and } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
-import SolutionsClient from "./client";
-import { cache, Suspense } from "react";
+import { Suspense } from "react";
 import { LoadingSpinner } from "@/app/components/shared/loading/loading-spinner";
 import { auth } from "@/lib/auth";
-
-// Cache simulation details - these change very infrequently
-const getSimulation = cache(async (id: string) => {
-  const simulation = await db
-    .select()
-    .from(simulationsTable)
-    .where(eq(simulationsTable.id, id));
-
-  return simulation.length > 0 ? simulation[0] : null;
-});
-
-// Cache solutions - these change very infrequently
-const getSolutions = cache(async (simulationId: string) => {
-  // Get solutions
-  const allSolutions = await db
-    .select()
-    .from(simulationsSolutionsTable)
-    .innerJoin(
-      relationSimulationSolutionTable,
-      eq(
-        simulationsSolutionsTable.id,
-        relationSimulationSolutionTable.solution_id
-      )
-    )
-    .where(eq(relationSimulationSolutionTable.simulation_id, simulationId))
-    .orderBy(relationSimulationSolutionTable.order_index);
-
-  // Make sure the solutions match the expected interface
-  const solutions = allSolutions.map((sol) => ({
-    id: sol.simulations_solutions.id,
-    simulation_id: simulationId, // Ensure it's never null
-    title: sol.simulations_solutions.title,
-    pdf_url: sol.simulations_solutions.pdf_url,
-    order_index: sol.relation_simulations_solutions.order_index,
-  }));
-
-  return solutions;
-});
+import {
+  getSimulation,
+  getSolutions,
+  getCompletedSimulation,
+} from "@/utils/simulations-data";
+import { Simulation } from "@/types/simulationsTypes";
+import SimulationSolutions from "@/app/components/simulations/simulation-solutions";
 
 // Set revalidation period
 export const revalidate = 3600;
@@ -73,7 +33,7 @@ export default async function SimulationSolutionsPage(props: any) {
   }
 
   // Adapt the data to match the Simulation interface
-  const simulation = {
+  const simulation: Simulation = {
     id: simulationData.id,
     title: simulationData.title,
     description: simulationData.description,
@@ -82,25 +42,14 @@ export default async function SimulationSolutionsPage(props: any) {
     subject: "Matematica", // Default value
     time_in_min: simulationData.time_in_min,
     is_complete: simulationData.is_complete,
+    card_id: simulationData.card_id,
   };
 
   // Check if user has completed this simulation
-  const completedSimulation = await db
-    .select()
-    .from(completedSimulationsTable)
-    .where(
-      and(
-        eq(completedSimulationsTable.user_id, user.id),
-        eq(completedSimulationsTable.simulation_id, simulationId)
-      )
-    );
-
-  const hasCompleted =
-    completedSimulation.length > 0 &&
-    completedSimulation[0].completed_at !== null;
+  const { isCompleted } = await getCompletedSimulation(user.id, simulationId);
 
   // If the user hasn't completed the simulation, redirect to the simulation page
-  if (!hasCompleted) {
+  if (!isCompleted) {
     redirect(`/dashboard/simulazioni/${simulationId}`);
   }
 
@@ -109,7 +58,7 @@ export default async function SimulationSolutionsPage(props: any) {
 
   return (
     <Suspense fallback={<LoadingSpinner text="Caricamento soluzioni..." />}>
-      <SolutionsClient simulation={simulation} solutions={solutions} />
+      <SimulationSolutions simulation={simulation} solutions={solutions} />
     </Suspense>
   );
 }

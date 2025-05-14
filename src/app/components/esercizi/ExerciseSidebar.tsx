@@ -1,30 +1,30 @@
 "use client";
 
-import { useTheoryContext } from "./TheoryContext";
+import { useExerciseContext } from "./ExerciseContext";
 import { useRouter } from "next/navigation";
 import TopicsSidebar from "@/app/components/shared/navigation/topics-sidebar";
 
-interface TheorySidebarProps {
+interface ExerciseSidebarProps {
   isMobile?: boolean;
 }
 
-export default function TheorySidebar({
+export default function ExerciseSidebar({
   isMobile = false,
-}: TheorySidebarProps) {
+}: ExerciseSidebarProps) {
   const router = useRouter();
   const {
     topics,
     completedTopicIds,
     completedSubtopicIds,
-    readingProgress,
+    exerciseProgress,
     activeTopicId,
     activeSubtopicId,
     viewedSubtopicId,
-  } = useTheoryContext();
+  } = useExerciseContext();
 
   // Handle navigation when clicking on a topic
   const handleTopicClick = (topicId: string) => {
-    router.push(`/dashboard/teoria/${topicId}`);
+    router.push(`/dashboard/esercizi/${topicId}`);
   };
 
   // Handle navigation when clicking on a subtopic
@@ -39,7 +39,7 @@ export default function TheorySidebar({
       sessionStorage.setItem("sidebar_navigation", "true");
 
       // Use scroll: false to prevent the default scroll behavior
-      router.push(`/dashboard/teoria/${topic.id}?subtopic=${subtopicId}`, {
+      router.push(`/dashboard/esercizi/${topic.id}?subtopic=${subtopicId}`, {
         scroll: false,
       });
 
@@ -69,8 +69,8 @@ export default function TheorySidebar({
         onSubtopicClick={handleSubtopicClick}
         completedTopicIds={completedTopicIds}
         completedSubtopicIds={completedSubtopicIds}
-        readingProgress={readingProgress}
-        topMargin="mt-4"
+        readingProgress={exerciseProgress}
+        basePath="/dashboard/esercizi"
       />
     </div>
   );

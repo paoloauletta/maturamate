@@ -109,7 +109,7 @@ export default function MarkdownRenderer({
           ),
           img: (props) => (
             <img
-              className="rounded-lg border border-muted mx-auto my-2"
+              className="rounded-lg border border-muted mx-auto my-2 max-w-full md:max-w-[700px] w-auto h-auto object-contain"
               {...props}
               loading="lazy"
               alt={props.alt ?? "image"}

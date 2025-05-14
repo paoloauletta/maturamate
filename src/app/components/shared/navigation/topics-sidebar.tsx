@@ -39,6 +39,7 @@ interface TopicsSidebarProps {
   completedTopicIds?: string[];
   completedSubtopicIds?: string[];
   readingProgress?: Record<string, number>;
+  topMargin?: string;
 }
 
 export default function TopicsSidebar({
@@ -51,6 +52,7 @@ export default function TopicsSidebar({
   completedTopicIds = [],
   completedSubtopicIds = [],
   readingProgress = {},
+  topMargin = "",
 }: TopicsSidebarProps) {
   // Initialize expanded state based on active topic or if topic contains active subtopic
   const initialExpandedState = topics.reduce((acc, topic) => {
@@ -176,7 +178,7 @@ export default function TopicsSidebar({
 
   const sidebarContent = (
     <div className="w-full h-full">
-      <div className="space-y-6">
+      <div className={`space-y-6 ${topMargin}`}>
         {sortedTopics.map((topic) => {
           const isExpanded = expandedTopics[topic.id] || false;
           const isActive = activeTopicId === topic.id;
@@ -243,8 +245,8 @@ export default function TopicsSidebar({
                     const subtopicClasses = cn(
                       "cursor-pointer py-1 px-4 text-sm transition-all duration-200 flex items-center -ml-px relative",
                       activeSubtopicId === subtopic.id
-                        ? "text-primary dark:text-primary font-bold"
-                        : "hover:text-primary dark:hover:text-bg-primary"
+                        ? "text-foreground dark:text-foreground font-bold"
+                        : "hover:text-foreground dark:hover:text-bg-foreground"
                     );
 
                     return (

@@ -9,31 +9,35 @@ import {
 } from "react";
 import { SidebarTopicType } from "@/types/theoryTypes";
 
-interface TheoryContextProps {
+interface ExerciseContextProps {
   topics: SidebarTopicType[];
   completedTopicIds: string[];
   completedSubtopicIds: string[];
-  readingProgress: Record<string, number>;
+  exerciseProgress: Record<string, number>;
   activeTopicId?: string;
   activeSubtopicId?: string;
   viewedSubtopicId?: string;
   updateCompletedTopic: (topicId: string) => void;
   updateCompletedSubtopic: (subtopicId: string) => void;
-  updateReadingProgress: (subtopicId: string, progress: number) => void;
+  updateExerciseProgress: (subtopicId: string, progress: number) => void;
   updateViewedSubtopic: (subtopicId: string) => void;
 }
 
-const TheoryContext = createContext<TheoryContextProps | undefined>(undefined);
+const ExerciseContext = createContext<ExerciseContextProps | undefined>(
+  undefined
+);
 
-export function useTheoryContext() {
-  const context = useContext(TheoryContext);
+export function useExerciseContext() {
+  const context = useContext(ExerciseContext);
   if (!context) {
-    throw new Error("useTheoryContext must be used within a TheoryProvider");
+    throw new Error(
+      "useExerciseContext must be used within an ExerciseProvider"
+    );
   }
   return context;
 }
 
-interface TheoryProviderProps {
+interface ExerciseProviderProps {
   children: ReactNode;
   topics: SidebarTopicType[];
   initialCompletedTopics: string[];
@@ -42,21 +46,21 @@ interface TheoryProviderProps {
   activeSubtopicId?: string;
 }
 
-export function TheoryProvider({
+export function ExerciseProvider({
   children,
   topics,
   initialCompletedTopics,
   initialCompletedSubtopics,
   activeTopicId,
   activeSubtopicId,
-}: TheoryProviderProps) {
+}: ExerciseProviderProps) {
   const [completedTopicIds, setCompletedTopicIds] = useState<string[]>(
     initialCompletedTopics
   );
   const [completedSubtopicIds, setCompletedSubtopicIds] = useState<string[]>(
     initialCompletedSubtopics
   );
-  const [readingProgress, setReadingProgress] = useState<
+  const [exerciseProgress, setExerciseProgress] = useState<
     Record<string, number>
   >({});
   const [viewedSubtopicId, setViewedSubtopicId] = useState<string | undefined>(
@@ -104,8 +108,8 @@ export function TheoryProvider({
     }
   };
 
-  const updateReadingProgress = (subtopicId: string, progress: number) => {
-    setReadingProgress((prev) => {
+  const updateExerciseProgress = (subtopicId: string, progress: number) => {
+    setExerciseProgress((prev) => {
       if (progress > (prev[subtopicId] || 0)) {
         return { ...prev, [subtopicId]: progress };
       }
@@ -121,17 +125,19 @@ export function TheoryProvider({
     topics,
     completedTopicIds,
     completedSubtopicIds,
-    readingProgress,
+    exerciseProgress,
     activeTopicId,
     activeSubtopicId,
     viewedSubtopicId,
     updateCompletedTopic,
     updateCompletedSubtopic,
-    updateReadingProgress,
+    updateExerciseProgress,
     updateViewedSubtopic,
   };
 
   return (
-    <TheoryContext.Provider value={value}>{children}</TheoryContext.Provider>
+    <ExerciseContext.Provider value={value}>
+      {children}
+    </ExerciseContext.Provider>
   );
 }

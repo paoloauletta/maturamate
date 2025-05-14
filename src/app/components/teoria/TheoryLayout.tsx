@@ -3,7 +3,6 @@
 import { ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { TheoryProvider } from "./TheoryContext";
-import TheorySidebar from "./TheorySidebar";
 import { SidebarTopicType } from "@/types/theoryTypes";
 
 interface TheoryLayoutProps {
@@ -36,22 +35,7 @@ export default function TheoryLayout({
       activeTopicId={activeTopicId}
       activeSubtopicId={activeSubtopicId}
     >
-      <div className="flex flex-col-reverse md:flex-row gap-8">
-        {/* Main content */}
-        <div className="w-full md:w-3/4 space-y-8 md:border-r md:border-muted md:pr-8">
-          {children}
-        </div>
-
-        {/* Sidebar (desktop) */}
-        <div className="hidden md:block md:w-1/4 relative">
-          <TheorySidebar />
-        </div>
-
-        {/* Mobile Topic Menu - Show above topic name on mobile */}
-        <div className="block md:hidden">
-          <TheorySidebar isMobile={true} />
-        </div>
-      </div>
+      {children}
     </TheoryProvider>
   );
 }

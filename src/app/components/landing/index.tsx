@@ -7,7 +7,7 @@ import Faq from "./faq";
 import Cta from "./cta";
 import Footer from "./footer";
 import { LandingNavbar } from "./navbar";
-import { AnimateOnScroll } from "../animation/animate-on-scroll";
+import { AnimateOnScroll } from "../shared/animation/animate-on-scroll";
 
 export default function Landing() {
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TopicsSidebar from "@/app/components/shared/navigation/topics-sidebar";
@@ -13,15 +13,82 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useExerciseFilters } from "@/hooks/use-exercise-filters";
 import DifficultyCompletionFilter from "@/app/components/esercizi/difficulty-completion-filter";
 import ExerciseHeader from "@/app/components/esercizi/exercise-header";
+import { ExerciseProvider, useExerciseContext } from "./ExerciseContext";
+import ExerciseSidebar from "./ExerciseSidebar";
+import { SidebarTopicType } from "@/types/theoryTypes";
 
 export default function TopicExercisesPage({
   currentTopic,
   topicsWithSubtopics,
   subtopicsWithExercises,
   activeSubtopicId: initialActiveSubtopicId,
+  userId,
 }: ExerciseTopicClientProps) {
+  // Convert topicsWithSubtopics to the format expected by the ExerciseProvider
+  const formattedTopics: SidebarTopicType[] = topicsWithSubtopics.map(
+    (topic) => ({
+      id: topic.id,
+      name: topic.name,
+      description: topic.description || null,
+      order_index: topic.order_index,
+      subtopics: topic.subtopics.map((subtopic) => ({
+        id: subtopic.id,
+        name: subtopic.name,
+        order_index: subtopic.order_index,
+        topic_id: subtopic.topic_id,
+      })),
+    })
+  );
+
+  // Get info about completed topics and subtopics
+  const completedTopicIds = topicsWithSubtopics
+    .filter((topic) => {
+      const subtopicsForTopic = subtopicsWithExercises.filter(
+        (s) => s.topic_id === topic.id
+      );
+      const allSubtopicsCompleted = subtopicsForTopic.every((subtopic) => {
+        return subtopic.exercise_cards.every((card) => card.is_completed);
+      });
+      return allSubtopicsCompleted && subtopicsForTopic.length > 0;
+    })
+    .map((topic) => topic.id);
+
+  const completedSubtopicIds = subtopicsWithExercises
+    .filter((subtopic) => {
+      return subtopic.exercise_cards.every((card) => card.is_completed);
+    })
+    .map((subtopic) => subtopic.id);
+
+  return (
+    <ExerciseProvider
+      topics={formattedTopics}
+      initialCompletedTopics={completedTopicIds}
+      initialCompletedSubtopics={completedSubtopicIds}
+      activeTopicId={currentTopic.id}
+      activeSubtopicId={initialActiveSubtopicId}
+    >
+      <ExercisesContent
+        currentTopic={currentTopic}
+        topicsWithSubtopics={topicsWithSubtopics}
+        subtopicsWithExercises={subtopicsWithExercises}
+        initialActiveSubtopicId={initialActiveSubtopicId}
+      />
+    </ExerciseProvider>
+  );
+}
+
+function ExercisesContent({
+  currentTopic,
+  topicsWithSubtopics,
+  subtopicsWithExercises,
+  initialActiveSubtopicId,
+}: Omit<ExerciseTopicClientProps, "userId"> & {
+  initialActiveSubtopicId?: string;
+}) {
   const router = useRouter();
   const subtopicRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const { updateViewedSubtopic } = useExerciseContext();
 
   // States
   const { isMobile, mounted } = useIsMobile();
@@ -58,36 +125,84 @@ export default function TopicExercisesPage({
   // Get the next topic ID
   const nextTopicId = findNextTopic();
 
-  // Handle navigation when clicking on a topic
-  const handleTopicClick = (topicId: string) => {
-    router.push(`/dashboard/esercizi/${topicId}`);
-  };
+  // Set up Intersection Observer to track which subtopic is currently in view
+  useEffect(() => {
+    // Initialize observer with options
+    const options = {
+      root: null, // viewport
+      rootMargin: "-100px 0px -65% 0px", // top, right, bottom, left
+      threshold: [0, 0.1, 0.2, 0.3], // trigger at multiple thresholds for smoother transitions
+    };
 
-  // Handle navigation when clicking on a subtopic
-  const handleSubtopicClick = (
-    subtopicId: string,
-    topicId: string,
-    skipUrlUpdate = false
-  ) => {
-    // If we're already on the correct topic page, just scroll to the subtopic
-    if (topicId === currentTopic.id) {
-      // Scroll to the subtopic element
-      const subtopicElement = subtopicRefs.current[subtopicId];
-      if (subtopicElement) {
-        subtopicElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      // Update URL without a full navigation (only if not skipped)
-      if (!skipUrlUpdate) {
-        const url = new URL(window.location.href);
-        url.searchParams.set("subtopic", subtopicId);
-        window.history.pushState({}, "", url.toString());
-      }
-    } else if (!skipUrlUpdate) {
-      // Navigate to the appropriate topic page with subtopic in query
-      router.push(`/dashboard/esercizi/${topicId}?subtopic=${subtopicId}`);
+    // Cleanup previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
     }
-  };
+
+    // Create new observer
+    observerRef.current = new IntersectionObserver((entries) => {
+      // Sort entries by their position in the viewport and intersection ratio
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => {
+          // First try to sort by how visible they are (higher intersection ratio first)
+          if (Math.abs(a.intersectionRatio - b.intersectionRatio) > 0.1) {
+            return b.intersectionRatio - a.intersectionRatio;
+          }
+          // If visibility is similar, prefer the element closest to the top
+          return a.boundingClientRect.top - b.boundingClientRect.top;
+        });
+
+      // Get the first (most visible or closest to top) entry
+      const topEntry = visibleEntries[0];
+
+      if (topEntry) {
+        const subtopicId = topEntry.target.id;
+        if (subtopicId) {
+          updateViewedSubtopic(subtopicId);
+        }
+      }
+    }, options);
+
+    // Observe all subtopic elements
+    Object.values(subtopicRefs.current).forEach((element) => {
+      if (element) {
+        observerRef.current?.observe(element);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [subtopicsWithExercises, updateViewedSubtopic]);
+
+  // When the active subtopic changes, scroll to that element
+  useEffect(() => {
+    // We only want this to run on initial page load, not on subsequent subtopic changes
+    if (
+      initialActiveSubtopicId &&
+      subtopicRefs.current[initialActiveSubtopicId] &&
+      !sessionStorage.getItem("sidebar_navigation")
+    ) {
+      requestAnimationFrame(() => {
+        const targetElement = subtopicRefs.current[initialActiveSubtopicId];
+        if (!targetElement) return;
+
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+
+    // Clear the flag after initial page load
+    return () => {
+      sessionStorage.removeItem("sidebar_navigation");
+    };
+  }, [initialActiveSubtopicId]);
 
   if (!mounted) {
     return null;
@@ -97,22 +212,7 @@ export default function TopicExercisesPage({
     <div>
       {/* Mobile Topic Menu - Show above topic name on mobile */}
       <div className="block md:hidden mb-4">
-        <TopicsSidebar
-          topics={topicsWithSubtopics}
-          activeTopicId={currentTopic.id}
-          activeSubtopicId={initialActiveSubtopicId}
-          onTopicClick={handleTopicClick}
-          onSubtopicClick={(subtopicId) => {
-            // Find the topic that contains this subtopic
-            const topic = topicsWithSubtopics.find((t) =>
-              t.subtopics?.some((s) => s.id === subtopicId)
-            );
-            if (topic) {
-              handleSubtopicClick(subtopicId, topic.id);
-            }
-          }}
-          basePath="/dashboard/esercizi"
-        />
+        <ExerciseSidebar isMobile={true} />
       </div>
 
       <ExerciseHeader
@@ -249,22 +349,7 @@ export default function TopicExercisesPage({
         {/* Sidebar - Hidden on mobile, shown on desktop */}
         <div className="w-full md:w-1/4 hidden md:block">
           <div className="sticky top-8 pt-4">
-            <TopicsSidebar
-              topics={topicsWithSubtopics}
-              activeTopicId={currentTopic.id}
-              activeSubtopicId={initialActiveSubtopicId}
-              onTopicClick={handleTopicClick}
-              onSubtopicClick={(subtopicId) => {
-                // Find the topic that contains this subtopic
-                const topic = topicsWithSubtopics.find((t) =>
-                  t.subtopics?.some((s) => s.id === subtopicId)
-                );
-                if (topic) {
-                  handleSubtopicClick(subtopicId, topic.id);
-                }
-              }}
-              basePath="/dashboard/esercizi"
-            />
+            <ExerciseSidebar />
           </div>
         </div>
       </div>

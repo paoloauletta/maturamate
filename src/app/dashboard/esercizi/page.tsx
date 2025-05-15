@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import ExercisesPage from "@/app/components/esercizi/exercises-page";
+import ExercisesPage from "@/app/components/esercizi/ExerciseCards";
 import { getExercisesData } from "@/utils/exercise-data";
 import { getTopicsWithSubtopics } from "@/utils/topics-subtopics";
 import { ExercisesSkeleton } from "@/app/components/shared/loading";

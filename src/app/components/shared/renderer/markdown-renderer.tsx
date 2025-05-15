@@ -47,6 +47,29 @@ export default function MarkdownRenderer({
 
   return (
     <div className={`markdown-content ${className}`}>
+      <style jsx global>{`
+        /* Make KaTeX math blocks responsive */
+        .katex-display {
+          overflow-x: auto;
+          overflow-y: hidden;
+          max-width: 100%;
+          padding: 0.5rem 0;
+        }
+        /* Prevent scroll bars when not needed */
+        .katex-display > .katex {
+          max-width: 100%;
+        }
+        /* Handle inline math */
+        .katex {
+          font-size: 1.1em;
+        }
+        /* Adjust font size on mobile */
+        @media (max-width: 640px) {
+          .katex {
+            font-size: 0.9em;
+          }
+        }
+      `}</style>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}

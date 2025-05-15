@@ -3,7 +3,6 @@
 import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import TopicsSidebar from "@/app/components/shared/navigation/topics-sidebar";
 import ExerciseCard from "@/app/components/shared/exercises/ExerciseCard";
 import MobileExerciseItem from "@/app/components/shared/exercises/MobileExerciseCard";
 import { ChevronRight } from "lucide-react";
@@ -11,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ExerciseTopicClientProps } from "@/types/exercisesTypes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useExerciseFilters } from "@/hooks/use-exercise-filters";
-import DifficultyCompletionFilter from "@/app/components/esercizi/difficulty-completion-filter";
-import ExerciseHeader from "@/app/components/esercizi/exercise-header";
+import DifficultyCompletionFilter from "@/app/components/esercizi/ExerciseFilter";
+import ExerciseHeader from "@/app/components/esercizi/ExerciseHeader";
 import { ExerciseProvider, useExerciseContext } from "./ExerciseContext";
 import ExerciseSidebar from "./ExerciseSidebar";
 import { SidebarTopicType } from "@/types/theoryTypes";

@@ -27,83 +27,85 @@ export default function TheoryExerciseCards({
   const exerciseCards = subtopic.exercise_cards as ExerciseCardType[];
 
   return (
-    <div className="border-t pt-8">
-      <div className="relative overflow-hidden rounded-lg p-1">
-        {/* Card carousel showing partial next card based on screen size */}
-        <div className="flex space-x-4 pr-3 w-full overflow-x-visible">
-          {/* First card (always visible on all screens) */}
-          <div className="w-full min-w-full md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
-            <ExerciseCard
-              id={exerciseCards[0].id}
-              topicName={topic.name}
-              topicOrder={topic.order_index}
-              subtopicName={subtopic.name}
-              subtopicOrder={subtopic.order_index}
-              description={exerciseCards[0].description}
-              difficulty={exerciseCards[0].difficulty}
-              isCompleted={exerciseCards[0].is_completed}
-              totalExercises={exerciseCards[0].total_exercises}
-              completedExercises={exerciseCards[0].completed_exercises}
-              isFlagged={exerciseCards[0].is_flagged}
-            />
+    <div className="mt-8">
+      <h3 className="text-xl font-semibold mb-4">Esercizi correlati</h3>
+      <div className="relative">
+        <div className="overflow-x-auto pb-2">
+          <div className="flex space-x-4 whitespace-nowrap">
+            {/* First card (always visible on all screens) */}
+            <div className="w-full min-w-full md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
+              <ExerciseCard
+                id={exerciseCards[0].id}
+                topicName={topic.name}
+                topicOrder={topic.order_index}
+                subtopicName={subtopic.name}
+                subtopicOrder={subtopic.order_index}
+                description={exerciseCards[0].description}
+                difficulty={exerciseCards[0].difficulty}
+                isCompleted={exerciseCards[0].is_completed}
+                totalExercises={exerciseCards[0].total_exercises}
+                completedExercises={exerciseCards[0].completed_exercises}
+                isFlagged={exerciseCards[0].is_flagged}
+              />
+            </div>
+
+            {/* Second card (glimpse on mobile, full on tablet/desktop) */}
+            {exerciseCards.length > 1 && (
+              <div className="min-w-[30%] w-[30%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
+                <ExerciseCard
+                  id={exerciseCards[1].id}
+                  topicName={topic.name}
+                  topicOrder={topic.order_index}
+                  subtopicName={subtopic.name}
+                  subtopicOrder={subtopic.order_index}
+                  description={exerciseCards[1].description}
+                  difficulty={exerciseCards[1].difficulty}
+                  isCompleted={exerciseCards[1].is_completed}
+                  totalExercises={exerciseCards[1].total_exercises}
+                  completedExercises={exerciseCards[1].completed_exercises}
+                  isFlagged={exerciseCards[1].is_flagged}
+                />
+              </div>
+            )}
+
+            {/* Third card (only visible on tablet+ with glimpse on tablet, full on desktop) */}
+            {exerciseCards.length > 2 && (
+              <div className="hidden md:block md:min-w-[30%] md:w-[30%] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
+                <ExerciseCard
+                  id={exerciseCards[2].id}
+                  topicName={topic.name}
+                  topicOrder={topic.order_index}
+                  subtopicName={subtopic.name}
+                  subtopicOrder={subtopic.order_index}
+                  description={exerciseCards[2].description}
+                  difficulty={exerciseCards[2].difficulty}
+                  isCompleted={exerciseCards[2].is_completed}
+                  totalExercises={exerciseCards[2].total_exercises}
+                  completedExercises={exerciseCards[2].completed_exercises}
+                  isFlagged={exerciseCards[2].is_flagged}
+                />
+              </div>
+            )}
+
+            {/* Fourth card (only glimpse on desktop) */}
+            {exerciseCards.length > 3 && (
+              <div className="hidden lg:block lg:min-w-[25%] lg:w-[25%]">
+                <ExerciseCard
+                  id={exerciseCards[3].id}
+                  topicName={topic.name}
+                  topicOrder={topic.order_index}
+                  subtopicName={subtopic.name}
+                  subtopicOrder={subtopic.order_index}
+                  description={exerciseCards[3].description}
+                  difficulty={exerciseCards[3].difficulty}
+                  isCompleted={exerciseCards[3].is_completed}
+                  totalExercises={exerciseCards[3].total_exercises}
+                  completedExercises={exerciseCards[3].completed_exercises}
+                  isFlagged={exerciseCards[3].is_flagged}
+                />
+              </div>
+            )}
           </div>
-
-          {/* Second card (glimpse on mobile, full on tablet/desktop) */}
-          {exerciseCards.length > 1 && (
-            <div className="min-w-[30%] w-[30%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
-              <ExerciseCard
-                id={exerciseCards[1].id}
-                topicName={topic.name}
-                topicOrder={topic.order_index}
-                subtopicName={subtopic.name}
-                subtopicOrder={subtopic.order_index}
-                description={exerciseCards[1].description}
-                difficulty={exerciseCards[1].difficulty}
-                isCompleted={exerciseCards[1].is_completed}
-                totalExercises={exerciseCards[1].total_exercises}
-                completedExercises={exerciseCards[1].completed_exercises}
-                isFlagged={exerciseCards[1].is_flagged}
-              />
-            </div>
-          )}
-
-          {/* Third card (only visible on tablet+ with glimpse on tablet, full on desktop) */}
-          {exerciseCards.length > 2 && (
-            <div className="hidden md:block md:min-w-[30%] md:w-[30%] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
-              <ExerciseCard
-                id={exerciseCards[2].id}
-                topicName={topic.name}
-                topicOrder={topic.order_index}
-                subtopicName={subtopic.name}
-                subtopicOrder={subtopic.order_index}
-                description={exerciseCards[2].description}
-                difficulty={exerciseCards[2].difficulty}
-                isCompleted={exerciseCards[2].is_completed}
-                totalExercises={exerciseCards[2].total_exercises}
-                completedExercises={exerciseCards[2].completed_exercises}
-                isFlagged={exerciseCards[2].is_flagged}
-              />
-            </div>
-          )}
-
-          {/* Fourth card (only glimpse on desktop) */}
-          {exerciseCards.length > 3 && (
-            <div className="hidden lg:block lg:min-w-[25%] lg:w-[25%]">
-              <ExerciseCard
-                id={exerciseCards[3].id}
-                topicName={topic.name}
-                topicOrder={topic.order_index}
-                subtopicName={subtopic.name}
-                subtopicOrder={subtopic.order_index}
-                description={exerciseCards[3].description}
-                difficulty={exerciseCards[3].difficulty}
-                isCompleted={exerciseCards[3].is_completed}
-                totalExercises={exerciseCards[3].total_exercises}
-                completedExercises={exerciseCards[3].completed_exercises}
-                isFlagged={exerciseCards[3].is_flagged}
-              />
-            </div>
-          )}
         </div>
 
         {/* Gradient overlay based on number of cards - responsive with CSS */}

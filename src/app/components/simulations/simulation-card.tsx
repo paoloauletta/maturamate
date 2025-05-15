@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { SimulationCard } from "@/types/simulationsTypes";
-import SimulationItem from "./simulation-card/card-item";
+import SimulationItem from "./card-item";
 
 // Animation variants
 const expandVariants = {

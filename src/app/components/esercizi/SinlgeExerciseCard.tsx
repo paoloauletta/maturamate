@@ -14,8 +14,8 @@ import {
   ContentType,
 } from "@/types/exercisesTypes";
 import { useIsMobile } from "@/hooks/use-mobile";
-import ExerciseHeader from "@/app/components/esercizi/exercise-header";
-import ExerciseProgress from "@/app/components/esercizi/exercise-progress";
+import ExerciseHeader from "@/app/components/esercizi/ExerciseHeader";
+import ExerciseProgress from "@/app/components/esercizi/ExerciseProgress";
 
 const MobileExerciseView = dynamic<MobileExerciseViewProps>(
   () =>

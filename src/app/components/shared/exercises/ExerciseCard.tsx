@@ -83,7 +83,7 @@ export default function ExerciseCard({
   return (
     <Link href={linkHref}>
       <Card className="h-full transition-all duration-300 hover:bg-muted/50 flex flex-col relative">
-        <CardHeader>
+        <CardHeader className="pb-4">
           {!disableHeader && (
             <div>
               <CardTitle className="text-base">
@@ -126,7 +126,7 @@ export default function ExerciseCard({
           )}
         </CardHeader>
 
-        <CardContent className="flex-grow">
+        <CardContent className="flex-grow pt-0 pb-0 mb-auto">
           {/* Difficulty indicators */}
           <div className="flex gap-1 items-center">
             {[...Array(difficulty)].map((_, i) => (
@@ -147,7 +147,7 @@ export default function ExerciseCard({
           </div>
         </CardContent>
 
-        <CardFooter className="pt-2 border-t text-xs text-muted-foreground flex justify-between">
+        <CardFooter className="pt-4 border-t text-xs text-muted-foreground flex justify-between">
           <div className="flex items-center gap-1">
             {isCompleted ? (
               <div className="flex items-center gap-1 text-green-600 dark:text-green-400">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FilterState } from "@/app/components/esercizi/difficulty-completion-filter";
+import { FilterState } from "@/app/components/esercizi/ExerciseFilter";
 
 export function useExerciseFilters() {
   const [difficultyFilter, setDifficultyFilter] = useState<number | null>(null);

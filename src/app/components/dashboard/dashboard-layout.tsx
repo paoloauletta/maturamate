@@ -194,7 +194,7 @@ export default function DashboardLayoutClient({
             </div>
           </header>
         </div>
-        <main className="flex flex-1 flex-col gap-4 p-4 pb-12 lg:gap-6 lg:px-18 lg:py-12">
+        <main className="flex flex-1 flex-col gap-4 p-4 pb-12 lg:gap-6 lg:px-8 lg:py-12">
           {children}
         </main>
       </div>

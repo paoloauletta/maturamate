@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import TopicExercisesPage from "@/app/components/esercizi/exercises-cards-page";
+import TopicExercisesPage from "@/app/components/esercizi/ExerciseCards";
 import { Suspense } from "react";
 import { ExercisesSkeleton } from "@/app/components/shared/loading";
 import { auth } from "@/lib/auth";

@@ -104,10 +104,10 @@ export default function TheorySubtopic({
             {/* Theory content */}
             {subtopic.theory.map((theory: TheoryContentType) => (
               <div key={theory.id} className="space-y-4">
-                <div className="prose max-w-none dark:prose-invert">
+                <div className="prose max-w-full dark:prose-invert overflow-x-auto">
                   <MarkdownRenderer
                     content={parseContent(theory.content)}
-                    className="theory-content prose-headings:mt-6 prose-headings:mb-4 prose-p:my-4 prose-ul:my-4 prose-ol:my-4"
+                    className="theory-content prose-headings:mt-6 prose-headings:mb-4 prose-p:my-4 prose-ul:my-4 prose-ol:my-4 w-full"
                   />
                 </div>
               </div>

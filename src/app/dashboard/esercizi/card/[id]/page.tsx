@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import CardDetailPage from "@/app/components/esercizi/card-detail-page";
+import CardDetailPage from "@/app/components/esercizi/SinlgeExerciseCard";
 import { Suspense } from "react";
 import { ExercisesSkeleton } from "@/app/components/shared/loading";
 import { auth } from "@/lib/auth";

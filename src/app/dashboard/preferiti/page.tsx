@@ -8,8 +8,12 @@ import {
   topicsTable,
   completedExercisesTable,
   completedExercisesCardsTable,
+  flaggedSimulationsTable,
+  simulationsTable,
+  simulationsCardsTable,
+  completedSimulationsTable,
 } from "@/db/schema";
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, count, desc, isNotNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { auth } from "@/lib/auth";
@@ -158,66 +162,157 @@ async function FavoritesPage() {
     .orderBy(flaggedExercisesTable.created_at);
 
   // Transform the raw results and parse JSON content if needed
-  const flaggedExercises = flaggedExercisesRaw.map((exercise) => {
-    let parsedQuestionData: ContentType;
-    let parsedSolutionData: ContentType;
+  const flaggedExercises = await Promise.all(
+    flaggedExercisesRaw.map(async (exercise) => {
+      let parsedQuestionData: ContentType;
+      let parsedSolutionData: ContentType;
 
-    // Parse question_data based on its type
-    if (typeof exercise.question_data === "string") {
-      try {
-        // Try to parse as JSON if it looks like JSON
-        if (
-          exercise.question_data.startsWith("[") ||
-          exercise.question_data.startsWith("{")
-        ) {
-          parsedQuestionData = JSON.parse(exercise.question_data);
-        } else {
+      // Parse question_data based on its type
+      if (typeof exercise.question_data === "string") {
+        try {
+          // Try to parse as JSON if it looks like JSON
+          if (
+            exercise.question_data.startsWith("[") ||
+            exercise.question_data.startsWith("{")
+          ) {
+            parsedQuestionData = JSON.parse(exercise.question_data);
+          } else {
+            parsedQuestionData = exercise.question_data;
+          }
+        } catch {
+          // If parsing fails, just use the string
           parsedQuestionData = exercise.question_data;
         }
-      } catch {
-        // If parsing fails, just use the string
-        parsedQuestionData = exercise.question_data;
+      } else {
+        // If it's already an object, just use it
+        parsedQuestionData = exercise.question_data as ContentType;
       }
-    } else {
-      // If it's already an object, just use it
-      parsedQuestionData = exercise.question_data as ContentType;
-    }
 
-    // Parse solution_data based on its type
-    if (typeof exercise.solution_data === "string") {
-      try {
-        // Try to parse as JSON if it looks like JSON
-        if (
-          exercise.solution_data.startsWith("[") ||
-          exercise.solution_data.startsWith("{")
-        ) {
-          parsedSolutionData = JSON.parse(exercise.solution_data);
-        } else {
+      // Parse solution_data based on its type
+      if (typeof exercise.solution_data === "string") {
+        try {
+          // Try to parse as JSON if it looks like JSON
+          if (
+            exercise.solution_data.startsWith("[") ||
+            exercise.solution_data.startsWith("{")
+          ) {
+            parsedSolutionData = JSON.parse(exercise.solution_data);
+          } else {
+            parsedSolutionData = exercise.solution_data;
+          }
+        } catch {
+          // If parsing fails, just use the string
           parsedSolutionData = exercise.solution_data;
         }
-      } catch {
-        // If parsing fails, just use the string
-        parsedSolutionData = exercise.solution_data;
+      } else {
+        // If it's already an object, just use it
+        parsedSolutionData = exercise.solution_data as ContentType;
       }
-    } else {
-      // If it's already an object, just use it
-      parsedSolutionData = exercise.solution_data as ContentType;
-    }
 
-    return {
-      ...exercise,
-      question_data: parsedQuestionData,
-      solution_data: parsedSolutionData,
-      // Ensure non-nullable fields have proper defaults
-      card_description: exercise.card_description || "",
-      difficulty: exercise.difficulty || 1,
-    };
-  });
+      // Check if the exercise is completed and if it was correct
+      const completedExercise = await db
+        .select({
+          id: completedExercisesTable.id,
+          is_correct: completedExercisesTable.is_correct,
+          created_at: completedExercisesTable.created_at,
+        })
+        .from(completedExercisesTable)
+        .where(
+          and(
+            eq(completedExercisesTable.user_id, user.id as string),
+            eq(completedExercisesTable.exercise_id, exercise.id)
+          )
+        )
+        .orderBy(desc(completedExercisesTable.created_at))
+        .limit(1);
+
+      const isCompleted = completedExercise.length > 0;
+      const wasCorrect = isCompleted ? completedExercise[0].is_correct : false;
+
+      return {
+        ...exercise,
+        question_data: parsedQuestionData,
+        solution_data: parsedSolutionData,
+        // Ensure non-nullable fields have proper defaults
+        card_description: exercise.card_description || "",
+        difficulty: exercise.difficulty || 1,
+        isCompleted,
+        wasCorrect,
+      };
+    })
+  );
+
+  // Fetch flagged simulations with card details
+  const flaggedSimulationsRaw = await db
+    .select({
+      id: simulationsTable.id,
+      title: simulationsTable.title,
+      description: simulationsTable.description,
+      pdf_url: simulationsTable.pdf_url,
+      time_in_min: simulationsTable.time_in_min,
+      is_complete: simulationsTable.is_complete,
+      card_id: simulationsTable.card_id,
+      card_title: simulationsCardsTable.title,
+      year: simulationsCardsTable.year,
+      subject: simulationsCardsTable.subject,
+      created_at: flaggedSimulationsTable.created_at,
+    })
+    .from(flaggedSimulationsTable)
+    .innerJoin(
+      simulationsTable,
+      eq(flaggedSimulationsTable.simulation_id, simulationsTable.id)
+    )
+    .innerJoin(
+      simulationsCardsTable,
+      eq(simulationsTable.card_id, simulationsCardsTable.id)
+    )
+    .where(eq(flaggedSimulationsTable.user_id, user.id as string))
+    .orderBy(desc(simulationsCardsTable.year));
+
+  // Process simulations to add completion status
+  const flaggedSimulations = await Promise.all(
+    flaggedSimulationsRaw.map(async (simulation) => {
+      // Check if user has completed the simulation
+      const completedQuery = await db
+        .select({ id: completedSimulationsTable.id })
+        .from(completedSimulationsTable)
+        .where(
+          and(
+            eq(completedSimulationsTable.user_id, user.id as string),
+            eq(completedSimulationsTable.simulation_id, simulation.id),
+            isNotNull(completedSimulationsTable.completed_at)
+          )
+        );
+
+      const isCompleted = completedQuery.length > 0;
+
+      // Check if user has started the simulation
+      const startedQuery = await db
+        .select({ id: completedSimulationsTable.id })
+        .from(completedSimulationsTable)
+        .where(
+          and(
+            eq(completedSimulationsTable.user_id, user.id as string),
+            eq(completedSimulationsTable.simulation_id, simulation.id)
+          )
+        );
+
+      const isStarted = startedQuery.length > 0;
+
+      return {
+        ...simulation,
+        is_completed: isCompleted,
+        is_started: isStarted || isCompleted,
+        is_flagged: true, // Always true since these are favorites
+      };
+    })
+  );
 
   return (
     <FavoritesClient
       flaggedCards={flaggedCards}
       flaggedExercises={flaggedExercises}
+      flaggedSimulations={flaggedSimulations}
     />
   );
 }

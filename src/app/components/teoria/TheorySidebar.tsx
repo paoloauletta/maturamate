@@ -70,7 +70,7 @@ export default function TheorySidebar({
         completedTopicIds={completedTopicIds}
         completedSubtopicIds={completedSubtopicIds}
         readingProgress={readingProgress}
-        topMargin="mt-4"
+        basePath="/dashboard/teoria"
       />
     </div>
   );

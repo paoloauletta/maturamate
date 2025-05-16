@@ -796,7 +796,7 @@ export default function FavoritesClient({
           <div key={year} className="space-y-6">
             <h2 className="text-2xl font-semibold">Simulazioni {year}</h2>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {Object.entries(simulationsByYearAndCard[year]).map(
                 ([cardTitle, simulations]) => {
                   // Get subject from first simulation

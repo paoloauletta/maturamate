@@ -46,28 +46,72 @@ export default function MarkdownRenderer({
   const formattedContent = processContent();
 
   return (
-    <div className={`markdown-content ${className}`}>
+    <div
+      className={`markdown-content ${className}`}
+      style={{
+        display: "block",
+        maxWidth: "100%",
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch", // For smoother scrolling on iOS
+      }}
+    >
       <style jsx global>{`
         /* Make KaTeX math blocks responsive */
         .katex-display {
-          overflow-x: auto;
+          display: block; /* Ensure it's block for layout purposes */
+          box-sizing: border-box; /* Enforce border-box sizing */
+          overflow-x: auto; /* Allow horizontal scrolling if content is too wide */
           overflow-y: hidden;
-          max-width: 100%;
-          padding: 0.5rem 0;
+          max-width: 100%; /* Do not exceed parent width */
+          width: 100%; /* Occupy parent's width, constrained by max-width */
+          padding: 0.5em 0; /* Vertical padding */
+          margin: 0.8em 0; /* Consistent vertical margin */
         }
-        /* Prevent scroll bars when not needed */
+        /* Styles for the inner .katex span within a .katex-display block */
         .katex-display > .katex {
-          max-width: 100%;
+          display: block; /* Ensure it behaves as a block within .katex-display */
+          box-sizing: border-box;
+          max-width: 100%; /* Respect the container's width */
+          text-align: center; /* Optional: center the math content */
         }
-        /* Handle inline math */
+        /* General styles for .katex (applies to inline and display math inner content) */
         .katex {
-          font-size: 1.1em;
+          font-size: 1.1em; /* Base font size for math */
+          box-sizing: border-box; /* Enforce border-box sizing */
         }
-        /* Adjust font size on mobile */
+        /* Adjust font size on mobile for better readability */
         @media (max-width: 640px) {
           .katex {
-            font-size: 0.9em;
+            /* Affects both inline and display math text size */
+            font-size: 0.95em; /* Slightly smaller on mobile */
           }
+          .katex-display {
+            padding: 0.4em 0; /* Adjust padding on mobile */
+            margin: 0.6em 0; /* Adjust margin on mobile */
+          }
+        }
+        /* Ensure tables are responsive */
+        .markdown-content table {
+          display: block; /* Make table itself block to enable overflow on wrapper */
+          max-width: 100%;
+          overflow-x: auto; /* Scroll wide tables */
+          margin-bottom: 1rem; /* Consistent spacing */
+        }
+        .markdown-content th,
+        .markdown-content td {
+          padding: 0.5rem 0.75rem; /* Adjust padding for table cells */
+          border: 1px solid hsl(var(--border));
+        }
+        .markdown-content thead {
+          background-color: hsl(var(--muted) / 0.5);
+        }
+        /* Ensure pre/code blocks are responsive */
+        .markdown-content pre {
+          overflow-x: auto; /* Scroll wide code blocks */
+          padding: 0.75rem;
+          margin-bottom: 1rem; /* Consistent spacing */
+          border-radius: var(--radius); /* Using CSS var for consistency */
+          background-color: hsl(var(--muted));
         }
       `}</style>
       <ReactMarkdown

@@ -160,7 +160,7 @@ export default function TheoryContent({
 
       <div className="flex flex-col-reverse md:flex-row gap-8">
         {/* Main content */}
-        <div className="w-full md:w-3/4 space-y-12 md:border-r md:border-muted md:pr-8">
+        <div className="w-full md:w-3/4 min-w-0 space-y-12 md:border-r md:border-muted md:pr-8">
           {subtopicsWithTheory.length > 0 ? (
             subtopicsWithTheory.map((subtopic, index) => (
               <TheorySubtopic

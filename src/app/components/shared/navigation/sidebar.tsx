@@ -106,7 +106,7 @@ export default function DashboardSidebar({
     <div
       className={cn(
         "flex flex-col border-r bg-background",
-        isMobile ? "h-full" : "h-screen sticky top-0 left-0",
+        isMobile ? "h-full" : "h-screen sticky top-0 left-0"
       )}
     >
       {/* Logo */}
@@ -346,7 +346,7 @@ export default function DashboardSidebar({
                             "flex items-center gap-2 py-2 px-3 rounded-md text-sm transition-colors cursor-pointer relative w-full",
                             isLinkActive(link.href)
                               ? "bg-accent text-primary dark:text-primary font-medium"
-                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                           )}
                         >
                           <Icon className="h-5 w-5" />
@@ -360,7 +360,7 @@ export default function DashboardSidebar({
                             "flex items-center gap-2 py-2 px-3 rounded-md text-sm transition-colors cursor-pointer relative w-full",
                             isLinkActive(link.href)
                               ? "bg-accent text-primary dark:text-primary font-medium"
-                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                           )}
                         >
                           <Icon className="h-5 w-5" />

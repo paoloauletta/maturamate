@@ -223,7 +223,7 @@ export default function TopicsSidebar({
                   )}
                   onClick={() => handleTopicClick(topic.id)}
                 >
-                  <span className="truncate max-w-[85%]">
+                  <span className="break-words w-full pr-2">
                     {topic.order_index !== null ? `${topic.order_index}. ` : ""}
                     {topic.name}
                   </span>
@@ -285,7 +285,7 @@ export default function TopicsSidebar({
                         ) : null}
 
                         <span className="flex items-center justify-between w-full">
-                          <span className="truncate max-w-[85%]">
+                          <span className="break-words w-full">
                             {topic.order_index !== null &&
                             subtopic.order_index !== null
                               ? `${topic.order_index}.${subtopic.order_index} `
@@ -320,7 +320,7 @@ export default function TopicsSidebar({
   return (
     <>
       {/* Mobile view */}
-      <div className="md:hidden w-full mb-6">
+      <div className="lg:hidden w-full mb-6">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
             <Button
@@ -345,7 +345,7 @@ export default function TopicsSidebar({
       </div>
 
       {/* Desktop view */}
-      <div className="hidden md:block">{sidebarContent}</div>
+      <div className="hidden lg:block">{sidebarContent}</div>
     </>
   );
 }

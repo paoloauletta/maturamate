@@ -148,9 +148,9 @@ export default function TheoryContent({
   }
 
   return (
-    <div>
+    <div className="mx-auto px-4 sm:px-6">
       {/* Mobile Topic Menu - Show above topic name on mobile */}
-      <div className="block md:hidden mb-4">
+      <div className="block lg:hidden mb-4">
         <TheorySidebar isMobile={true} />
       </div>
 
@@ -158,9 +158,9 @@ export default function TheoryContent({
         {/* You can add filter controls here if needed */}
       </TheoryHeader>
 
-      <div className="flex flex-col-reverse md:flex-row gap-8">
+      <div className="flex flex-col md:flex-row gap-4 lg:gap-8">
         {/* Main content */}
-        <div className="w-full md:w-3/4 min-w-0 space-y-12 md:border-r md:border-muted md:pr-8">
+        <div className="flex-1 min-w-0 space-y-12">
           {subtopicsWithTheory.length > 0 ? (
             subtopicsWithTheory.map((subtopic, index) => (
               <TheorySubtopic
@@ -187,7 +187,7 @@ export default function TheoryContent({
         </div>
 
         {/* Sidebar - Hidden on mobile, shown on desktop */}
-        <div className="w-full md:w-1/4 hidden md:block">
+        <div className="hidden lg:block lg:w-1/3 xl:w-1/4 flex-shrink-0 pl-4 border-l border-muted">
           <div className="sticky top-8 pt-4">
             <TheorySidebar />
           </div>

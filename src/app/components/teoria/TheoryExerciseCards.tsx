@@ -26,14 +26,20 @@ export default function TheoryExerciseCards({
   // Ensure we have proper typing, treating exercise_cards as ExerciseCardType[]
   const exerciseCards = subtopic.exercise_cards as ExerciseCardType[];
 
+  // Calculate visible card count based on screen size
+  // On mobile: 1 card, tablet: 2 cards, desktop: 3 cards
+  // This matches the number of cards we're rendering below
+  const visibleCardCount = Math.min(exerciseCards.length, 3);
+  const remainingCards = Math.max(0, exerciseCards.length - visibleCardCount);
+
   return (
-    <div className="mt-8">
+    <div className="mt-8 w-full">
       <h3 className="text-xl font-semibold mb-4">Esercizi correlati</h3>
-      <div className="relative">
-        <div className="overflow-x-auto pb-2">
-          <div className="flex space-x-4 whitespace-nowrap">
+      <div className="relative w-full">
+        <div className="overflow-x-auto pb-2 w-full">
+          <div className="flex space-x-4 w-full">
             {/* First card (always visible on all screens) */}
-            <div className="w-full min-w-full md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
+            <div className="w-[85%] min-w-[85%] sm:w-[70%] sm:min-w-[70%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
               <ExerciseCard
                 id={exerciseCards[0].id}
                 topicName={topic.name}
@@ -51,7 +57,7 @@ export default function TheoryExerciseCards({
 
             {/* Second card (glimpse on mobile, full on tablet/desktop) */}
             {exerciseCards.length > 1 && (
-              <div className="min-w-[30%] w-[30%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
+              <div className="min-w-[85%] w-[85%] sm:min-w-[70%] sm:w-[70%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
                 <ExerciseCard
                   id={exerciseCards[1].id}
                   topicName={topic.name}
@@ -70,7 +76,7 @@ export default function TheoryExerciseCards({
 
             {/* Third card (only visible on tablet+ with glimpse on tablet, full on desktop) */}
             {exerciseCards.length > 2 && (
-              <div className="hidden md:block md:min-w-[30%] md:w-[30%] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
+              <div className="min-w-[85%] w-[85%] sm:min-w-[70%] sm:w-[70%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
                 <ExerciseCard
                   id={exerciseCards[2].id}
                   topicName={topic.name}
@@ -89,7 +95,7 @@ export default function TheoryExerciseCards({
 
             {/* Fourth card (only glimpse on desktop) */}
             {exerciseCards.length > 3 && (
-              <div className="hidden lg:block lg:min-w-[25%] lg:w-[25%]">
+              <div className="min-w-[85%] w-[85%] sm:min-w-[70%] sm:w-[70%] md:min-w-[calc(50%-8px)] md:w-[calc(50%-8px)] lg:min-w-[calc(33.333%-10.667px)] lg:w-[calc(33.333%-10.667px)]">
                 <ExerciseCard
                   id={exerciseCards[3].id}
                   topicName={topic.name}
@@ -112,7 +118,7 @@ export default function TheoryExerciseCards({
         {exerciseCards.length > 1 && (
           <div className="absolute right-0 top-0 bottom-0 flex items-center justify-end pointer-events-none">
             {/* Main gradient overlay - light and dark mode compatible */}
-            <div className="absolute inset-y-0 right-0 w-[100px] md:w-[120px] lg:w-[160px]">
+            <div className="absolute inset-y-0 right-0 w-[80px] sm:w-[100px] md:w-[120px] lg:w-[160px]">
               {/* Light mode gradient */}
               <div
                 className="absolute inset-0 dark:hidden"
@@ -141,19 +147,14 @@ export default function TheoryExerciseCards({
               className="relative z-10 mr-4 md:mr-6 lg:mr-8 bg-muted/80 hover:bg-muted rounded-full py-2 px-3 px-4 backdrop-blur-sm border border-border cursor-pointer transition-colors duration-200 pointer-events-auto"
             >
               <span className="text-xs md:text-sm font-medium flex items-center">
-                {/* Mobile */}
-                <span className="md:hidden">
-                  +{subtopic.exercise_cards.length - 1}
-                </span>
-                {/* Tablet */}
-                <span className="hidden md:inline lg:hidden">
-                  +{subtopic.exercise_cards.length - 2}
-                </span>
-                {/* Desktop */}
-                <span className="hidden lg:inline">
-                  +{subtopic.exercise_cards.length - 3}
-                </span>
-                <span className="ml-1">altri</span>
+                {remainingCards > 0 ? (
+                  <>
+                    <span>+{remainingCards}</span>
+                    <span className="ml-1">altri</span>
+                  </>
+                ) : (
+                  <span>Vedi Tutti</span>
+                )}
                 <ChevronRight className="ml-1 h-3 w-3 opacity-70" />
               </span>
             </Link>
@@ -162,10 +163,13 @@ export default function TheoryExerciseCards({
       </div>
 
       {/* Exercise Button */}
-      <div className="flex justify-start mt-4 lg:mt-8 p-1">
-        <Link href={`/dashboard/esercizi?subtopic=${subtopic.id}`}>
+      <div className="flex justify-center sm:justify-start mt-4 lg:mt-8 p-1 w-full">
+        <Link
+          href={`/dashboard/esercizi?subtopic=${subtopic.id}`}
+          className="w-full sm:w-auto"
+        >
           <Button
-            className="group px-8 text-white cursor-pointer"
+            className="group px-4 sm:px-8 text-white cursor-pointer w-full sm:w-auto"
             variant="default"
             size="lg"
           >

@@ -81,14 +81,14 @@ export default function TheorySubtopic({
     <div
       ref={(el) => onRef(subtopic.id, el)}
       id={subtopic.id}
-      className="scroll-mt-16"
+      className="scroll-mt-16 w-full"
     >
       {/* Add divider between subtopics except for the first one */}
       {index > 0 && (
-        <div className="my-10 border-t border-gray-200 dark:border-gray-800" />
+        <div className="my-10 border-t border-gray-200 dark:border-gray-800 w-full" />
       )}
 
-      <div>
+      <div className="w-full">
         <div className="flex items-center justify-between">
           <h2 className="md:text-3xl text-2xl font-semibold text-foreground/95">
             {subtopic.order_index !== null ? `${subtopic.order_index}. ` : ""}
@@ -100,14 +100,14 @@ export default function TheorySubtopic({
         </div>
 
         {subtopic.theory.length > 0 ? (
-          <div className="mt-6">
+          <div className="mt-6 w-full">
             {/* Theory content */}
             {subtopic.theory.map((theory: TheoryContentType) => (
-              <div key={theory.id} className="space-y-4">
-                <div className="prose max-w-full dark:prose-invert overflow-x-auto">
+              <div key={theory.id} className="space-y-4 w-full">
+                <div className="prose max-w-full dark:prose-invert w-full">
                   <MarkdownRenderer
                     content={parseContent(theory.content)}
-                    className="theory-content prose-headings:mt-6 prose-headings:mb-4 prose-p:my-4 prose-ul:my-4 prose-ol:my-4 w-full"
+                    className="theory-content prose-headings:mt-6 prose-headings:mb-4 prose-p:my-4 prose-ul:my-4 prose-ol:my-4"
                   />
                 </div>
               </div>
@@ -139,7 +139,9 @@ export default function TheorySubtopic({
             </div>
 
             {/* Exercise Cards */}
-            <TheoryExerciseCards topic={topic} subtopic={subtopic} />
+            <div className="w-full">
+              <TheoryExerciseCards topic={topic} subtopic={subtopic} />
+            </div>
           </div>
         ) : (
           <p className="text-muted-foreground">

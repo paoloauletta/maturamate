@@ -47,7 +47,7 @@ export default function MarkdownRenderer({
 
   return (
     <div
-      className={`markdown-content ${className}`}
+      className={`markdown-content w-full ${className}`}
       style={{
         display: "block",
         maxWidth: "100%",
@@ -56,6 +56,14 @@ export default function MarkdownRenderer({
       }}
     >
       <style jsx global>{`
+        /* Base container styles */
+        .markdown-content {
+          width: 100%;
+          box-sizing: border-box;
+          font-size: 1rem;
+          line-height: 1.6;
+        }
+
         /* Make KaTeX math blocks responsive */
         .katex-display {
           display: block; /* Ensure it's block for layout purposes */
@@ -79,8 +87,27 @@ export default function MarkdownRenderer({
           font-size: 1.1em; /* Base font size for math */
           box-sizing: border-box; /* Enforce border-box sizing */
         }
+
+        /* Ensure content like paragraphs and text spans full width */
+        .markdown-content p,
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4,
+        .markdown-content h5,
+        .markdown-content h6,
+        .markdown-content ul,
+        .markdown-content ol {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
         /* Adjust font size on mobile for better readability */
         @media (max-width: 640px) {
+          .markdown-content {
+            font-size: 0.95rem;
+          }
           .katex {
             /* Affects both inline and display math text size */
             font-size: 0.95em; /* Slightly smaller on mobile */
@@ -112,6 +139,28 @@ export default function MarkdownRenderer({
           margin-bottom: 1rem; /* Consistent spacing */
           border-radius: var(--radius); /* Using CSS var for consistency */
           background-color: hsl(var(--muted));
+          width: 100%;
+          max-width: 100%;
+        }
+
+        /* Ensure images are responsive but have a max width based on screen size */
+        .markdown-content img {
+          max-width: 100%;
+          height: auto;
+          margin: 1em auto;
+          display: block;
+        }
+
+        @media (min-width: 768px) {
+          .markdown-content img {
+            max-width: 85%;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .markdown-content img {
+            max-width: 80%;
+          }
         }
       `}</style>
       <ReactMarkdown
@@ -132,31 +181,34 @@ export default function MarkdownRenderer({
             }
 
             // Otherwise render a normal paragraph
-            return <p {...props} className="mb-2 last:mb-0" />;
+            return <p {...props} className="mb-2 last:mb-0 w-full" />;
           },
           h1: (props) => (
             <h1
               {...props}
-              className="text-3xl font-semibold mt-8 first:mt-0 mb-4"
+              className="text-3xl font-semibold mt-8 first:mt-0 mb-4 w-full"
             />
           ),
           h2: (props) => (
             <h2
               {...props}
-              className="text-2xl font-semibold mt-8 first:mt-0 mb-3"
+              className="text-2xl font-semibold mt-8 first:mt-0 mb-3 w-full"
             />
           ),
           h3: (props) => (
             <h3
               {...props}
-              className="text-xl font-semibold mt-8 first:mt-0 mb-2"
+              className="text-xl font-semibold mt-8 first:mt-0 mb-2 w-full"
             />
           ),
           ul: (props) => (
-            <ul {...props} className="list-disc pl-5 mb-2 last:mb-0" />
+            <ul {...props} className="list-disc pl-5 mb-2 last:mb-0 w-full" />
           ),
           ol: (props) => (
-            <ol {...props} className="list-decimal pl-5 mb-2 last:mb-0" />
+            <ol
+              {...props}
+              className="list-decimal pl-5 mb-2 last:mb-0 w-full"
+            />
           ),
           li: (props) => <li {...props} className="mb-2 last:mb-0" />,
           code: (props) => (
@@ -165,27 +217,27 @@ export default function MarkdownRenderer({
           pre: (props) => (
             <pre
               {...props}
-              className="bg-muted rounded p-3 mb-4 overflow-x-auto"
+              className="bg-muted rounded p-3 mb-4 overflow-x-auto w-full"
             />
           ),
           blockquote: (props) => (
             <blockquote
               {...props}
-              className="border-l-4 border-muted pl-4 italic mb-4"
+              className="border-l-4 border-muted pl-4 italic mb-4 w-full"
             />
           ),
           img: (props) => (
             <img
-              className="rounded-lg border border-muted mx-auto my-2 max-w-full md:max-w-[700px] w-auto h-auto object-contain"
+              className="rounded-lg border border-muted mx-auto my-2 w-auto h-auto object-contain"
               {...props}
               loading="lazy"
               alt={props.alt ?? "image"}
-              style={{ display: "block" }}
+              style={{ display: "block", maxWidth: "100%" }}
             />
           ),
           // Table components
           table: (props) => (
-            <div className="overflow-x-auto my-6">
+            <div className="overflow-x-auto my-6 w-full">
               <table
                 {...props}
                 className="w-full border-collapse border border-border rounded-md"

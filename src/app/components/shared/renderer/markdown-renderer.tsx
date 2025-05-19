@@ -164,6 +164,7 @@ export default function MarkdownRenderer({
           height: auto;
           margin: 1em auto;
           display: block;
+          max-height: 600px;
         }
 
         @media (min-width: 768px) {
@@ -243,11 +244,11 @@ export default function MarkdownRenderer({
           ),
           img: (props) => (
             <img
-              className="rounded-lg border border-muted mx-auto my-2 w-auto h-auto object-contain"
+              className="rounded-lg border border-muted mx-auto my-2 w-auto h-auto object-contain max-w-full max-h-[600px]"
               {...props}
               loading="lazy"
               alt={props.alt ?? "image"}
-              style={{ display: "block", maxWidth: "100%" }}
+              style={{ display: "block", maxWidth: "100%", maxHeight: "600px" }}
             />
           ),
           // Table components

@@ -121,19 +121,55 @@ export default function TheoryExerciseCards({
               className="relative z-10 mr-4 sm:mr-5 md:mr-6 lg:mr-8 bg-muted/80 hover:bg-muted rounded-full py-2 px-4 backdrop-blur-sm border border-border cursor-pointer transition-colors duration-200 pointer-events-auto"
             >
               <span className="text-xs md:text-sm font-medium flex items-center">
-                {/* Mobile count: total - 1 shown */}
+                {/* --- Mobile View --- */}
                 <span className="inline sm:hidden">
-                  +{Math.max(0, exerciseCards.length - 1)}
+                  {(() => {
+                    const hidden = exerciseCards.length - 1; // Mobile shows 1 card
+                    // Button is visible only if exerciseCards.length > 1, so hidden is always > 0 for mobile.
+                    return (
+                      <>
+                        <span>+{hidden}</span>
+                        <span className="ml-1">altri</span>
+                      </>
+                    );
+                  })()}
                 </span>
-                {/* SM count: total - 2 shown */}
+
+                {/* --- Tablet View (sm) --- */}
                 <span className="hidden sm:inline md:hidden">
-                  +{Math.max(0, exerciseCards.length - 2)}
+                  {(() => {
+                    const hidden =
+                      exerciseCards.length - Math.min(exerciseCards.length, 2); // Tablet shows up to 2 cards
+                    if (hidden > 0) {
+                      return (
+                        <>
+                          <span>+{hidden}</span>
+                          <span className="ml-1">altri</span>
+                        </>
+                      );
+                    } else {
+                      return <span>Vedi tutti</span>;
+                    }
+                  })()}
                 </span>
-                {/* MD+ count: total - 3 shown */}
+
+                {/* --- Desktop View (md+) --- */}
                 <span className="hidden md:inline">
-                  +{Math.max(0, exerciseCards.length - 3)}
+                  {(() => {
+                    const hidden =
+                      exerciseCards.length - Math.min(exerciseCards.length, 3); // Desktop shows up to 3 cards
+                    if (hidden > 0) {
+                      return (
+                        <>
+                          <span>+{hidden}</span>
+                          <span className="ml-1">altri</span>
+                        </>
+                      );
+                    } else {
+                      return <span>Vedi tutti</span>;
+                    }
+                  })()}
                 </span>
-                <span className="ml-1">altri</span>
                 <ChevronRight className="ml-1 h-3 w-3 opacity-70" />
               </span>
             </Link>

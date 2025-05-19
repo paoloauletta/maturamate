@@ -124,11 +124,26 @@ export default function MarkdownRenderer({
           overflow-x: auto; /* Scroll wide tables */
           margin-bottom: 1rem; /* Consistent spacing */
         }
+
+        /* Equal width columns for tables */
+        .markdown-content table.equal-width-cols {
+          table-layout: fixed; /* Fixed layout for equal column widths */
+        }
+
+        .markdown-content table.equal-width-cols th,
+        .markdown-content table.equal-width-cols td {
+          width: calc(
+            100% / var(--col-count, 3)
+          ); /* Default to 3 columns if not specified */
+          text-align: center; /* Center align the content */
+        }
+
         .markdown-content th,
         .markdown-content td {
           padding: 0.5rem 0.75rem; /* Adjust padding for table cells */
           border: 1px solid hsl(var(--border));
         }
+
         .markdown-content thead {
           background-color: hsl(var(--muted) / 0.5);
         }
@@ -236,14 +251,46 @@ export default function MarkdownRenderer({
             />
           ),
           // Table components
-          table: (props) => (
-            <div className="overflow-x-auto my-6 w-full">
-              <table
-                {...props}
-                className="w-full border-collapse border border-border rounded-md"
-              />
-            </div>
-          ),
+          table: ({ node, ...props }) => {
+            // Count columns in first row to set CSS variable for equal widths
+            let columnCount = 3; // Default to 3 columns
+            try {
+              // Safely access nested properties with type checking
+              const firstChild = node?.children?.[0];
+              if (firstChild && "children" in firstChild) {
+                const firstRow = firstChild.children?.[0];
+                if (firstRow && "children" in firstRow) {
+                  columnCount = firstRow.children.length;
+                }
+              }
+            } catch (e) {
+              // If there's an error, fall back to default
+              columnCount = 3;
+            }
+
+            // Check if this is a table that should have equal width columns
+            // We can identify this by checking if the table has exactly 3 columns
+            const isEqualWidthTable = columnCount === 3;
+
+            // Use string CSS custom property to avoid TypeScript errors
+            const tableStyle = isEqualWidthTable
+              ? ({
+                  "--col-count": columnCount.toString(),
+                } as React.CSSProperties)
+              : {};
+
+            return (
+              <div className="overflow-x-auto my-6 w-full">
+                <table
+                  {...props}
+                  className={`w-full border-collapse border border-border rounded-md ${
+                    isEqualWidthTable ? "equal-width-cols" : ""
+                  }`}
+                  style={tableStyle}
+                />
+              </div>
+            );
+          },
           thead: (props) => <thead {...props} className="bg-muted/50" />,
           tbody: (props) => <tbody {...props} />,
           tr: (props) => (
@@ -252,11 +299,16 @@ export default function MarkdownRenderer({
           th: (props) => (
             <th
               {...props}
-              className="px-4 py-2 text-left font-semibold text-foreground"
+              className="px-4 py-2 font-semibold text-foreground"
+              style={{ textAlign: "center" }}
             />
           ),
           td: (props) => (
-            <td {...props} className="px-4 py-2 text-foreground" />
+            <td
+              {...props}
+              className="px-4 py-2 text-foreground"
+              style={{ textAlign: "center" }}
+            />
           ),
         }}
       >

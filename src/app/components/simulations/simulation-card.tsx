@@ -70,13 +70,19 @@ export default function SimulationCardComponent({
         },
       }}
     >
-      <Card className="border border-border/80 dark:border-border bg-background overflow-hidden">
-        <CardHeader className="pb-3">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-xl">{card.title}</CardTitle>
+      <Card
+        className="border border-border/80 dark:border-border bg-background overflow-hidden h-full flex flex-col cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <CardHeader className="pb-2 sm:pb-3">
+          <div className="flex justify-between items-start sm:items-center">
+            <CardTitle className="text-lg sm:text-xl">{card.title}</CardTitle>
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-muted-foreground hover:text-primary transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
+              className="text-muted-foreground hover:text-primary transition-colors ml-2 sm:ml-0"
               aria-label={
                 isExpanded ? "Nascondi simulazioni" : "Mostra simulazioni"
               }
@@ -97,7 +103,7 @@ export default function SimulationCardComponent({
               </motion.svg>
             </button>
           </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-2">
+          <div className="flex items-center gap-2 sm:gap-3 text-sm text-muted-foreground mt-1 sm:mt-2">
             <div className="flex items-center">
               <span>{card.subject}</span>
             </div>
@@ -107,7 +113,7 @@ export default function SimulationCardComponent({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 pb-3">
+        <CardContent className="pt-0 pb-2 sm:pb-3 flex-grow">
           <p className="text-sm text-muted-foreground">
             {card.description.length > 120
               ? `${card.description.substring(0, 120)}...`
@@ -122,7 +128,8 @@ export default function SimulationCardComponent({
               animate="visible"
               exit="exit"
               variants={expandVariants}
-              className="px-6 space-y-2"
+              className="px-4 sm:px-6 space-y-2 pb-2 sm:pb-3"
+              onClick={(e) => e.stopPropagation()}
             >
               {card.simulations.map((simulation, index) => (
                 <SimulationItem

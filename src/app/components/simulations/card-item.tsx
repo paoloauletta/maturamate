@@ -39,14 +39,15 @@ export default function SimulationItem({
         duration: 0.15,
         delay: index * 0.05, // Stagger children animations
       }}
-      className="py-3 first:pt-4 border-b border-border/30 last:border-b-0"
+      className="py-2 sm:py-3 first:pt-2 sm:first:pt-4 border-b border-border/30 last:border-b-0"
+      onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
         <div>
           <div className="text-sm font-medium">
             <span>{simulationType}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1">
             <div className="flex items-center">
               <Clock className="h-3.5 w-3.5 mr-1" />
               <span>{formatTimeInHours(simulation.time_in_min)}</span>
@@ -68,7 +69,7 @@ export default function SimulationItem({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={(e) => {
@@ -92,7 +93,10 @@ export default function SimulationItem({
             />
           </motion.button>
 
-          <Link href={`/dashboard/simulazioni/${simulation.id}`}>
+          <Link
+            href={`/dashboard/simulazioni/${simulation.id}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <Button
               variant={
                 simulation.is_completed || !simulation.is_started

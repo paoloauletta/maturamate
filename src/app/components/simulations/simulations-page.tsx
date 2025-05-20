@@ -73,8 +73,10 @@ export default function SimulationsPage({
 
   return (
     <div className="">
-      <div className="flex justify-between items-center lg:mt-0 lg:mb-8 lg:pb-4 border-b border-border my-6 pb-2">
-        <h1 className="text-4xl font-bold text-left">Simulazioni</h1>
+      <div className="flex justify-between items-center border-b border-border my-4 sm:my-6 pb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-left">
+          Simulazioni
+        </h1>
       </div>
 
       {sortedYears.length > 0 ? (

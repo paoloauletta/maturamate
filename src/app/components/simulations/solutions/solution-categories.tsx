@@ -69,7 +69,7 @@ export default function SolutionCategories({
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <CardContent className="pt-2 space-y-2 text-white">
+                <CardContent className="pt-2 space-y-2 dark:text-white">
                   {problemiSolutions.map((solution) => (
                     <Button
                       key={solution.id}
@@ -78,7 +78,7 @@ export default function SolutionCategories({
                           ? "default"
                           : "outline"
                       }
-                      className="w-full justify-start"
+                      className="w-full justify-start dark:text-white"
                       onClick={() => onSelectSolution(solution)}
                     >
                       {solution.title}
@@ -118,7 +118,7 @@ export default function SolutionCategories({
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <CardContent className="pt-2 space-y-2">
+                <CardContent className="pt-2 space-y-2 dark:text-white">
                   {quesitiSolutions.map((solution) => (
                     <Button
                       key={solution.id}
@@ -127,7 +127,7 @@ export default function SolutionCategories({
                           ? "default"
                           : "outline"
                       }
-                      className="w-full justify-start text-white"
+                      className="w-full justify-start dark:text-white"
                       onClick={() => onSelectSolution(solution)}
                     >
                       {solution.title}

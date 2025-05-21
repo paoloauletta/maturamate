@@ -9,7 +9,7 @@ interface ExerciseHeaderProps {
   title: string;
   topicName?: string;
   subtopicName?: string;
-  backHref: string;
+  backHref?: string;
   backLabel?: string;
   isCardFlagged?: boolean;
   onToggleFlag?: () => void;
@@ -36,12 +36,14 @@ export default function ExerciseHeader({
 }: ExerciseHeaderProps) {
   return (
     <div className="mb-6">
-      <Link href={backHref}>
-        <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
-          <ArrowLeft className="h-4 w-4" />
-          <span>{backLabel}</span>
-        </div>
-      </Link>
+      {backHref && (
+        <Link href={backHref}>
+          <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
+            <ArrowLeft className="h-4 w-4" />
+            <span>{backLabel}</span>
+          </div>
+        </Link>
+      )}
 
       <div className="flex flex-col gap-2 mb-6 pb-4 border-b border-muted">
         <div className="flex items-center justify-between">

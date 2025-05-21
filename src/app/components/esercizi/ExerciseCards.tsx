@@ -216,7 +216,6 @@ function ExercisesContent({
 
       <ExerciseHeader
         title={currentTopic.name}
-        backHref="/dashboard/esercizi"
         showTheoryButton
         theoryHref={`/dashboard/teoria/${currentTopic.id}`}
       >

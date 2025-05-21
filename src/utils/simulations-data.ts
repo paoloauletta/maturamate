@@ -157,3 +157,44 @@ export const getSolutions = cache(
     }));
   }
 );
+
+// Get a single simulation card by ID with all its simulations
+export async function getSimulationCardWithSimulations(
+  cardId: string,
+  userId: string
+) {
+  // Get the simulation card
+  const card = await db
+    .select()
+    .from(simulationsCardsTable)
+    .where(eq(simulationsCardsTable.id, cardId));
+
+  if (card.length === 0) {
+    return null;
+  }
+
+  // Get all simulations for this card
+  const simulations = await db
+    .select()
+    .from(simulationsTable)
+    .where(eq(simulationsTable.card_id, cardId))
+    .orderBy(simulationsTable.title);
+
+  // Get user's simulation status
+  const { completedSimulationMap, startedSimulationMap, flaggedSimulationMap } =
+    await getUserSimulationStatus(userId);
+
+  // Add user-specific info to each simulation
+  const simulationsWithUserInfo = simulations.map((sim) => ({
+    ...sim,
+    is_completed: completedSimulationMap[sim.id] || false,
+    is_started: startedSimulationMap[sim.id] || false,
+    is_flagged: flaggedSimulationMap[sim.id] || false,
+  }));
+
+  // Return card with its simulations
+  return {
+    ...card[0],
+    simulations: simulationsWithUserInfo,
+  };
+}

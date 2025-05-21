@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { SimulationCard } from "@/types/simulationsTypes";
 import SimulationItem from "./card-item";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Animation variants
 const expandVariants = {
@@ -39,7 +41,7 @@ export default function SimulationCardComponent({
   card,
   onToggleFavorite,
 }: SimulationCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
 
   // Convert time in minutes to hours and minutes format
   const formatTimeInHours = (minutes: number) => {
@@ -57,6 +59,11 @@ export default function SimulationCardComponent({
     return `${hours} ${hours === 1 ? "ora" : "ore"} e ${remainingMinutes} min`;
   };
 
+  // Handle card click to navigate to card detail page
+  const handleCardClick = () => {
+    router.push(`/dashboard/simulazioni/card/${card.id}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -72,7 +79,7 @@ export default function SimulationCardComponent({
     >
       <Card
         className="border border-border/80 dark:border-border bg-background overflow-hidden h-full flex flex-col cursor-pointer"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleCardClick}
       >
         <CardHeader className="pb-2 sm:pb-3">
           <div className="flex justify-between items-start sm:items-center">
@@ -80,12 +87,10 @@ export default function SimulationCardComponent({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setIsExpanded(!isExpanded);
+                handleCardClick();
               }}
               className="text-muted-foreground hover:text-primary transition-colors ml-2 sm:ml-0"
-              aria-label={
-                isExpanded ? "Nascondi simulazioni" : "Mostra simulazioni"
-              }
+              aria-label="Visualizza simulazioni"
             >
               <motion.svg
                 width="20"
@@ -96,10 +101,8 @@ export default function SimulationCardComponent({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
               >
-                <path d="m6 9 6 6 6-6" />
+                <path d="M9 18l6-6-6-6" />
               </motion.svg>
             </button>
           </div>
@@ -120,29 +123,6 @@ export default function SimulationCardComponent({
               : card.description}
           </p>
         </CardContent>
-
-        <AnimatePresence initial={false}>
-          {isExpanded && (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              variants={expandVariants}
-              className="px-4 sm:px-6 space-y-2 pb-2 sm:pb-3"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {card.simulations.map((simulation, index) => (
-                <SimulationItem
-                  key={simulation.id}
-                  simulation={simulation}
-                  index={index}
-                  onToggleFavorite={onToggleFavorite}
-                  formatTimeInHours={formatTimeInHours}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </Card>
     </motion.div>
   );

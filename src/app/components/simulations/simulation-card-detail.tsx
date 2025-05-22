@@ -79,60 +79,57 @@ export default function SimulationCardDetailPage({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Back link */}
-      <Link href="/dashboard/simulazioni">
-        <div className="text-muted-foreground items-center w-fit gap-1 mb-4 flex flex-row hover:text-foreground transition-all">
-          <ArrowLeft className="h-4 w-4" />
-          <span>Torna alle simulazioni</span>
-        </div>
-      </Link>
-
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{card.title}</h1>
-        <div className="flex items-center gap-2 sm:gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <span>{card.subject}</span>
+    <div className="w-full flex items-center justify-center py-8">
+      <div className="w-full max-w-3xl px-4">
+        {/* Back link */}
+        <Link href="/dashboard/simulazioni">
+          <div className="text-muted-foreground items-center w-fit gap-1 mb-4 flex flex-row hover:text-foreground transition-all">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Torna alle simulazioni</span>
           </div>
-          <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-          <div className="flex items-center">
-            <span>{card.year}</span>
-          </div>
-        </div>
-        {card.description && (
-          <p className="text-sm text-muted-foreground mt-3">
-            {card.description}
-          </p>
-        )}
-      </div>
+        </Link>
 
-      {/* List of simulations */}
-      <div className="mt-6 border rounded-md overflow-hidden bg-card">
-        <div className="px-4 py-3 bg-muted/30 border-b font-medium">
-          Simulazioni disponibili
-        </div>
-        <div className="divide-y">
-          {card.simulations.map((simulation, index) => (
-            <div key={simulation.id} className="p-4">
-              <SimulationItem
-                simulation={simulation}
-                index={index}
-                onToggleFavorite={toggleFavorite}
-                formatTimeInHours={formatTimeInHours}
-              />
+        {/* Unified Card Info + Simulations */}
+        <div className="border border-border bg-card/80 rounded-xl p-6 flex flex-col gap-8">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">{card.title}</h1>
+            <div className="flex items-center gap-2 mt-1 text-base text-muted-foreground">
+              <span>{card.subject}</span>
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+              <span>{card.year}</span>
             </div>
-          ))}
+            {card.description && (
+              <p className="mt-3 text-muted-foreground text-sm">
+                {card.description}
+              </p>
+            )}
+          </div>
+          <div>
+            <div className="font-medium mb-2 text-lg">
+              Simulazioni disponibili
+            </div>
+            <div className="flex flex-col gap-4">
+              {card.simulations.length > 0 ? (
+                card.simulations.map((simulation, index) => (
+                  <SimulationItem
+                    key={simulation.id}
+                    simulation={simulation}
+                    index={index}
+                    onToggleFavorite={toggleFavorite}
+                    formatTimeInHours={formatTimeInHours}
+                  />
+                ))
+              ) : (
+                <div className="text-center p-8 bg-muted/30 rounded-lg">
+                  <p className="text-muted-foreground text-lg">
+                    Non ci sono simulazioni disponibili per questa scheda.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-      {card.simulations.length === 0 && (
-        <div className="text-center p-12 bg-muted/30 rounded-lg">
-          <p className="text-muted-foreground text-lg">
-            Non ci sono simulazioni disponibili per questa scheda.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

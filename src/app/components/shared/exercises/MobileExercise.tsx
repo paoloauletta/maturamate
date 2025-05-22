@@ -48,9 +48,7 @@ export default function MobileExerciseView({
   isFlagged: initialIsFlagged = false,
 }: MobileExerciseViewProps) {
   // State for this exercise
-  const [isExpanded, setIsExpanded] = useState(
-    autoExpand || (inFavouritesPage ? true : false)
-  );
+  const [isExpanded, setIsExpanded] = useState(autoExpand);
   const [isRevealed, setIsRevealed] = useState(isCompleted || inFavouritesPage);
   const [isIncorrect, setIsIncorrect] = useState(isCompleted && !wasCorrect);
   const [showTutor, setShowTutor] = useState(tutorState === "showTutor");
@@ -65,11 +63,7 @@ export default function MobileExerciseView({
   // Auto-expand when autoExpand changes
   useEffect(() => {
     // If in favorites page, always expand
-    if (inFavouritesPage) {
-      setIsExpanded(true);
-    } else {
-      setIsExpanded(autoExpand || false); // Don't auto-expand completed exercises
-    }
+    setIsExpanded(autoExpand || false); // Don't auto-expand completed exercises
 
     // Scroll to this exercise if it's being auto-expanded
     if (autoExpand && exerciseRef.current) {
@@ -249,23 +243,21 @@ export default function MobileExerciseView({
           </div>
 
           <div className="flex items-center gap-2">
-            {!inFavouritesPage && (
-              <button
-                onClick={handleToggleFlag}
-                disabled={isLoading}
-                className={cn(
-                  "p-1 transition-colors cursor-pointer hover:scale-110 transition-transform duration-200",
-                  isFlagged
-                    ? "text-yellow-500"
-                    : "text-muted-foreground hover:text-yellow-500"
-                )}
-              >
-                <Star
-                  className="h-4 w-4"
-                  fill={isFlagged ? "currentColor" : "none"}
-                />
-              </button>
-            )}
+            <button
+              onClick={handleToggleFlag}
+              disabled={isLoading}
+              className={cn(
+                "p-1 transition-colors cursor-pointer hover:scale-110 transition-transform duration-200",
+                isFlagged
+                  ? "text-yellow-500"
+                  : "text-muted-foreground hover:text-yellow-500"
+              )}
+            >
+              <Star
+                className="h-4 w-4"
+                fill={isFlagged ? "currentColor" : "none"}
+              />
+            </button>
 
             {isExpanded ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />

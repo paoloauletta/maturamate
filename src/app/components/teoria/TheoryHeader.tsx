@@ -17,13 +17,6 @@ export default function TheoryHeader({ topic, children }: TheoryHeaderProps) {
 
   return (
     <div className="mb-6">
-      <Link href="/dashboard/teoria">
-        <div className="text-muted-foreground items-center w-fit gap-1 mb-1 flex flex-row hover:text-foreground transition-all">
-          <ArrowLeft className="h-4 w-4" />
-          <span>Torna agli argomenti</span>
-        </div>
-      </Link>
-
       <div className="flex flex-col gap-2 mb-6 pb-4 border-b border-muted">
         <div className="flex items-center justify-between">
           <h1 className="lg:text-4xl text-2xl font-bold">

@@ -148,7 +148,7 @@ export default function TheoryContent({
   }
 
   return (
-    <div className="mx-auto px-4 sm:px-6">
+    <div>
       {/* Mobile Topic Menu - Show above topic name on mobile */}
       <div className="block lg:hidden mb-4">
         <TheorySidebar isMobile={true} />

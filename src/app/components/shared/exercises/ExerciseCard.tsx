@@ -87,20 +87,22 @@ export default function ExerciseCard({
           {!disableHeader && (
             <div>
               <CardTitle className="text-base">
-                <div className="flex w-full justify-between items-center">
+                <div className="flex w-full justify-between items-start gap-4">
                   <span className="line-clamp-2 overflow-hidden">
                     {description}
                   </span>
-                  {isFlagged && !disableStar && (
-                    <div
-                      className="rounded-full text-yellow-500 cursor-pointer hover:scale-110 transition-transform duration-200"
-                      onClick={handleToggleFlag}
-                      title="Rimuovi dai preferiti"
-                      data-star-icon="true"
-                    >
-                      <Star className="h-4 w-4" fill="currentColor" />
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    {isFlagged && !disableStar && (
+                      <div
+                        className="text-yellow-500 cursor-pointer hover:scale-110 transition-transform duration-200"
+                        onClick={handleToggleFlag}
+                        title="Rimuovi dai preferiti"
+                        data-star-icon="true"
+                      >
+                        <Star className="h-4 w-4" fill="currentColor" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardTitle>
             </div>

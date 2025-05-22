@@ -78,7 +78,7 @@ export default function SimulationCardComponent({
       }}
     >
       <Card
-        className="border border-border/80 dark:border-border bg-background overflow-hidden h-full flex flex-col cursor-pointer"
+        className="border border-border/80 hover:bg-muted/50 transition-all dark:border-border bg-background overflow-hidden h-full flex flex-col cursor-pointer"
         onClick={handleCardClick}
       >
         <CardHeader className="pb-2 sm:pb-3">

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { UserSimulation } from "@/types/simulationsTypes";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePathname } from "next/navigation";
 
 interface SimulationItemProps {
   simulation: UserSimulation;
@@ -25,6 +26,15 @@ export default function SimulationItem({
   formatTimeInHours,
 }: SimulationItemProps) {
   let simulationType = "Simulazione Completa";
+  const pathname = usePathname();
+
+  // Determine the referrer based on the current path
+  let referrer = "simulazioni";
+  if (pathname.includes("/statistiche")) {
+    referrer = "statistiche";
+  } else if (pathname.includes("/preferiti")) {
+    referrer = "preferiti";
+  }
 
   if (simulation.title.toLowerCase().includes("problem")) {
     simulationType = "Solo Problemi";
@@ -80,7 +90,7 @@ export default function SimulationItem({
               }}
             />
             <Link
-              href={`/dashboard/simulazioni/${simulation.id}`}
+              href={`/dashboard/simulazioni/${simulation.id}?referrer=${referrer}`}
               onClick={(e) => e.stopPropagation()}
             >
               <Button
@@ -93,7 +103,7 @@ export default function SimulationItem({
                 className={cn(
                   "px-4 py-1.5 text-sm font-semibold rounded-md",
                   simulation.is_completed
-                    ? "border-green-200 text-green-500 hover:bg-green-50 hover:text-green-600 hover:border-green-300"
+                    ? "border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-500"
                     : simulation.is_started
                     ? "bg-bg-primary hover:bg-blue-700"
                     : ""

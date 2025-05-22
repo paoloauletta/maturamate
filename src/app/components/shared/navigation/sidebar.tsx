@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -49,21 +50,17 @@ export default function DashboardSidebar({
   const user = session?.user;
   const router = useRouter();
   const pathname = usePathname();
+  const [activeLink, setActiveLink] = useState<string | null>(null);
 
-  // Function to check if a link should be active based on the current pathname
-  const isLinkActive = (href: string): boolean => {
-    // Special case for dashboard home
-    if (href === "/dashboard" && pathname === "/dashboard") {
-      return true;
+  // Set initial active link based on pathname
+  useEffect(() => {
+    const matchingLink = navLinks.find(
+      (link) => link.href && pathname === link.href && link.type !== "divider"
+    );
+    if (matchingLink && matchingLink.name) {
+      setActiveLink(matchingLink.name);
     }
-
-    // For other routes, check if the pathname starts with the href
-    if (href !== "/dashboard") {
-      return pathname.startsWith(href + "/") || pathname === href;
-    }
-
-    return false;
-  };
+  }, [pathname]);
 
   // Mock user subscription data
   const subscriptionData = {
@@ -73,10 +70,11 @@ export default function DashboardSidebar({
   };
 
   // Handle navigation with mobile menu closing
-  const handleMobileItemClick = (href: string) => {
+  const handleMobileItemClick = (href: string, name: string) => {
     if (onItemClick) {
       onItemClick();
     }
+    setActiveLink(name);
     router.push(href);
   };
 
@@ -202,36 +200,6 @@ export default function DashboardSidebar({
                 </DropdownMenu>
               )}
             </div>
-
-            {/* Subscription features */}
-            {!isMobile && (
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <div className="bg-muted/50 p-2 rounded-md text-xs">
-                  <div className="flex items-center gap-1 mb-1">
-                    <FileCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="font-medium">Simulazioni</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Rimaste</span>
-                    <Badge variant="secondary" className="ml-auto">
-                      {subscriptionData.simulationsLeft}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="bg-muted/50 p-2 rounded-md text-xs">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="font-medium">Crediti AI</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Rimasti</span>
-                    <Badge variant="secondary">
-                      {subscriptionData.aiCredits}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <TooltipProvider>
@@ -330,16 +298,18 @@ export default function DashboardSidebar({
               const Icon = link.icon;
 
               return (
-                <TooltipProvider key={link.href}>
+                <TooltipProvider key={index}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       {isMobile ? (
                         // For mobile, we need to close the menu on navigation
                         <div
-                          onClick={() => handleMobileItemClick(link.href!)}
+                          onClick={() =>
+                            handleMobileItemClick(link.href!, link.name)
+                          }
                           className={cn(
                             "flex items-center gap-2 py-2 px-3 rounded-md text-sm transition-colors cursor-pointer relative w-full",
-                            isLinkActive(link.href)
+                            pathname === link.href && activeLink === link.name
                               ? "bg-accent text-primary dark:text-primary font-medium"
                               : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                           )}
@@ -351,9 +321,10 @@ export default function DashboardSidebar({
                         // For desktop, we can use Link directly
                         <Link
                           href={link.href}
+                          onClick={() => setActiveLink(link.name)}
                           className={cn(
                             "flex items-center gap-2 py-2 px-3 rounded-md text-sm transition-colors cursor-pointer relative w-full",
-                            isLinkActive(link.href)
+                            pathname === link.href && activeLink === link.name
                               ? "bg-accent text-primary dark:text-primary font-medium"
                               : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                           )}

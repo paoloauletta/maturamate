@@ -42,12 +42,12 @@ export const navLinks = [
   },
   {
     name: "Teoria",
-    href: "/dashboard/teoria",
+    href: "/dashboard/coming-soon",
     icon: Book,
   },
   {
     name: "Esercizi",
-    href: "/dashboard/esercizi",
+    href: "/dashboard/coming-soon",
     icon: BookOpen,
   },
   {
@@ -61,7 +61,7 @@ export const navLinks = [
   },
   {
     name: "Tutor",
-    href: "/dashboard/tutor",
+    href: "/dashboard/coming-soon",
     icon: Bot,
   },
   {

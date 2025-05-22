@@ -276,7 +276,7 @@ export default function SettingsClient({
               <AlertDialogTrigger asChild>
                 <Button
                   variant="destructive"
-                  className="sm:w-auto w-full mt-2 sm:mt-0 gap-2"
+                  className="sm:w-auto bg-red-500 w-full mt-2 sm:mt-0 gap-2 text-white"
                 >
                   <Trash2 className="h-4 w-4" />
                   Elimina Account

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Simulation } from "@/types/simulationsTypes";
+import { useSearchParams } from "next/navigation";
 
 interface ConfirmationViewProps {
   simulation: Simulation;
@@ -23,13 +24,40 @@ export default function ConfirmationView({
   onStartSimulation,
   formatDuration,
 }: ConfirmationViewProps) {
+  // Get the referrer from URL params
+  const searchParams = useSearchParams();
+  const referrer = searchParams.get("referrer");
+
+  // Determine the back path and text based on the referrer
+  const getBackDetails = () => {
+    switch (referrer) {
+      case "statistiche":
+        return {
+          path: "/dashboard/statistiche",
+          text: "Torna alle statistiche",
+        };
+      case "preferiti":
+        return {
+          path: "/dashboard/preferiti",
+          text: "Torna ai preferiti",
+        };
+      default:
+        return {
+          path: "/dashboard/simulazioni",
+          text: "Torna alle simulazioni",
+        };
+    }
+  };
+
+  const { path, text } = getBackDetails();
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-250px)]">
       <div className="relative w-full max-w-2xl flex justify-center">
-        <Link href="/dashboard/simulazioni">
+        <Link href={path}>
           <div className="absolute -top-10 left-0 text-muted-foreground items-center w-fit gap-1 flex flex-row hover:text-foreground transition-all z-10">
             <ArrowLeft className="h-4 w-4" />
-            <span>Torna alle simulazioni</span>
+            <span>{text}</span>
           </div>
         </Link>
         <Card className="w-full border-border">

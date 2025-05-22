@@ -291,11 +291,6 @@ export default function DashboardSidebar({
                     <span>Settings</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    <span>Upgrade to Pro</span>
-                  </DropdownMenuItem>
-
                   <DropdownMenuSeparator />
 
                   <DropdownMenuItem onClick={() => signOut()}>

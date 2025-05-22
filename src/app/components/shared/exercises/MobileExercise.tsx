@@ -286,32 +286,44 @@ export default function MobileExerciseView({
                 {/* Question */}
                 <div className="prose prose-sm dark:prose-invert mb-6">
                   {question.split("\n").map((line, index) => (
-                    <div key={index} className="mb-2">
+                    <div key={index} className="mb-2 text-xl">
                       <MathRenderer content={line} />
                     </div>
                   ))}
                 </div>
 
                 {/* Solution Box with Blur Effect - always visible in favorites */}
-                <div
-                  onClick={inFavouritesPage ? undefined : handleRevealSolution}
-                  className={cn(
-                    "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
-                    inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
-                    !inFavouritesPage && !isRevealed
-                      ? "blur-sm select-none"
-                      : ""
-                  )}
-                >
-                  <h4 className="text-sm font-semibold mb-3 text-primary">
-                    Soluzione
-                  </h4>
-                  <div className="prose prose-sm dark:prose-invert">
-                    {solution.split("\n").map((line, index) => (
-                      <div key={index} className="mb-2">
-                        <MathRenderer content={line} />
+                <div className="relative">
+                  {/* Overlay text for blurred solution */}
+                  {!inFavouritesPage && !isRevealed && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                      <div className="px-4 py-2 rounded-md text-muted-foreground font-medium">
+                        Premi per rivelare la soluzione
                       </div>
-                    ))}
+                    </div>
+                  )}
+                  <div
+                    onClick={
+                      inFavouritesPage ? undefined : handleRevealSolution
+                    }
+                    className={cn(
+                      "bg-muted/30 border border-border rounded-md p-4 mb-4 transition-all duration-200",
+                      inFavouritesPage ? "" : "cursor-pointer", // Remove pointer cursor in favorites
+                      !inFavouritesPage && !isRevealed
+                        ? "blur-sm select-none"
+                        : ""
+                    )}
+                  >
+                    <h4 className="text-sm font-semibold mb-3 text-primary">
+                      Soluzione
+                    </h4>
+                    <div className="prose prose-sm dark:prose-invert">
+                      {solution.split("\n").map((line, index) => (
+                        <div key={index} className="mb-2 text-lg">
+                          <MathRenderer content={line} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

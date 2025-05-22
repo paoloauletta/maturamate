@@ -24,7 +24,7 @@ export default function YearSection({
   return (
     <div className="mb-12">
       {!hideYearHeading && year && (
-        <h2 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
+        <h2 className="md:text-3xl text-2xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
           Simulazioni {year}
         </h2>
       )}

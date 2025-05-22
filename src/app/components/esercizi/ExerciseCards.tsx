@@ -241,7 +241,7 @@ function ExercisesContent({
                 className="scroll-mt-16"
               >
                 <div className="mb-6">
-                  <h2 className="text-3xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
+                  <h2 className="md:text-3xl text-2xl font-semibold mb-6 text-foreground/95 border-b border-muted pb-2">
                     {subtopic.order_index !== null
                       ? `${subtopic.order_index}. `
                       : ""}

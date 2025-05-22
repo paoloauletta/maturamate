@@ -86,6 +86,7 @@ export default function CardDetailPage({
   completedExercises,
   flaggedExercises = new Set(),
   card,
+  topicId,
 }: ExtendedExerciseCardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -413,7 +414,9 @@ export default function CardDetailPage({
         topicName={topicName}
         subtopicName={subtopicName}
         backHref={
-          fromFavorites ? "/dashboard/preferiti" : "/dashboard/esercizi"
+          fromFavorites
+            ? "/dashboard/preferiti"
+            : `/dashboard/esercizi/${topicId}`
         }
         backLabel={fromFavorites ? "Torna ai preferiti" : "Torna agli esercizi"}
         isCardFlagged={isCardFlagged}
@@ -525,7 +528,15 @@ export default function CardDetailPage({
             </p>
             <div className="flex gap-3">
               <Button variant="outline" asChild>
-                <Link href="/dashboard/esercizi">Torna agli esercizi</Link>
+                <Link
+                  href={
+                    fromFavorites
+                      ? "/dashboard/preferiti"
+                      : `/dashboard/esercizi/${topicId}`
+                  }
+                >
+                  Torna agli esercizi
+                </Link>
               </Button>
               {/* Add a "next card" button if available */}
             </div>

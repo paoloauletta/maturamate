@@ -90,7 +90,7 @@ export default function SimulationCardDetailPage({
         </Link>
 
         {/* Unified Card Info + Simulations */}
-        <div className="border border-border bg-card/80 rounded-xl p-6 flex flex-col gap-8">
+        <div className="border border-border bg-card/80 rounded-xl p-4 md:p-6 flex flex-col gap-8">
           <div>
             <h1 className="text-2xl font-bold mb-1">{card.title}</h1>
             <div className="flex items-center gap-2 mt-1 text-base text-muted-foreground">

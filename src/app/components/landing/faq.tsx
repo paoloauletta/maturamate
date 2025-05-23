@@ -36,49 +36,6 @@ export default function Faq({
       ),
     },
     {
-      question: "Come funziona il piano Premium?",
-      answer: (
-        <>
-          <p className="text-muted-foreground mb-4 max-w-[600px]">
-            Il piano Premium ti offre accesso illimitato a molte funzionalità:
-            simulazioni, esercizi avanzati e piano di studio personalizzato.
-          </p>
-          <p className="text-muted-foreground mb-4 max-w-[600px]">
-            Inoltre, il piano offre numerosi vantaggi anche per quanto riguarda
-            l'AI. Non solo ti permette di accedere a conversazioni giornaliere
-            con l'AI base fino a 10× più estese rispetto al piano Free, ma ti
-            offre anche l'accesso all'AI avanzata (Reasoning Model) per
-            spiegazioni più dettagliate.
-          </p>
-          <p className="text-muted-foreground mb-4 max-w-[600px]">
-            Puoi scegliere tra abbonamento mensile o trimestrale. Nessun rinnovo
-            automatico obbligatorio.
-          </p>
-        </>
-      ),
-    },
-    {
-      question: "Cosa fa l’AI all’interno di MaturaMate?",
-      answer: (
-        <>
-          <p className="text-muted-foreground mb-4 max-w-[580px]">
-            Ti aiuta a capire gli esercizi passo dopo passo, genera risposte su
-            misura, e ti aiuta nella creazione di un piano di studio in base ai
-            tuoi punti deboli.
-          </p>
-          <p className="text-muted-foreground mb-4 max-w-[580px]">
-            Se non capisci una soluzione, ti basterà interagire con l'AI per
-            ricevere una spiegazione dettagliata. È disponibile sia per aiutarti
-            con gli esercizi, sia con le simulazioni.
-          </p>
-          <p className="text-muted-foreground mb-4 max-w-[580px]">
-            Nel piano Premium usa un modello AI avanzato per spiegazioni più
-            profonde.
-          </p>
-        </>
-      ),
-    },
-    {
       question: "Le simulazioni sono quelle ufficiali del Ministero?",
       answer: (
         <>
@@ -98,17 +55,6 @@ export default function Faq({
           risultati. Vedi i tuoi progressi per argomento, con grafici chiari e
           consigli pratici su dove concentrarti.
         </p>
-      ),
-    },
-    {
-      question: "Posso cancellare l’abbonamento quando voglio?",
-      answer: (
-        <>
-          <p className="text-muted-foreground mb-4 max-w-[580px]">
-            Certo. Nessun vincolo. Puoi gestire il tuo abbonamento dalla
-            dashboard e interromperlo in qualsiasi momento senza penali.
-          </p>
-        </>
       ),
     },
     {

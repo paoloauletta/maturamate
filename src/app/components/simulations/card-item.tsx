@@ -66,13 +66,13 @@ export default function SimulationItem({
             {simulation.is_completed && (
               <div className="flex items-center text-green-600 dark:text-green-400">
                 <CheckCircle className="h-4 w-4 mr-1" />
-                <span>Completata</span>
+                <span className="md:block hidden">Completata</span>
               </div>
             )}
             {simulation.is_started && !simulation.is_completed && (
               <div className="flex items-center text-bg-primary dark:text-bg-primary">
                 <Clock className="h-4 w-4 mr-1" />
-                <span>In corso</span>
+                <span className="md:block hidden">In corso</span>
               </div>
             )}
           </div>

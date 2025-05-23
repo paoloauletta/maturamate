@@ -41,12 +41,12 @@ export default function SolutionCategories({
   );
 
   return (
-    <div className="md:col-span-1 space-y-4">
+    <div className="md:col-span-1 ">
       {/* Problemi Section */}
       {problemiSolutions.length > 0 && (
-        <Card>
+        <Card className="py-4 md:py-6">
           <CardHeader
-            className="pb-2 cursor-pointer"
+            className="cursor-pointer"
             onClick={() => setProblemiExpanded(!problemiExpanded)}
           >
             <div className="flex items-center justify-between">
@@ -93,9 +93,9 @@ export default function SolutionCategories({
 
       {/* Quesiti Section */}
       {quesitiSolutions.length > 0 && (
-        <Card>
+        <Card className="py-4 md:py-6">
           <CardHeader
-            className="pb-2 cursor-pointer"
+            className="cursor-pointer"
             onClick={() => setQuesitiExpanded(!quesitiExpanded)}
           >
             <div className="flex items-center justify-between">

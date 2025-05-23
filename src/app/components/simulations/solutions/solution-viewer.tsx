@@ -53,23 +53,6 @@ export default function SolutionViewer({
             />
           </CardContent>
         </Card>
-
-        {/* Help card only visible on mobile - improved styling */}
-        <Card className="py-4 px-4 md:hidden bg-primary/10 border-primary/20">
-          <CardContent className="py-0 px-0">
-            <div className="flex flex-col items-center gap-0 text-center">
-              <p className="text-primary font-medium text-lg mb-2">
-                Non capisci la soluzione?
-              </p>
-              <Link href="/dashboard/tutor">
-                <Button variant="default" size="lg" className="text-white">
-                  <Bot className="mr-2 h-5 w-5" />
-                  Chiedi a Mathy
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

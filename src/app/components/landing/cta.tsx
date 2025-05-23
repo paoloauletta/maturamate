@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 interface CTAButtonProps {
   href: string;
@@ -48,6 +49,9 @@ export default function Cta({
                 size="lg"
                 className="text-white"
                 asChild
+                onClick={() => {
+                  signIn("google", { callbackUrl: "/dashboard" });
+                }}
               >
                 <div>
                   <Link href={button.href}>

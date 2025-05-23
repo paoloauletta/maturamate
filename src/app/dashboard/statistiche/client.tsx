@@ -36,7 +36,7 @@ interface RecentSimulation {
   title: string;
   date: string;
   attempt: number;
-  simulationId: string;
+  simulationId: string | null;
 }
 
 interface StatisticsData {

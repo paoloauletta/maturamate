@@ -56,12 +56,46 @@ export interface FlaggedSimulation {
   is_flagged: boolean;
 }
 
+export interface FlaggedCard {
+  id: string;
+  description: string;
+  difficulty: number;
+  subtopic_id: string | null;
+  subtopic_name: string | null;
+  topic_id: string | null;
+  topic_name: string | null;
+  created_at: Date;
+  is_completed: boolean;
+  total_exercises: number;
+  completed_exercises: number;
+}
+
+export interface FlaggedExercise {
+  id: string;
+  question_data: ContentType;
+  solution_data: ContentType;
+  exercise_card_id: string;
+  created_at: string | Date;
+  card_description: string;
+  difficulty: number;
+  subtopic_id: string | null;
+  subtopic_name: string | null;
+  topic_id: string | null;
+  topic_name: string | null;
+  isCompleted: boolean;
+  wasCorrect: boolean;
+}
+
 export interface FavoritesClientProps {
   flaggedSimulations: FlaggedSimulation[];
+  flaggedCards: FlaggedCard[];
+  flaggedExercises: FlaggedExercise[];
 }
 
 export default function FavoritesClient({
   flaggedSimulations,
+  flaggedCards,
+  flaggedExercises,
 }: FavoritesClientProps) {
   const [activeTab, setActiveTab] = useState("cards");
   const [localFlaggedSimulations, setLocalFlaggedSimulations] =

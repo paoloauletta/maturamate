@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { FilterState } from "@/app/components/esercizi/ExerciseFilter";
+
+// Define FilterState interface locally
+export interface FilterState {
+  difficultyFilter: number | null;
+  completionFilter: string | null;
+}
 
 export function useExerciseFilters() {
   const [difficultyFilter, setDifficultyFilter] = useState<number | null>(null);

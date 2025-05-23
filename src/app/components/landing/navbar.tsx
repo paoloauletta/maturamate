@@ -201,11 +201,11 @@ export function LandingNavbar() {
                 Features
               </ScrollLink>
               <ScrollLink
-                href="#prezzi"
-                section="prezzi"
+                href="#faq"
+                section="faq"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary"
               >
-                Prezzi
+                FAQ
               </ScrollLink>
             </div>
 
@@ -271,12 +271,12 @@ export function LandingNavbar() {
               </ScrollLink>
 
               <ScrollLink
-                href="#prezzi"
-                section="prezzi"
+                href="#faq"
+                section="faq"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="relative text-gray-700 dark:text-gray-300 block py-2"
               >
-                <span className="block">Prezzi</span>
+                <span className="block">FAQ</span>
               </ScrollLink>
 
               <div className="flex w-full flex-col gap-4 mt-4">

@@ -7,8 +7,27 @@ import { toast } from "sonner";
 
 export default function ComingSoon() {
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "success" | "error" | "already"
+  >("idle");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const submit = async () => {
+    const res = await fetch("/api/waiting-list", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (res.ok) {
+      setStatus("success");
+    } else if (res.status === 409) {
+      setStatus("already");
+    } else {
+      setStatus("error");
+    }
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +78,7 @@ export default function ComingSoon() {
               <button
                 type="submit"
                 disabled={isLoading}
+                onClick={submit}
                 className="h-12 rounded-r-lg bg-primary text-white px-4 py-2 text-sm font-medium flex items-center justify-center transition-opacity disabled:opacity-70"
               >
                 {isLoading ? "Invio..." : "Notificami"}{" "}
@@ -67,9 +87,30 @@ export default function ComingSoon() {
             </div>
           </form>
         ) : (
-          <div className="mt-12 p-4 bg-green-500/10 text-green-500 rounded-lg border border-green-500/20 max-w-md mx-auto">
-            <p>Grazie! Ti invieremo un'email quando saremo pronti.</p>
-          </div>
+          <>
+            {status === "success" && (
+              <div className="justify-center items-center mt-12 p-4 bg-green-500/10 text-green-500 rounded-lg border border-green-500/20 max-w-lg mx-auto">
+                <p className="text-green-500">
+                  Grazie! Ti invieremo un'email quando saremo pronti.
+                </p>
+              </div>
+            )}
+            {status === "already" && (
+              <div className="justify-center items-center mt-12 p-4 bg-yellow-500/10 text-yellow-500 rounded-lg border border-yellow-500/20 max-w-lg mx-auto">
+                <p className="text-yellow-500">
+                  Sei già nella lista! Ti invieremo un'email quando saremo
+                  pronti.
+                </p>
+              </div>
+            )}
+            {status === "error" && (
+              <div className="justify-center items-center mt-12 p-4 bg-red-500/10 text-red-500 rounded-lg border border-red-500/20 max-w-lg mx-auto">
+                <p className="text-red-500">
+                  Si è verificato un errore. Riprova più tardi.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2">

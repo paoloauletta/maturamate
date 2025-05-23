@@ -1,6 +1,6 @@
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowRightIcon, ChevronDownIcon } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { Mockup, MockupFrame } from "@/components/ui/mockup";
 import Glow from "@/components/ui/glow";
@@ -66,7 +66,7 @@ export default function Hero({
     <Section
       className={cn(
         "fade-bottom overflow-hidden min-h-screen flex items-center lg:pt-24",
-        className,
+        className
       )}
     >
       <div className="max-w-container mx-auto flex flex-col gap-12 pt-24 md:pt-16 sm:gap-24">
@@ -140,6 +140,7 @@ export default function Hero({
               />
             </div>
           </div>
+          <ArrowDownIcon className="size-8 text-primary/50 md:hidden block animate-appear opacity-0 delay-[1500ms] hover:cursor-pointer animate-bounce-slow" />
         </div>
       </div>
     </Section>

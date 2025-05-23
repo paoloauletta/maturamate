@@ -24,10 +24,6 @@ export default function Landing() {
         </AnimateOnScroll>
 
         <AnimateOnScroll animation="slide-up" delay={0.1}>
-          <Pricing />
-        </AnimateOnScroll>
-
-        <AnimateOnScroll animation="slide-up" delay={0.1}>
           <Faq />
         </AnimateOnScroll>
 

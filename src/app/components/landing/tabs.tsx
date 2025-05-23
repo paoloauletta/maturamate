@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useTheme } from "next-themes";
+
 import { ThemeImage } from "../theme-image";
 
 export function LandingTabs() {
@@ -11,7 +11,6 @@ export function LandingTabs() {
   const [activeTab, setActiveTab] = useState<TabType>("experience");
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [animationProgress, setAnimationProgress] = useState(0);
-  const { theme } = useTheme();
 
   const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef<NodeJS.Timeout | null>(null);
@@ -25,39 +24,39 @@ export function LandingTabs() {
       description:
         "Tutti gli argomenti di matematica spiegati in modo chiaro e organizzato: categorie, formule, grafici, immagini ed esercizi collegati.",
       lightImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/teoria.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L3Rlb3JpYS5wbmciLCJpYXQiOjE3NDY3NDQ0MDksImV4cCI6MjA2MjEwNDQwOX0.ojVJA-SGWsQLQ-7zswND4EBZLyCsR_TgRtzR03BbweE",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/Dashboard%20Teoria.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L0Rhc2hib2FyZCBUZW9yaWEucG5nIiwiaWF0IjoxNzQ3OTk1OTA4LCJleHAiOjIwNjMzNTU5MDh9.tC6h5YuibkemixZxcjnsPZGEHZ5glJRD35Fu6EYbEDE",
       darkImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/teoria.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL3Rlb3JpYS5wbmciLCJpYXQiOjE3NDY3NDQ5NTcsImV4cCI6MjA2MjEwNDk1N30.eZlpPsC5LPbwbekXRoqEPlSYiyznT2WpUDbuOMeX3qI",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/Dashboard%20Teoria%20(1).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL0Rhc2hib2FyZCBUZW9yaWEgKDEpLnBuZyIsImlhdCI6MTc0Nzk5NTk2NywiZXhwIjoyMDYzMzU1OTY3fQ.6u4FWcbrYonC_UY5IyANFei0LrlDTJD8mDnHblGkygU",
       mobileLightImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/teoria-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L3Rlb3JpYS1tb2JpbGUucG5nIiwiaWF0IjoxNzQ2NzQ1NDU2LCJleHAiOjE3NzgyODE0NTZ9.GaR-3OnDWJIsmuiIxQM6d467qFCCw9FYL_LqZItKNas",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/Dashboard%20Teoria%20from%20DevTools.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L0Rhc2hib2FyZCBUZW9yaWEgZnJvbSBEZXZUb29scy5wbmciLCJpYXQiOjE3NDc5OTU4NzMsImV4cCI6MjA2MzM1NTg3M30.zKQbR0165CI06gfa3ws5DlCiD2o0_1RnXj8uyU_l6_4",
       mobileDarkImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/teoria-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL3Rlb3JpYS1tb2JpbGUucG5nIiwiaWF0IjoxNzQ2NzQ1NDg4LCJleHAiOjE3NzgyODE0ODh9.gDEwniHyXKCG2IO3jE02TMsnIN1Hy9eYNyCaq6WU1ro",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/Dashboard%20Teoria%20from%20DevTools%20(1).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL0Rhc2hib2FyZCBUZW9yaWEgZnJvbSBEZXZUb29scyAoMSkucG5nIiwiaWF0IjoxNzQ3OTk1OTg3LCJleHAiOjIwNjMzNTU5ODd9.TR5Wqwr0mPJJ-tEkoQEliLyYZEo0rhr5_nDL5XV6qs8",
     },
     timeline: {
       title: "Esercizi",
       description:
         "Una raccolta completa di esercizi per ogni argomento, divisi per livello di difficoltà, e con la possibilità di fare domande all'AI.",
       lightImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/esercizi.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L2VzZXJjaXppLnBuZyIsImlhdCI6MTc0Njc0NDQyNSwiZXhwIjoyMDYyMTA0NDI1fQ.EV6Hhi65bjVjrwmheO7d70epM4d_zwNBOjMUrAk29E4",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/Dashboard%20Teoria%20(2).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L0Rhc2hib2FyZCBUZW9yaWEgKDIpLnBuZyIsImlhdCI6MTc0Nzk5NTg0MSwiZXhwIjoyMDYzMzU1ODQxfQ.vmXYHPohYGPjyJespCo16mB3RCgmg6tz6tzQH214BjA",
       darkImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/esercizi.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2VzZXJjaXppLnBuZyIsImlhdCI6MTc0Njc0NDk4MywiZXhwIjoyMDYyMTA0OTgzfQ.dZGx8PbnR3LZTCaesFiUS7x4xH3gb8EmtYBbeYw7mnU",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/Dashboard%20Teoria%20(3).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL0Rhc2hib2FyZCBUZW9yaWEgKDMpLnBuZyIsImlhdCI6MTc0Nzk5NTk3OCwiZXhwIjoyMDYzMzU1OTc4fQ.xME_Nt4fbSoH8Wu6ajJ9XDommamz5rvmxNKwb5-D5kM",
       mobileLightImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/esercizi-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L2VzZXJjaXppLW1vYmlsZS5wbmciLCJpYXQiOjE3NDY3NDU0NzAsImV4cCI6MTc3ODI4MTQ3MH0.NKZ4Zzins8RYRMmw_RIePB_fqZIUtLJZF_LPZXbX0QU",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/Dashboard%20Teoria%20from%20DevTools%20(2).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L0Rhc2hib2FyZCBUZW9yaWEgZnJvbSBEZXZUb29scyAoMikucG5nIiwiaWF0IjoxNzQ3OTk1ODU2LCJleHAiOjIwNjMzNTU4NTZ9.9naKKBCcuypYn1-fQ6Soa62nGsm-pG92PyHOJA5d_2k",
       mobileDarkImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/esercizi-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL2VzZXJjaXppLW1vYmlsZS5wbmciLCJpYXQiOjE3NDY3NDU1NDEsImV4cCI6MTc3ODI4MTU0MX0.EySMCwYQ7yP8JGACbNfitp2R-ZOG8XmhP9kKMKnemrY",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/Dashboard%20Teoria%20Screenshot.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL0Rhc2hib2FyZCBUZW9yaWEgU2NyZWVuc2hvdC5wbmciLCJpYXQiOjE3NDc5OTU5OTYsImV4cCI6MjA2MzM1NTk5Nn0.narHYv2p_mCyUDj7hXCRxP8XvqlM3Xy3LlT49Xeb64E",
     },
     dashboard: {
       title: "Simulazioni",
       description:
         "Tutte le simulazioni d'esame ufficiali degli anni passati, pronte da svolgere per allenarti come se fossi il giorno della maturità.",
       lightImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/simulazione.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L3NpbXVsYXppb25lLnBuZyIsImlhdCI6MTc0Njc0NDQzMywiZXhwIjoyMDYyMTA0NDMzfQ.LPxUxal2R6KBTN43bD-DThd9azNF79ARJZM3LAAtFY0",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/Dashboard%20Simulazioni.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L0Rhc2hib2FyZCBTaW11bGF6aW9uaS5wbmciLCJpYXQiOjE3NDc5OTU5MzMsImV4cCI6MjA2MzM1NTkzM30.N67fkyKTd3TEoVtLbiN3-PYv8zWAKQ-bJxSmQ0gqAQE",
       darkImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/simulazione.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL3NpbXVsYXppb25lLnBuZyIsImlhdCI6MTc0Njc0NDk5MywiZXhwIjoyMDYyMTA0OTkzfQ.xM_UhaDIQvYP4jFkOLbN9XZXSY0SH8qxI4cM0XFJaI8",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/Dashboard%20Simulazioni%20(1).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL0Rhc2hib2FyZCBTaW11bGF6aW9uaSAoMSkucG5nIiwiaWF0IjoxNzQ3OTk1OTQ1LCJleHAiOjIwNjMzNTU5NDV9.An0wj_y19xWgvb_GL6-kPCCVEV2bhlk5lfRfcEha7D0",
       mobileLightImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/simulazione-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L3NpbXVsYXppb25lLW1vYmlsZS5wbmciLCJpYXQiOjE3NDY3NDU0ODAsImV4cCI6MTc3ODI4MTQ4MH0._rd4jRZTB_Qm5HcgNI_dbQX0HZiX5w6EeWKM_L-mkvU",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing-light/Dashboard%20Simulazioni%20from%20DevTools.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nLWxpZ2h0L0Rhc2hib2FyZCBTaW11bGF6aW9uaSBmcm9tIERldlRvb2xzLnBuZyIsImlhdCI6MTc0Nzk5NTkyMSwiZXhwIjoyMDYzMzU1OTIxfQ.qvAiMC7SR-BSjBDpgrrP5IDV3XHCPybsh69YLv2WH9Y",
       mobileDarkImage:
-        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/simulazione-mobile.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL3NpbXVsYXppb25lLW1vYmlsZS5wbmciLCJpYXQiOjE3NDY3NDU1MDQsImV4cCI6MTc3ODI4MTUwNH0.jgoc3AbqaRxlz8CmejrB1SItYaTFkMIPeKp9zCITOFk",
+        "https://yrnoofgubhnghwauieil.supabase.co/storage/v1/object/sign/landing/Dashboard%20Simulazioni%20iPhone%2012%20Pro%20(1).png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzBmM2JjYjBiLWU5NDgtNDY0Ny04ZGEyLWM0NjZlMTVkMzVlYiJ9.eyJ1cmwiOiJsYW5kaW5nL0Rhc2hib2FyZCBTaW11bGF6aW9uaSBpUGhvbmUgMTIgUHJvICgxKS5wbmciLCJpYXQiOjE3NDc5OTU5NTcsImV4cCI6MjA2MzM1NTk1N30.jJfIwawsNdbiKxabdBMz222vLZ5ZZqBdpC7eTgrwLjo",
     },
   };
 
@@ -180,7 +179,7 @@ export function LandingTabs() {
 
   return (
     <div
-      id="features"
+      id="tabs-section"
       className="max-w-7xl w-full mx-auto flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8"
     >
       {/* Improved title and subtitle styling */}

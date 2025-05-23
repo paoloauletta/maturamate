@@ -7,9 +7,15 @@ import {
   primaryKey,
   uuid,
   boolean,
-  varchar,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
+
+export const waitingList = pgTable("waiting_list", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  unsubscribed: boolean("unsubscribed").default(false),
+});
 
 export const users = pgTable("user", {
   id: text("id")
@@ -102,6 +108,7 @@ export const topicsTable = pgTable("topics", {
   description: text("description").notNull(),
   order_index: integer("order_index"),
   created_at: timestamp("created_at").notNull().defaultNow(),
+  slug: text("slug").notNull(),
 });
 
 export const subtopicsTable = pgTable("subtopics", {
@@ -113,6 +120,7 @@ export const subtopicsTable = pgTable("subtopics", {
   description: text("description").notNull(),
   order_index: integer("order_index"),
   created_at: timestamp("created_at").notNull().defaultNow(),
+  slug: text("slug").notNull(),
 });
 
 export const completedTopicsTable = pgTable("completed_topics", {
@@ -147,6 +155,7 @@ export const exercisesCardsTable = pgTable("exercises_cards", {
   difficulty: integer("difficulty").notNull(), // either 1, 2, 3
   order_index: integer("order_index"),
   created_at: timestamp("created_at").notNull().defaultNow(),
+  slug: text("slug").notNull(),
 });
 
 export const completedExercisesTable = pgTable("completed_exercises", {
@@ -215,6 +224,7 @@ export const simulationsTable = pgTable("simulations", {
   time_in_min: integer("time_in_min").notNull(),
   is_complete: boolean("is_complete").notNull().default(true),
   created_at: timestamp("created_at").notNull().defaultNow(),
+  slug: text("slug").notNull(),
 });
 
 export const simulationsSolutionsTable = pgTable("simulations_solutions", {

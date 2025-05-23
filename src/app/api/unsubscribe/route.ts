@@ -1,7 +1,6 @@
-// app/api/unsubscribe/route.ts
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { waitingList } from "@/lib/schema";
+import { db } from "@/db/drizzle";
+import { waitingList } from "@/db/schema";
 import { validateUnsubscribeToken } from "@/lib/unsubscribe";
 import { eq } from "drizzle-orm";
 

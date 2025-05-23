@@ -456,7 +456,7 @@ export default function PdfViewer({
             size="sm"
             onClick={toggleFullscreen}
             title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 md:block hidden"
           >
             {fullscreen ? (
               <Minimize2 className="h-4 w-4" />

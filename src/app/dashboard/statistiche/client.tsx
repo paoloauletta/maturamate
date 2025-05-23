@@ -309,7 +309,7 @@ export function SimulationsStatisticsClient({ data }: StatisticsClientProps) {
               )}
             </CardContent>
             <CardFooter className="border-t pt-4">
-              <Button asChild className="w-full">
+              <Button asChild className="w-full text-white">
                 <Link href="/dashboard/simulazioni?referrer=statistiche">
                   Tutte le simulazioni
                 </Link>
@@ -337,8 +337,11 @@ export function SimulationsStatisticsClient({ data }: StatisticsClientProps) {
           </p>
         </CardContent>
         <CardFooter>
-          <Button asChild className="w-full bg-primary hover:bg-primary/90">
-            <Link href="/dashboard/simulazioni?referrer=statistiche">
+          <Button asChild className="w-full" variant="default">
+            <Link
+              href="/dashboard/simulazioni?referrer=statistiche"
+              className="text-white"
+            >
               Inizia una nuova simulazione
             </Link>
           </Button>

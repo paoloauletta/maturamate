@@ -195,7 +195,7 @@ async function DashboardContent() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button asChild className="w-full">
+            <Button asChild className="w-full text-white">
               <Link href="/dashboard/simulazioni">
                 Tutte le simulazioni
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -227,7 +227,7 @@ async function DashboardContent() {
               </CardContent>
             </div>
             <CardFooter>
-              <Button asChild className="w-full bg-primary hover:bg-primary/90">
+              <Button asChild variant="default" className="w-full text-white">
                 <Link href="/dashboard/simulazioni">
                   Inizia una nuova simulazione
                   <ArrowRight className="ml-2 h-4 w-4" />

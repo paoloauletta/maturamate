@@ -53,7 +53,7 @@ export default function SimulationItem({
       className="bg-muted/40 border border-border rounded-xl p-4 md:p-6 flex flex-col justify-between items-center gap-6"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex flex-col items-start justify-center gap-2 w-full">
+      <div className="flex flex-col items-start justify-center gap-1 md:gap-2 w-full">
         <div className="text-base font-semibold">
           <span>{simulationType}</span>
         </div>

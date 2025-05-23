@@ -1,4 +1,3 @@
-// app/unsubscribe/page.tsx
 "use client";
 
 import { useEffect } from "react";

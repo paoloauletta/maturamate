@@ -24,7 +24,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${funnelDisplay.className} antialiased`}>
-        <SpeedInsights />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -33,6 +32,7 @@ export default function RootLayout({
         >
           <SessionProvider>{children}</SessionProvider>
         </ThemeProvider>
+        <SpeedInsights />s
       </body>
     </html>
   );

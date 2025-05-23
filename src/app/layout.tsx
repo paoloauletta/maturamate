@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "./components/shared/theme/themeProvider";
 import { SessionProvider } from "next-auth/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel-display",
@@ -22,18 +23,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${funnelDisplay.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SessionProvider>{children}</SessionProvider>
-        </ThemeProvider>
-        <SpeedInsights />s
-      </body>
-    </html>
+    <>
+      <html lang="en">
+        <body className={`${funnelDisplay.className} antialiased`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SessionProvider>{children}</SessionProvider>
+          </ThemeProvider>
+        </body>
+      </html>
+      <SpeedInsights />
+      <Analytics />
+    </>
   );
 }

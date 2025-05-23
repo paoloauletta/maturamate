@@ -1,4 +1,5 @@
 ignoredBuiltDependencies:
+  - '@vercel/speed-insights'
   - unrs-resolver
 onlyBuiltDependencies:
   - esbuild

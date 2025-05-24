@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import UsernameSetupForm from "../components/username-setup/username-setup";
+import UsernameSetupForm from "../../components/username-setup/username-setup";
 import { db } from "@/db/drizzle";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";

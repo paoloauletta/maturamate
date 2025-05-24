@@ -5,6 +5,7 @@ import { ThemeProvider } from "./components/shared/theme/themeProvider";
 import { SessionProvider } from "next-auth/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
+import { CookieConsent } from "./components/shared/cookie-consent";
 
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel-display",
@@ -33,6 +34,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SessionProvider>{children}</SessionProvider>
+            <CookieConsent />
           </ThemeProvider>
         </body>
       </html>

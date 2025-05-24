@@ -60,7 +60,10 @@ export default function FooterSection({
   copyright = "© 2025 Mikołaj Dobrucki. All rights reserved",
   policies = [
     { text: "Privacy Policy", href: "https://www.launchuicomponents.com/" },
-    { text: "Terms of Service", href: "https://www.launchuicomponents.com/" },
+    {
+      text: "Terms and Conditions",
+      href: "https://www.launchuicomponents.com/",
+    },
   ],
   showModeToggle = true,
   className,

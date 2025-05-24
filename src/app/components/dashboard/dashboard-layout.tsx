@@ -22,6 +22,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import FooterSection from "../shared/navigation/dashboard-footer";
 
 // Dynamic imports for non-critical components
 const DashboardSidebar = lazy(
@@ -119,85 +120,90 @@ export default function DashboardLayoutClient({
   }
 
   return (
-    <section
-      className={cn(
-        "grid min-h-screen w-full",
-        collapsed
-          ? "md:grid-cols-[64px_1fr] lg:grid-cols-[64px_1fr]"
-          : "md:grid-cols-[280px_1fr] lg:grid-cols-[280px_1fr]"
-      )}
-    >
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Suspense
-          fallback={<div className="bg-background h-screen w-full border-r" />}
-        >
-          <DashboardSidebar
-            collapsed={collapsed}
-            setCollapsed={setCollapsed}
-            onItemClick={() => {}}
-          />
-        </Suspense>
-      </div>
+    <>
+      <section
+        className={cn(
+          "grid min-h-screen w-full",
+          collapsed
+            ? "md:grid-cols-[64px_1fr] lg:grid-cols-[64px_1fr]"
+            : "md:grid-cols-[280px_1fr] lg:grid-cols-[280px_1fr]"
+        )}
+      >
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          <Suspense
+            fallback={
+              <div className="bg-background h-screen w-full border-r" />
+            }
+          >
+            <DashboardSidebar
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              onItemClick={() => {}}
+            />
+          </Suspense>
+        </div>
 
-      <div className="flex flex-col">
-        <div className="bg-background sticky top-0 z-40">
-          <header className="flex h-14 items-center gap-4 px-6 lg:h-[60px] lg:px-6 border-b">
-            {/* Theme toggle on mobile - placed where the logo was */}
-            <div className="md:hidden">
-              <Suspense fallback={<div className="h-8 w-8" />}>
-                <ThemeToggle />
-              </Suspense>
-            </div>
-            <div className="ml-auto flex items-center gap-x-5">
-              {/* Only show theme toggle on desktop */}
-              <div className="hidden md:block">
+        <div className="flex flex-col">
+          <div className="bg-background sticky top-0 z-40">
+            <header className="flex h-14 items-center gap-4 px-6 lg:h-[60px] lg:px-6 border-b">
+              {/* Theme toggle on mobile - placed where the logo was */}
+              <div className="md:hidden">
                 <Suspense fallback={<div className="h-8 w-8" />}>
                   <ThemeToggle />
                 </Suspense>
               </div>
+              <div className="ml-auto flex items-center gap-x-5">
+                {/* Only show theme toggle on desktop */}
+                <div className="hidden md:block">
+                  <Suspense fallback={<div className="h-8 w-8" />}>
+                    <ThemeToggle />
+                  </Suspense>
+                </div>
 
-              {/* Mobile hamburger menu on the right */}
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild className="md:hidden block">
-                  <Button
-                    variant="ghost"
-                    className="align-end items-end flex p-0 h-auto"
-                  >
-                    <Menu style={{ width: "20px", height: "20px" }} />
-                    <span className="sr-only">Menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="p-0 w-[300px] border-l">
-                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Application navigation links
-                  </SheetDescription>
-                  <div className="flex h-full flex-col">
-                    <Suspense
-                      fallback={
-                        <div className="h-full w-full flex justify-center items-center">
-                          Loading...
-                        </div>
-                      }
+                {/* Mobile hamburger menu on the right */}
+                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                  <SheetTrigger asChild className="md:hidden block">
+                    <Button
+                      variant="ghost"
+                      className="align-end items-end flex p-0 h-auto"
                     >
-                      <DashboardSidebar
-                        collapsed={false}
-                        setCollapsed={() => {}}
-                        onItemClick={() => setMobileMenuOpen(false)}
-                        isMobile={true}
-                      />
-                    </Suspense>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </header>
+                      <Menu style={{ width: "20px", height: "20px" }} />
+                      <span className="sr-only">Menu</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="p-0 w-[300px] border-l">
+                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                    <SheetDescription className="sr-only">
+                      Application navigation links
+                    </SheetDescription>
+                    <div className="flex h-full flex-col">
+                      <Suspense
+                        fallback={
+                          <div className="h-full w-full flex justify-center items-center">
+                            Loading...
+                          </div>
+                        }
+                      >
+                        <DashboardSidebar
+                          collapsed={false}
+                          setCollapsed={() => {}}
+                          onItemClick={() => setMobileMenuOpen(false)}
+                          isMobile={true}
+                        />
+                      </Suspense>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </header>
+          </div>
+          <main className="flex flex-1 flex-col gap-4 p-4 pb-12 lg:gap-6 lg:px-8 lg:py-12">
+            {children}
+          </main>
+          <FooterSection />
         </div>
-        <main className="flex flex-1 flex-col gap-4 p-4 pb-12 lg:gap-6 lg:px-8 lg:py-12">
-          {children}
-        </main>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

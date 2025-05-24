@@ -31,33 +31,8 @@ interface FooterProps {
 
 export default function FooterSection({
   logo = <LaunchUI />,
-  name = "MaturaMate",
-  columns = [
-    {
-      title: "Landing",
-      links: [
-        { text: "Home", href: "/" },
-        { text: "Features", href: "/#features" },
-        { text: "FAQ", href: "/#faq" },
-      ],
-    },
-    {
-      title: "Dashbaord",
-      links: [
-        { text: "Teoria", href: "/dashboard/teoria" },
-        { text: "Esercizi", href: "/dashboard/esercizi" },
-        { text: "Simulazioni", href: "/dashboard/simulazioni" },
-      ],
-    },
-    {
-      title: "Il Tuo Studio",
-      links: [
-        { text: "Tutor AI", href: "/dashboard/tutor" },
-        { text: "Preferiti", href: "/dashboard/preferiti" },
-        { text: "Statistiche", href: "/dashboard/statistiche" },
-      ],
-    },
-  ],
+  name = "",
+  columns = [],
   copyright = "© 2025 MaturaMate. All rights reserved",
   policies = [
     { text: "Privacy Policy", href: "/privacy-policy" },
@@ -68,7 +43,7 @@ export default function FooterSection({
 }: FooterProps) {
   return (
     <footer className={cn("bg-background w-full px-4", className)}>
-      <div className="max-w-container mx-auto">
+      <div>
         <Footer>
           <FooterContent>
             <FooterColumn className="col-span-2 sm:col-span-3 md:col-span-1">
